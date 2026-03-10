@@ -7,6 +7,17 @@ datasource db {
   provider = "sqlite"
 }
 
+model JobListing {
+  id          String      @id @default(cuid())
+  title       String
+  description String
+  location    String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  candidates  Candidate[]
+}
+
 model Candidate {
   id            String          @id @default(cuid())
   name          String
@@ -18,6 +29,8 @@ model Candidate {
   scoreTotal    Float?
   appliedAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
+  jobListingId  String?
+  jobListing    JobListing?     @relation(fields: [jobListingId], references: [id])
 }
 
 model User {

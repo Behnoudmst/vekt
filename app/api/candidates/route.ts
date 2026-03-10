@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
     const name = formData.get("name");
     const email = formData.get("email");
     const resume = formData.get("resume") as File | null;
+    const jobListingId = formData.get("jobListingId") as string | null;
 
     const validation = candidateApplicationSchema.safeParse({ name, email });
     if (!validation.success) {
@@ -103,6 +104,7 @@ export async function POST(req: NextRequest) {
         name: validation.data.name,
         email: validation.data.email,
         resumePath: `/uploads/${filename}`,
+        ...(jobListingId ? { jobListingId } : {}),
       },
     });
 

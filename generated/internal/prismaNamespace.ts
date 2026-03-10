@@ -384,6 +384,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
+  JobListing: 'JobListing',
   Candidate: 'Candidate',
   User: 'User'
 } as const
@@ -401,10 +402,84 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "candidate" | "user"
+    modelProps: "jobListing" | "candidate" | "user"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
+    JobListing: {
+      payload: Prisma.$JobListingPayload<ExtArgs>
+      fields: Prisma.JobListingFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.JobListingFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.JobListingFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload>
+        }
+        findFirst: {
+          args: Prisma.JobListingFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.JobListingFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload>
+        }
+        findMany: {
+          args: Prisma.JobListingFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload>[]
+        }
+        create: {
+          args: Prisma.JobListingCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload>
+        }
+        createMany: {
+          args: Prisma.JobListingCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.JobListingCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload>[]
+        }
+        delete: {
+          args: Prisma.JobListingDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload>
+        }
+        update: {
+          args: Prisma.JobListingUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload>
+        }
+        deleteMany: {
+          args: Prisma.JobListingDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.JobListingUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.JobListingUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload>[]
+        }
+        upsert: {
+          args: Prisma.JobListingUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$JobListingPayload>
+        }
+        aggregate: {
+          args: Prisma.JobListingAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateJobListing>
+        }
+        groupBy: {
+          args: Prisma.JobListingGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobListingGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.JobListingCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.JobListingCountAggregateOutputType> | number
+        }
+      }
+    }
     Candidate: {
       payload: Prisma.$CandidatePayload<ExtArgs>
       fields: Prisma.CandidateFieldRefs
@@ -589,6 +664,19 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
+export const JobListingScalarFieldEnum = {
+  id: 'id',
+  title: 'title',
+  description: 'description',
+  location: 'location',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type JobListingScalarFieldEnum = (typeof JobListingScalarFieldEnum)[keyof typeof JobListingScalarFieldEnum]
+
+
 export const CandidateScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -599,7 +687,8 @@ export const CandidateScalarFieldEnum = {
   scoreQ2: 'scoreQ2',
   scoreTotal: 'scoreTotal',
   appliedAt: 'appliedAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  jobListingId: 'jobListingId'
 } as const
 
 export type CandidateScalarFieldEnum = (typeof CandidateScalarFieldEnum)[keyof typeof CandidateScalarFieldEnum]
@@ -645,6 +734,20 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
 
 
 /**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
  * Reference to a field of type 'CandidateStatus'
  */
 export type EnumCandidateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CandidateStatus'>
@@ -655,13 +758,6 @@ export type EnumCandidateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-/**
- * Reference to a field of type 'DateTime'
- */
-export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
     
 
 
@@ -766,6 +862,7 @@ export type PrismaClientOptions = ({
   comments?: runtime.SqlCommenterPlugin[]
 }
 export type GlobalOmitConfig = {
+  jobListing?: Prisma.JobListingOmit
   candidate?: Prisma.CandidateOmit
   user?: Prisma.UserOmit
 }

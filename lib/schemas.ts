@@ -19,7 +19,14 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const jobListingSchema = z.object({
+  title: z.string().min(1, "Title is required").max(100),
+  description: z.string().min(1, "Description is required"),
+  location: z.string().optional(),
+});
+
 export type CandidateApplicationInput = z.infer<typeof candidateApplicationSchema>;
 export type WebhookScoreInput = z.infer<typeof webhookScoreSchema>;
 export type ReviewDecisionInput = z.infer<typeof reviewDecisionSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type JobListingInput = z.infer<typeof jobListingSchema>;

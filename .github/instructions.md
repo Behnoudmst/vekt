@@ -20,6 +20,7 @@ Search for the skills that might help you with implementation and use the skills
 * **Constraint:** pdf files will be stored in local disk.
 * **Database:** A `Candidate` record is created with a status of `INITIAL_APPLIED`.
 
+
 ### 3.2 Automated Evaluation Workflow (Steps 2 & 3)
 
 The engine must trigger two sequential or parallel external calls:
@@ -84,12 +85,16 @@ We will create a `/lib/mocks` directory that implements the `QuestionnaireServic
 **api and state:** Use Zustand for global state and axios for api calls
 ---
 
-## 6. Success Metrics for the Homework
+## 6. Success Metrics
 
 * **Correctness:** Does the math match the 40/60 weighted requirement?
 * **Resilience:** Does the app handle a "Service 1 Failed" scenario?
 * **Clarity:** Is the "Priority Queue" easily identifiable in the UI?
 
 ---
+
+
+**Updated Features**
+in recruiter dashboard, there should be possibility for him to add new job listings, These listings will be visible on the home page as list and visitors can apply to each of them. make the necessarry changes
 
 

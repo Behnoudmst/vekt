@@ -19,6 +19,7 @@ export function GET() {
     },
     tags: [
       { name: "Candidates", description: "Candidate ingestion and listing" },
+      { name: "JobListings", description: "Job listing management" },
       { name: "Recruiter", description: "Protected recruiter dashboard endpoints" },
       { name: "Meta", description: "API meta endpoints" },
     ],
@@ -53,6 +54,10 @@ export function GET() {
                       example: "jane@example.com",
                     },
                     resume: { type: "string", format: "binary" },
+                    jobListingId: {
+                      type: "string",
+                      description: "Optional job listing ID to associate this application with",
+                    },
                   },
                 },
               },
@@ -118,6 +123,109 @@ export function GET() {
                 },
               },
             },
+          },
+        },
+      },
+      "/api/job-listings": {
+        get: {
+          summary: "List active job listings",
+          tags: ["JobListings"],
+          responses: {
+            "200": {
+              description: "Array of active job listings",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        id: { type: "string" },
+                        title: { type: "string" },
+                        description: { type: "string" },
+                        location: { type: "string", nullable: true },
+                        isActive: { type: "boolean" },
+                        createdAt: { type: "string", format: "date-time" },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        post: {
+          summary: "Create a new job listing",
+          tags: ["JobListings"],
+          security: [{ cookieAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["title", "description"],
+                  properties: {
+                    title: { type: "string", example: "Senior Backend Engineer" },
+                    description: { type: "string" },
+                    location: { type: "string", example: "Remote" },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            "201": { description: "Job listing created" },
+            "400": { description: "Validation error" },
+            "401": { description: "Unauthorized" },
+          },
+        },
+      },
+      "/api/job-listings/{id}": {
+        patch: {
+          summary: "Toggle a job listing active/inactive",
+          tags: ["JobListings"],
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: "path",
+              name: "id",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["isActive"],
+                  properties: { isActive: { type: "boolean" } },
+                },
+              },
+            },
+          },
+          responses: {
+            "200": { description: "Updated job listing" },
+            "401": { description: "Unauthorized" },
+          },
+        },
+        delete: {
+          summary: "Delete a job listing",
+          tags: ["JobListings"],
+          security: [{ cookieAuth: [] }],
+          parameters: [
+            {
+              in: "path",
+              name: "id",
+              required: true,
+              schema: { type: "string" },
+            },
+          ],
+          responses: {
+            "200": { description: "Deleted successfully" },
+            "401": { description: "Unauthorized" },
           },
         },
       },

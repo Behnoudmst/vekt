@@ -19,6 +19,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import JobListingsSection from "./JobListingsSection";
 import ReviewButton from "./ReviewButton";
 import SignOutButton from "./SignOutButton";
 
@@ -32,6 +33,19 @@ export default async function RecruiterPage() {
   const candidates = await prisma.candidate.findMany({
     where: { status: CandidateStatus.PRIORITY_QUEUE },
     orderBy: [{ scoreTotal: "desc" }, { appliedAt: "asc" }],
+  });
+
+  const jobListings = await prisma.jobListing.findMany({
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      location: true,
+      isActive: true,
+      createdAt: true,
+      _count: { select: { candidates: true } },
+    },
   });
 
   return (
@@ -56,6 +70,11 @@ export default async function RecruiterPage() {
       </header>
 
       <main className="mx-auto max-w-4xl p-6">
+        {/* Job Listings section */}
+        <JobListingsSection listings={jobListings} />
+
+        <Separator className="my-8" />
+
         {/* Section header */}
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
