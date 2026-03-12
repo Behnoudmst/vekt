@@ -6,7 +6,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Behnoudmst/spark-hire",
+    "url": "https://github.com/Behnoudmst/spark-hire"
   },
   "scripts": {
     "dev": "next dev",
