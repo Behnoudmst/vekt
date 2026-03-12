@@ -98,7 +98,7 @@ export default function PrivacyPolicyPage() {
             <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
               <li><strong>Access</strong> — request a copy of the personal data we hold about you</li>
               <li><strong>Rectification</strong> — ask us to correct inaccurate data</li>
-              <li><strong>Erasure</strong> — request deletion of your data ("right to be forgotten")</li>
+              <li><strong>Erasure</strong> — request deletion of your data (&ldquo;right to be forgotten&rdquo;)</li>
               <li><strong>Restriction</strong> — ask us to limit how we use your data</li>
               <li><strong>Portability</strong> — receive your data in a machine-readable format</li>
               <li><strong>Object</strong> — object to processing based on legitimate interest</li>

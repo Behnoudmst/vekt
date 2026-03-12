@@ -1,7 +1,13 @@
 {
   "name": "spark-hire",
+  "author": {"name": "Behnoud Mostafaie", "url": "https://behnoud.net"},
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Behnoudmst/spark-hire",
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
