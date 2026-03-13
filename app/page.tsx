@@ -83,7 +83,7 @@ export default async function Home({
               {listings.map((listing) => (
                 <Link
                   key={listing.id}
-                  href={`/apply?jobId=${listing.id}`}
+                  href={`/jobs/${listing.id}`}
                   className="group block rounded-xl border border-border bg-card transition-all duration-150 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <div className="flex items-start justify-between gap-4 p-5">
