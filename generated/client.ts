@@ -31,8 +31,8 @@ export * from "./enums"
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more JobListings
- * const jobListings = await prisma.jobListing.findMany()
+ * // Fetch zero or more Jobs
+ * const jobs = await prisma.job.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -42,17 +42,27 @@ export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts exten
 export { Prisma }
 
 /**
- * Model JobListing
+ * Model Job
  * 
  */
-export type JobListing = Prisma.JobListingModel
+export type Job = Prisma.JobModel
 /**
  * Model Candidate
  * 
  */
 export type Candidate = Prisma.CandidateModel
 /**
+ * Model Evaluation
+ * 
+ */
+export type Evaluation = Prisma.EvaluationModel
+/**
  * Model User
  * 
  */
 export type User = Prisma.UserModel
+/**
+ * Model Setting
+ * Key-value store for admin-controlled global settings (e.g. RETENTION_DAYS)
+ */
+export type Setting = Prisma.SettingModel

@@ -1,105 +1,124 @@
 import { CandidateStatus } from "@/generated/client";
+import { evaluateCandidate } from "@/lib/ai";
+import { inngest } from "@/lib/inngest";
 import logger from "@/lib/logger";
-import { MockEvaluationService } from "@/lib/mocks/MockEvaluationService";
 import { prisma } from "@/lib/prisma";
-import { calculateScore, isPriorityCandidate } from "@/lib/scoring";
+import { meetsThreshold } from "@/lib/scoring";
 
-const MAX_RETRIES = 3;
-const RETRY_DELAY_MS = 1000;
+/** Inngest function: durable AI evaluation pipeline */
+export const analyzeCandidate = inngest.createFunction(
+  {
+    id: "analyze-candidate",
+    retries: 5,
+  },
+  { event: "vekt/candidate.created" },
+  async ({ event, step }) => {
+    const { candidateId } = event.data as { candidateId: string };
 
-const evaluationService = new MockEvaluationService();
+    // Mark as ANALYZING
+    await step.run("mark-analyzing", async () => {
+      await prisma.candidate.update({
+        where: { id: candidateId },
+        data: { status: CandidateStatus.ANALYZING },
+      });
+      logger.info({ candidateId }, "Pipeline: marked ANALYZING");
+    });
 
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  retries: number,
-  label: string,
-): Promise<T> {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-      if (attempt === retries) throw err;
-      logger.warn({ attempt, label, err }, "Queue: retrying after failure");
-      await new Promise((r) => setTimeout(r, RETRY_DELAY_MS * attempt));
-    }
-  }
-  throw new Error(`All ${retries} retries exhausted for ${label}`);
-}
+    // Fetch candidate + job
+    const candidate = await step.run("fetch-candidate", async () => {
+      return prisma.candidate.findUniqueOrThrow({
+        where: { id: candidateId },
+        include: { job: true },
+      });
+    });
+
+    // Run AI evaluation
+    const evaluated = await step.run("ai-evaluate", async () => {
+      const job = candidate.job;
+      const { result, promptSnapshot } = await evaluateCandidate({
+        jobTitle: job?.title ?? "General Position",
+        jobDescription: job?.description ?? "",
+        customPrompt: job?.customPrompt ?? null,
+        resumeText: candidate.resumeText,
+      });
+      return { result, promptSnapshot };
+    });
+
+    // Save evaluation & update status
+    await step.run("save-evaluation", async () => {
+      const { result, promptSnapshot } = evaluated;
+      const threshold = candidate.job?.threshold ?? 75;
+      const status = meetsThreshold(result.score, threshold)
+        ? CandidateStatus.SHORTLISTED
+        : CandidateStatus.REJECTED;
+
+      await prisma.$transaction([
+        prisma.evaluation.create({
+          data: {
+            candidateId,
+            score: result.score,
+            reasoning: result.reasoning,
+            pros: JSON.stringify(result.pros),
+            cons: JSON.stringify(result.cons),
+            promptSnapshot,
+          },
+        }),
+        prisma.candidate.update({
+          where: { id: candidateId },
+          data: { status },
+        }),
+      ]);
+
+      logger.info({ candidateId, score: result.score, status }, "Pipeline: evaluation saved");
+    });
+  },
+);
 
 /**
- * In-process orchestration engine.
- * Triggered after a candidate is created. Runs evaluation steps sequentially,
- * updates candidate status at each stage, and finalises with a score.
+ * Fallback fire-and-forget pipeline for when Inngest is not configured.
+ * Used in development without the Inngest Dev Server.
  */
-export async function runEvaluationPipeline(candidateId: string): Promise<void> {
-  logger.info({ candidateId }, "Queue: starting evaluation pipeline");
+export async function runEvaluationPipelineDirect(candidateId: string): Promise<void> {
+  logger.info({ candidateId }, "Pipeline: starting direct evaluation");
 
-  // --- Step 2: Questionnaire (Q1) ---
   await prisma.candidate.update({
     where: { id: candidateId },
-    data: { status: CandidateStatus.PENDING_Q1 },
+    data: { status: CandidateStatus.ANALYZING },
   });
 
-  let scoreQ1: number;
-  try {
-    const result = await withRetry(
-      () => evaluationService.triggerQ1(candidateId),
-      MAX_RETRIES,
-      "Q1",
-    );
-    scoreQ1 = result.score;
-    await prisma.candidate.update({
-      where: { id: candidateId },
-      data: { scoreQ1 },
-    });
-    logger.info({ candidateId, scoreQ1 }, "Queue: Q1 score saved");
-  } catch (err) {
-    logger.error({ candidateId, err }, "Queue: Q1 permanently failed — marking rejected");
-    await prisma.candidate.update({
-      where: { id: candidateId },
-      data: { status: CandidateStatus.REJECTED },
-    });
-    return;
-  }
-
-  // --- Step 3: Automated Call (Q2) ---
-  await prisma.candidate.update({
+  const candidate = await prisma.candidate.findUniqueOrThrow({
     where: { id: candidateId },
-    data: { status: CandidateStatus.PENDING_Q2 },
+    include: { job: true },
   });
 
-  let scoreQ2: number;
-  try {
-    const result = await withRetry(
-      () => evaluationService.triggerQ2(candidateId),
-      MAX_RETRIES,
-      "Q2",
-    );
-    scoreQ2 = result.score;
-    await prisma.candidate.update({
-      where: { id: candidateId },
-      data: { scoreQ2 },
-    });
-    logger.info({ candidateId, scoreQ2 }, "Queue: Q2 score saved");
-  } catch (err) {
-    logger.error({ candidateId, err }, "Queue: Q2 permanently failed — marking rejected");
-    await prisma.candidate.update({
-      where: { id: candidateId },
-      data: { status: CandidateStatus.REJECTED },
-    });
-    return;
-  }
+  const { result, promptSnapshot } = await evaluateCandidate({
+    jobTitle: candidate.job?.title ?? "General Position",
+    jobDescription: candidate.job?.description ?? "",
+    customPrompt: candidate.job?.customPrompt ?? null,
+    resumeText: candidate.resumeText,
+  });
 
-  // --- Step 4: Scoring ---
-  const scoreTotal = calculateScore(scoreQ1, scoreQ2);
-  const status = isPriorityCandidate(scoreTotal)
-    ? CandidateStatus.PRIORITY_QUEUE
+  const threshold = candidate.job?.threshold ?? 75;
+  const status = meetsThreshold(result.score, threshold)
+    ? CandidateStatus.SHORTLISTED
     : CandidateStatus.REJECTED;
 
-  await prisma.candidate.update({
-    where: { id: candidateId },
-    data: { scoreTotal, status },
-  });
+  await prisma.$transaction([
+    prisma.evaluation.create({
+      data: {
+        candidateId,
+        score: result.score,
+        reasoning: result.reasoning,
+        pros: JSON.stringify(result.pros),
+        cons: JSON.stringify(result.cons),
+        promptSnapshot,
+      },
+    }),
+    prisma.candidate.update({
+      where: { id: candidateId },
+      data: { status },
+    }),
+  ]);
 
-  logger.info({ candidateId, scoreQ1, scoreQ2, scoreTotal, status }, "Queue: pipeline complete");
+  logger.info({ candidateId, score: result.score, status }, "Pipeline: direct evaluation complete");
 }

@@ -8,13 +8,14 @@ export default async function ApplyPage({
 }) {
   const { jobId } = await searchParams;
 
-  const jobListing = jobId
-    ? await prisma.jobListing.findUnique({
+  const job = jobId
+    ? await prisma.job.findUnique({
         where: { id: jobId, isActive: true },
         select: { id: true, title: true, description: true, location: true },
       })
     : null;
 
-  return <ApplyForm jobListing={jobListing} />;
+  return <ApplyForm job={job} />;
 }
+
 

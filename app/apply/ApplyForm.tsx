@@ -3,26 +3,26 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Briefcase,
-  CheckCircle,
-  MapPin,
-  SpinnerGap,
-  WarningCircle,
+    Briefcase,
+    CheckCircle,
+    MapPin,
+    SpinnerGap,
+    WarningCircle,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRef, useState } from "react";
 
-type JobListing = {
+type Job = {
   id: string;
   title: string;
   description: string;
@@ -30,7 +30,7 @@ type JobListing = {
 };
 
 type Props = {
-  jobListing?: JobListing | null;
+  job?: Job | null;
 };
 
 type SubmissionState =
@@ -39,7 +39,7 @@ type SubmissionState =
   | { status: "success"; candidateId: string }
   | { status: "error"; message: string };
 
-export default function ApplyForm({ jobListing }: Props) {
+export default function ApplyForm({ job }: Props) {
   const [state, setState] = useState<SubmissionState>({ status: "idle" });
   const [consentPrivacy, setConsentPrivacy] = useState(false);
   const [consentTerms, setConsentTerms] = useState(false);
@@ -50,8 +50,8 @@ export default function ApplyForm({ jobListing }: Props) {
     setState({ status: "loading" });
 
     const formData = new FormData(e.currentTarget);
-    if (jobListing) {
-      formData.append("jobListingId", jobListing.id);
+    if (job) {
+      formData.append("jobId", job.id);
     }
     formData.append("consentGiven", "true");
 
@@ -80,30 +80,30 @@ export default function ApplyForm({ jobListing }: Props) {
   return (
     <div className="flex min-h-[89vh] flex-col bg-background">
       <main className="flex-1">
-      {/* Layout: single col mobile, 2-col desktop when job listing present */}
+      {/* Layout: single col mobile, 2-col desktop when job present */}
       <div
         className={
-          jobListing
+          job
             ? "mx-auto grid max-w-5xl gap-8 p-6 md:grid-cols-[1fr_400px] md:items-start"
             : "mx-auto flex max-w-md flex-col p-6"
         }
       >
         {/* Left: job description */}
-        {jobListing && (
+        {job && (
           <div>
             <div className="mb-3 flex items-center gap-2">
               <Briefcase className="size-5 text-primary" weight="fill" />
-              <h1 className="text-xl font-semibold">{jobListing.title}</h1>
+              <h1 className="text-xl font-semibold">{job.title}</h1>
             </div>
-            {jobListing.location && (
+            {job.location && (
               <div className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground">
                 <MapPin className="size-3.5 shrink-0" />
-                {jobListing.location}
+                {job.location}
               </div>
             )}
             <div
               className="prose prose-sm dark:prose-invert max-w-none text-foreground"
-              dangerouslySetInnerHTML={{ __html: jobListing.description }}
+              dangerouslySetInnerHTML={{ __html: job.description }}
             />
           </div>
         )}
@@ -119,13 +119,19 @@ export default function ApplyForm({ jobListing }: Props) {
                   Your application is being evaluated by our AI engine.
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="flex flex-col gap-3">
                 <p className="text-muted-foreground text-xs">
-                  Candidate ID:{" "}
-                  <code className="font-mono bg-muted px-1 py-0.5 rounded">
+                  Track your application status using your candidate ID:
+                </p>
+                <Link
+                  href={`/status/${state.candidateId}`}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium text-primary underline underline-offset-3"
+                >
+                  <code className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs text-foreground">
                     {state.candidateId}
                   </code>
-                </p>
+                  → View Status
+                </Link>
               </CardContent>
               <CardFooter>
                 <Button
@@ -142,8 +148,8 @@ export default function ApplyForm({ jobListing }: Props) {
               <CardHeader>
                 <CardTitle>Apply Now</CardTitle>
                 <CardDescription>
-                  {jobListing
-                    ? `Applying for: ${jobListing.title}`
+                  {job
+                    ? `Applying for: ${job.title}`
                     : "Submit your application and our AI engine will evaluate your profile."}
                 </CardDescription>
               </CardHeader>
@@ -222,9 +228,9 @@ export default function ApplyForm({ jobListing }: Props) {
                         className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-primary"
                       />
                       <label htmlFor="consentTerms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
-                        I understand my data will be retained for up to 12 months after this recruitment process concludes, and I may contact{" "}
-                        <a href="mailto:privacy@spark-hire.io" className="text-primary underline underline-offset-3 font-medium">
-                          privacy@spark-hire.io
+                        I understand my data will be retained for up to 12 months and I may contact{" "}
+                        <a href="mailto:privacy@vekt.io" className="text-primary underline underline-offset-3 font-medium">
+                          privacy@vekt.io
                         </a>
                         {" "}to access, correct, or delete my data at any time.
                       </label>

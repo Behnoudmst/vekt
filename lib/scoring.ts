@@ -1,15 +1,7 @@
-const WEIGHT_Q1 = 0.4;
-const WEIGHT_Q2 = 0.6;
-const PRIORITY_THRESHOLD = 75;
-
 /**
- * Calculates the weighted total score.
- * Formula: (scoreQ1 * 0.4) + (scoreQ2 * 0.6)
+ * Determines whether a candidate score meets the job's threshold.
+ * Candidates at or above threshold are SHORTLISTED; below are REJECTED.
  */
-export function calculateScore(scoreQ1: number, scoreQ2: number): number {
-  return scoreQ1 * WEIGHT_Q1 + scoreQ2 * WEIGHT_Q2;
-}
-
-export function isPriorityCandidate(scoreTotal: number): boolean {
-  return scoreTotal >= PRIORITY_THRESHOLD;
+export function meetsThreshold(score: number, threshold: number): boolean {
+  return score >= threshold;
 }

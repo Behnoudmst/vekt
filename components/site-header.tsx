@@ -14,6 +14,7 @@ type Props = {
 export default async function SiteHeader({ backHref, backLabel }: Props) {
   const session = await auth();
   const email = session?.user?.email;
+  const role = (session?.user as { role?: string } | undefined)?.role;
 
   return (
     <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-sm">
@@ -36,6 +37,13 @@ export default async function SiteHeader({ backHref, backLabel }: Props) {
             <Link href="/recruiter" className="ml-auto">
               <Button size="sm" variant={"link"} className=" border-l pl-3 hidden sm:block truncate">
                 Recruiter Dashboard
+              </Button>
+            </Link>
+          )}
+          {role === "ADMIN" && (
+            <Link href="/admin">
+              <Button size="sm" variant={"link"} className="border-l pl-3 hidden sm:block truncate">
+                Admin
               </Button>
             </Link>
           )}

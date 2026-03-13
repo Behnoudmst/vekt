@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { jobListingSchema } from "@/lib/schemas";
+import { jobSchema } from "@/lib/schemas";
 import { NextRequest, NextResponse } from "next/server";
 
 const PAGE_SIZE = 10;
@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   };
 
   const [items, total] = await Promise.all([
-    prisma.jobListing.findMany({
+    prisma.job.findMany({
       where,
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
@@ -38,12 +38,14 @@ export async function GET(req: NextRequest) {
         title: true,
         description: true,
         location: true,
+        customPrompt: true,
+        threshold: true,
         isActive: true,
         createdAt: true,
         _count: { select: { candidates: true } },
       },
     }),
-    prisma.jobListing.count({ where }),
+    prisma.job.count({ where }),
   ]);
 
   return NextResponse.json({
@@ -62,7 +64,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const validation = jobListingSchema.safeParse(body);
+    const validation = jobSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
         { error: "Validation failed", details: validation.error.flatten() },
@@ -70,11 +72,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const listing = await prisma.jobListing.create({ data: validation.data });
-    logger.info({ listingId: listing.id }, "API: job listing created");
-    return NextResponse.json(listing, { status: 201 });
+    const job = await prisma.job.create({ data: validation.data });
+    logger.info({ jobId: job.id }, "API: job created");
+    return NextResponse.json(job, { status: 201 });
   } catch (err) {
     logger.error({ err }, "API: POST /api/job-listings error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+

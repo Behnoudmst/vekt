@@ -18,17 +18,27 @@ export { Prisma }
 export * as $Enums from './enums'
 export * from './enums';
 /**
- * Model JobListing
+ * Model Job
  * 
  */
-export type JobListing = Prisma.JobListingModel
+export type Job = Prisma.JobModel
 /**
  * Model Candidate
  * 
  */
 export type Candidate = Prisma.CandidateModel
 /**
+ * Model Evaluation
+ * 
+ */
+export type Evaluation = Prisma.EvaluationModel
+/**
  * Model User
  * 
  */
 export type User = Prisma.UserModel
+/**
+ * Model Setting
+ * Key-value store for admin-controlled global settings (e.g. RETENTION_DAYS)
+ */
+export type Setting = Prisma.SettingModel

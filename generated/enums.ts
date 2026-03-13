@@ -11,12 +11,10 @@
 
 export const CandidateStatus = {
   APPLIED: 'APPLIED',
-  PENDING_Q1: 'PENDING_Q1',
-  PENDING_Q2: 'PENDING_Q2',
-  SCORED: 'SCORED',
-  PRIORITY_QUEUE: 'PRIORITY_QUEUE',
-  REJECTED: 'REJECTED',
-  HUMAN_REVIEWED: 'HUMAN_REVIEWED'
+  ANALYZING: 'ANALYZING',
+  SHORTLISTED: 'SHORTLISTED',
+  ACCEPTED: 'ACCEPTED',
+  REJECTED: 'REJECTED'
 } as const
 
 export type CandidateStatus = (typeof CandidateStatus)[keyof typeof CandidateStatus]

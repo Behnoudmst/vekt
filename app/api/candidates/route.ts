@@ -1,71 +1,21 @@
 import { PRIVACY_POLICY_VERSION } from "@/lib/brand";
+import { inngest } from "@/lib/inngest";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { runEvaluationPipeline } from "@/lib/queue";
+import { runEvaluationPipelineDirect } from "@/lib/queue";
 import { candidateApplicationSchema } from "@/lib/schemas";
 import { mkdir, writeFile } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
+import { extractText } from "unpdf";
 
-/**
- * @swagger
- * /api/candidates:
- *   post:
- *     summary: Submit a new candidate application
- *     description: Accepts a multipart form with name, email, and resume PDF. Creates a candidate record and triggers the evaluation pipeline asynchronously.
- *     tags:
- *       - Candidates
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - email
- *               - resume
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Jane Doe"
- *               email:
- *                 type: string
- *                 format: email
- *                 example: "jane@example.com"
- *               resume:
- *                 type: string
- *                 format: binary
- *     responses:
- *       201:
- *         description: Candidate created successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 id:
- *                   type: string
- *                 name:
- *                   type: string
- *                 email:
- *                   type: string
- *                 status:
- *                   type: string
- *       400:
- *         description: Validation error or missing resume
- *       409:
- *         description: Email already registered
- *       500:
- *         description: Server error
- */
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const name = formData.get("name");
     const email = formData.get("email");
     const resume = formData.get("resume") as File | null;
-    const jobListingId = formData.get("jobListingId") as string | null;
+    const jobId = formData.get("jobId") as string | null;
 
     const validation = candidateApplicationSchema.safeParse({ name, email });
     if (!validation.success) {
@@ -98,32 +48,44 @@ export async function POST(req: NextRequest) {
     const bytes = await resume.arrayBuffer();
     await writeFile(filePath, Buffer.from(bytes));
 
+    // Extract PDF text
+    let resumeText = "";
+    try {
+      const { text } = await extractText(new Uint8Array(bytes), { mergePages: true });
+      resumeText = Array.isArray(text) ? text.join("\n") : (text ?? "");
+    } catch (pdfErr) {
+      logger.warn({ pdfErr }, "API: PDF text extraction failed, continuing with empty text");
+    }
+
     const candidate = await prisma.candidate.create({
       data: {
         name: validation.data.name,
         email: validation.data.email,
         resumePath: `/uploads/${filename}`,
+        resumeText,
         consentGiven: true,
         consentAt: new Date(),
         privacyPolicyVersion: PRIVACY_POLICY_VERSION,
-        ...(jobListingId ? { jobListingId } : {}),
+        ...(jobId ? { jobId } : {}),
       },
     });
 
     logger.info({ candidateId: candidate.id }, "API: candidate created");
 
-    // Fire-and-forget: run evaluation pipeline in background
-    runEvaluationPipeline(candidate.id).catch((err) =>
-      logger.error({ candidateId: candidate.id, err }, "API: pipeline error"),
-    );
+    // Trigger evaluation — via Inngest if configured, else direct fallback
+    const inngestEventKey = process.env.INNGEST_EVENT_KEY;
+    if (inngestEventKey) {
+      inngest.send({ name: "vekt/candidate.created", data: { candidateId: candidate.id } }).catch(
+        (err) => logger.error({ candidateId: candidate.id, err }, "API: Inngest send error"),
+      );
+    } else {
+      runEvaluationPipelineDirect(candidate.id).catch((err) =>
+        logger.error({ candidateId: candidate.id, err }, "API: pipeline error"),
+      );
+    }
 
     return NextResponse.json(
-      {
-        id: candidate.id,
-        name: candidate.name,
-        email: candidate.email,
-        status: candidate.status,
-      },
+      { id: candidate.id, name: candidate.name, email: candidate.email, status: candidate.status },
       { status: 201 },
     );
   } catch (err) {
@@ -132,17 +94,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/**
- * @swagger
- * /api/candidates:
- *   get:
- *     summary: List all candidates (admin/debug)
- *     tags:
- *       - Candidates
- *     responses:
- *       200:
- *         description: Array of all candidates
- */
 export async function GET() {
   const candidates = await prisma.candidate.findMany({
     orderBy: { appliedAt: "desc" },
@@ -151,11 +102,10 @@ export async function GET() {
       name: true,
       email: true,
       status: true,
-      scoreQ1: true,
-      scoreQ2: true,
-      scoreTotal: true,
       appliedAt: true,
+      evaluation: { select: { score: true } },
     },
   });
   return NextResponse.json(candidates);
 }
+

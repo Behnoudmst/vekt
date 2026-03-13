@@ -5,13 +5,8 @@ export const candidateApplicationSchema = z.object({
   email: z.string().email("Invalid email address"),
 });
 
-export const webhookScoreSchema = z.object({
-  candidateId: z.string().cuid("Invalid candidate ID"),
-  score: z.number().min(0).max(100),
-});
-
 export const reviewDecisionSchema = z.object({
-  decision: z.enum(["HIRE", "REJECT"]),
+  decision: z.enum(["ACCEPT", "SHORTLIST", "REJECT"]),
 });
 
 export const loginSchema = z.object({
@@ -19,14 +14,15 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-export const jobListingSchema = z.object({
+export const jobSchema = z.object({
   title: z.string().min(1, "Title is required").max(100),
   description: z.string().min(1, "Description is required"),
   location: z.string().optional(),
+  customPrompt: z.string().optional(),
+  threshold: z.number().int().min(0).max(100).optional(),
 });
 
 export type CandidateApplicationInput = z.infer<typeof candidateApplicationSchema>;
-export type WebhookScoreInput = z.infer<typeof webhookScoreSchema>;
 export type ReviewDecisionInput = z.infer<typeof reviewDecisionSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
-export type JobListingInput = z.infer<typeof jobListingSchema>;
+export type JobInput = z.infer<typeof jobSchema>;

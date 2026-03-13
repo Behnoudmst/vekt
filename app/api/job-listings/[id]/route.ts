@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { jobListingSchema } from "@/lib/schemas";
+import { jobSchema } from "@/lib/schemas";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
@@ -19,28 +19,28 @@ export async function PATCH(
 
     // Toggle-only call (just isActive boolean)
     if (Object.keys(body).length === 1 && "isActive" in body) {
-      const listing = await prisma.jobListing.update({
+      const job = await prisma.job.update({
         where: { id },
         data: { isActive: body.isActive },
       });
-      logger.info({ listingId: id, isActive: listing.isActive }, "API: job listing toggled");
-      return NextResponse.json(listing);
+      logger.info({ jobId: id, isActive: job.isActive }, "API: job toggled");
+      return NextResponse.json(job);
     }
 
     // Full update — validate all editable fields
-    const validation = jobListingSchema.safeParse(body);
+    const validation = jobSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
         { error: "Validation failed", details: validation.error.flatten() },
         { status: 400 },
       );
     }
-    const listing = await prisma.jobListing.update({
+    const job = await prisma.job.update({
       where: { id },
       data: validation.data,
     });
-    logger.info({ listingId: id }, "API: job listing updated");
-    return NextResponse.json(listing);
+    logger.info({ jobId: id }, "API: job updated");
+    return NextResponse.json(job);
   } catch (err) {
     logger.error({ err }, "API: PATCH /api/job-listings/[id] error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -58,11 +58,12 @@ export async function DELETE(
 
   const { id } = await params;
   try {
-    await prisma.jobListing.delete({ where: { id } });
-    logger.info({ listingId: id }, "API: job listing deleted");
+    await prisma.job.delete({ where: { id } });
+    logger.info({ jobId: id }, "API: job deleted");
     return NextResponse.json({ success: true });
   } catch (err) {
     logger.error({ err }, "API: DELETE /api/job-listings/[id] error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+

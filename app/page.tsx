@@ -16,7 +16,7 @@ export default async function Home({
   const { q } = await searchParams;
   const search = (q ?? "").trim();
 
-  const listings = await prisma.jobListing.findMany({
+  const listings = await prisma.job.findMany({
     where: {
       isActive: true,
       ...(search
@@ -98,7 +98,7 @@ export default async function Home({
                         </div>
                       )}
                       <div
-                        className="prose prose-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed [&_*]:text-xs [&_*]:text-muted-foreground"
+                        className="prose prose-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed **:text-xs **:text-muted-foreground"
                         dangerouslySetInnerHTML={{ __html: listing.description }}
                       />
                     </div>
