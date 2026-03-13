@@ -8,14 +8,29 @@ services:
       AUTH_SECRET: "change-me-to-a-random-32+-char-string"
       AUTH_TRUST_HOST: "true"
       NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
-      # ── Optional ────────────────────────────────────────────────────────────
-      COMPANY_NAME: "Spark-Hire"
       DATABASE_URL: "file:/data/app.db"
-      MOCK_Q1_SCORE: 80
-      MOCK_Q2_SCORE: 85
-      MOCK_Q1_FAIL: "false"
-      SEED_RECRUITER_EMAIL: "dev@example.com"
-      SEED_RECRUITER_PASSWORD: "dev@93245"
+
+      # ── Seed accounts ───────────────────────────────────────────────────────
+      SEED_ADMIN_EMAIL: "${SEED_ADMIN_EMAIL:-admin@example.com}"
+      SEED_ADMIN_PASSWORD: "${SEED_ADMIN_PASSWORD:-change-me}"
+      SEED_RECRUITER_EMAIL: "${SEED_RECRUITER_EMAIL:-recruiter@example.com}"
+      SEED_RECRUITER_PASSWORD: "${SEED_RECRUITER_PASSWORD:-change-me}"
+
+      # ── AI evaluation ───────────────────────────────────────────────────────
+      # Choices: mock (default) | openai | ollama
+      AI_PROVIDER: "${AI_PROVIDER:-mock}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      OLLAMA_BASE_URL: "${OLLAMA_BASE_URL:-http://localhost:11434}"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-llama3.2}"
+
+      # ── Inngest (durable pipeline) ──────────────────────────────────────────
+      # Leave blank to use the in-process direct fallback.
+      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:-}"
+      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-}"
+
+      # ── Branding & logging ──────────────────────────────────────────────────
+      COMPANY_NAME: "${COMPANY_NAME:-Vekt}"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
     volumes:
       - db-data:/data                  # SQLite database file
       - uploads:/app/public/uploads    # Candidate resume uploads
