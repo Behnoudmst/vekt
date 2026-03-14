@@ -2,7 +2,20 @@ import { auth } from "@/lib/auth";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { jobSchema } from "@/lib/schemas";
+import { generateSlug } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
+
+async function generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
+  const base = generateSlug(title) || "job";
+  let slug = base;
+  let counter = 2;
+  while (true) {
+    const existing = await prisma.job.findUnique({ where: { slug } });
+    if (!existing || existing.id === excludeId) break;
+    slug = `${base}-${counter++}`;
+  }
+  return slug;
+}
 
 const PAGE_SIZE = 10;
 
@@ -35,6 +48,7 @@ export async function GET(req: NextRequest) {
       take: limit,
       select: {
         id: true,
+        slug: true,
         title: true,
         description: true,
         location: true,
@@ -72,8 +86,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const job = await prisma.job.create({ data: validation.data });
-    logger.info({ jobId: job.id }, "API: job created");
+    const slug = await generateUniqueSlug(validation.data.title);
+    const job = await prisma.job.create({ data: { ...validation.data, slug } });
+    logger.info({ jobId: job.id, slug: job.slug }, "API: job created");
     return NextResponse.json(job, { status: 201 });
   } catch (err) {
     logger.error({ err }, "API: POST /api/job-listings error");

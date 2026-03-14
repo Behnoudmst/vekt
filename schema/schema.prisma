@@ -9,6 +9,7 @@ datasource db {
 
 model Job {
   id           String      @id @default(cuid())
+  slug         String      @unique
   title        String
   description  String
   location     String?

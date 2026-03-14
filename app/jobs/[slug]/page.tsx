@@ -5,12 +5,12 @@ import ApplyForm from "./ApplyForm";
 export default async function JobApplyPage({
   params,
 }: {
-  params: Promise<{ jobId: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { jobId } = await params;
+  const { slug } = await params;
 
   const job = await prisma.job.findUnique({
-    where: { id: jobId, isActive: true },
+    where: { slug, isActive: true },
     select: { id: true, title: true, description: true, location: true },
   });
 

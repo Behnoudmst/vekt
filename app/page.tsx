@@ -1,9 +1,9 @@
 import { Badge } from "@/components/ui/badge";
 import { prisma } from "@/lib/prisma";
 import {
-  ArrowRight,
-  Briefcase,
-  MapPin
+    ArrowRight,
+    Briefcase,
+    MapPin
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import JobSearchInput from "./JobSearchInput";
@@ -31,6 +31,7 @@ export default async function Home({
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
+      slug: true,
       title: true,
       description: true,
       location: true,
@@ -83,7 +84,7 @@ export default async function Home({
               {listings.map((listing) => (
                 <Link
                   key={listing.id}
-                  href={`/jobs/${listing.id}`}
+                  href={`/jobs/${listing.slug}`}
                   className="group block rounded-xl border border-border bg-card transition-all duration-150 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <div className="flex items-start justify-between gap-4 p-5">
