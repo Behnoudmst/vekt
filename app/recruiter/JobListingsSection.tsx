@@ -23,6 +23,7 @@ import {
     Trash,
     X,
 } from "@phosphor-icons/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
@@ -476,6 +477,11 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
+                        <Button asChild size="sm">
+                          <Link href={`/recruiter/jobs/${listing.id}`}>
+                            Applications
+                          </Link>
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"

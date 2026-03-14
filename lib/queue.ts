@@ -4,6 +4,8 @@ import { inngest } from "@/lib/inngest";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { meetsThreshold } from "@/lib/scoring";
+import fs from "fs/promises";
+import path from "path";
 
 /** Inngest function: durable AI evaluation pipeline */
 export const analyzeCandidate = inngest.createFunction(
@@ -71,6 +73,62 @@ export const analyzeCandidate = inngest.createFunction(
 
       logger.info({ candidateId, score: result.score, status }, "Pipeline: evaluation saved");
     });
+  },
+);
+
+/** Inngest cron function: delete candidate records (+ resume files) past the retention window */
+export const purgeExpiredCandidates = inngest.createFunction(
+  { id: "purge-expired-candidates" },
+  { cron: "0 2 * * *" }, // runs daily at 02:00 UTC
+  async ({ step }) => {
+    const setting = await step.run("read-retention-setting", async () => {
+      return prisma.setting.findUnique({ where: { key: "RETENTION_DAYS" } });
+    });
+
+    const retentionDays = setting ? parseInt(setting.value, 10) : 90;
+    if (isNaN(retentionDays) || retentionDays <= 0) {
+      logger.warn({ retentionDays: setting?.value }, "Purge: invalid RETENTION_DAYS, skipping");
+      return { deleted: 0 };
+    }
+
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - retentionDays);
+
+    const expired = await step.run("fetch-expired-candidates", async () => {
+      return prisma.candidate.findMany({
+        where: { appliedAt: { lt: cutoff } },
+        select: { id: true, resumePath: true },
+      });
+    });
+
+    if (expired.length === 0) {
+      logger.info({ retentionDays, cutoff }, "Purge: no expired candidates");
+      return { deleted: 0 };
+    }
+
+    // Delete resume files from disk
+    await step.run("delete-resume-files", async () => {
+      const uploadsDir = path.join(process.cwd(), "private", "uploads");
+      for (const candidate of expired) {
+        const filename = path.basename(candidate.resumePath);
+        // Only delete UUIDs (guard against unexpected paths)
+        if (/^[a-f0-9-]{36}\.pdf$/i.test(filename)) {
+          await fs.unlink(path.join(uploadsDir, filename)).catch(() => {
+            // File already gone — not an error
+          });
+        }
+      }
+    });
+
+    // Delete candidate records (Evaluation cascades automatically)
+    const { count } = await step.run("delete-candidate-records", async () => {
+      return prisma.candidate.deleteMany({
+        where: { id: { in: expired.map((c) => c.id) } },
+      });
+    });
+
+    logger.info({ deleted: count, retentionDays, cutoff }, "Purge: completed");
+    return { deleted: count };
   },
 );
 

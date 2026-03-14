@@ -1,8 +1,20 @@
 services:
+  inngest:
+    image: inngest/inngest:latest
+    ports:
+      - "8288:8288"
+    command: inngest serve --host 0.0.0.0
+    environment:
+      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:-local-dev-event-key}"
+      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-local-dev-signing-key}"
+    restart: unless-stopped
+
   app:
     build: .
     ports:
       - "3000:3000"
+    depends_on:
+      - inngest
     environment:
       # ── Required ────────────────────────────────────────────────────────────
       AUTH_SECRET: "change-me-to-a-random-32+-char-string"
@@ -23,17 +35,19 @@ services:
       OLLAMA_BASE_URL: "${OLLAMA_BASE_URL:-http://localhost:11434}"
       OLLAMA_MODEL: "${OLLAMA_MODEL:-llama3.2}"
 
-      # ── Inngest (durable pipeline) ──────────────────────────────────────────
-      # Leave blank to use the in-process direct fallback.
-      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:-}"
-      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-}"
+      # ── Inngest (durable pipeline) ───────────────────────────────────────────
+      INNGEST_BASE_URL: "http://inngest:8288"
+      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:-local-dev-event-key}"
+      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-local-dev-signing-key}"
+      # URL Inngest uses to call back into the app
+      INNGEST_APP_URL: "${NEXTAUTH_URL:-http://app:3000}/api/inngest"
 
       # ── Branding & logging ──────────────────────────────────────────────────
       COMPANY_NAME: "${COMPANY_NAME:-Vekt}"
       LOG_LEVEL: "${LOG_LEVEL:-info}"
     volumes:
       - db-data:/data                  # SQLite database file
-      - uploads:/app/public/uploads    # Candidate resume uploads
+      - uploads:/app/private/uploads   # Candidate resume uploads
     restart: unless-stopped
 
 volumes:
