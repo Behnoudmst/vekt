@@ -3,10 +3,11 @@ services:
     image: inngest/inngest:latest
     ports:
       - "8288:8288"
-    command: inngest start
+    # http://app:3000 is the Docker-internal hostname for the app service
+    command: inngest start --sdk-url http://app:3000/api/inngest
     environment:
       INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:-local-dev-event-key}"
-      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-local-dev-signing-key}"
+      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef}"
     restart: unless-stopped
 
   app:
@@ -32,8 +33,8 @@ services:
       # Choices: mock (default) | openai | ollama
       AI_PROVIDER: "${AI_PROVIDER:-mock}"
       OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
-      OLLAMA_BASE_URL: "${OLLAMA_BASE_URL:-http://localhost:11434}"
-      OLLAMA_MODEL: "${OLLAMA_MODEL:-llama3.2}"
+      OLLAMA_BASE_URL: "${OLLAMA_BASE_URL:-}"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-}"
 
       # ── Inngest (durable pipeline) ───────────────────────────────────────────
       INNGEST_BASE_URL: "http://inngest:8288"
