@@ -3,16 +3,14 @@
 import { Button } from "@/components/ui/button";
 import { CookieIcon } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const CONSENT_KEY = "cookie-consent";
 
 export default function CookieBanner() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (!localStorage.getItem(CONSENT_KEY)) setVisible(true);
-  }, []);
+  const [visible, setVisible] = useState(
+    () => typeof window !== "undefined" && !localStorage.getItem(CONSENT_KEY),
+  );
 
   function dismiss() {
     localStorage.setItem(CONSENT_KEY, "acknowledged");
