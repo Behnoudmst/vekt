@@ -2,7 +2,7 @@ services:
   inngest:
     image: inngest/inngest:latest
     ports:
-      - "8288:8288"
+      - "127.0.0.1:8288:8288"
     # http://app:3000 is the Docker-internal hostname for the app service
     command: inngest start --sdk-url http://app:3000/api/inngest
     environment:
