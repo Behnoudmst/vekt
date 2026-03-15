@@ -27,6 +27,17 @@ export async function PATCH(
   }
 
   const { id } = await params;
+
+  // Check ownership — admins can edit any job, recruiters only their own
+  const role = (session.user as { role?: string }).role;
+  if (role !== "ADMIN") {
+    const job = await prisma.job.findUnique({ where: { id }, select: { createdById: true } });
+    if (!job) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (job.createdById !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   try {
     const body = await req.json();
 
@@ -71,6 +82,17 @@ export async function DELETE(
   }
 
   const { id } = await params;
+
+  // Check ownership — admins can delete any job, recruiters only their own
+  const role = (session.user as { role?: string }).role;
+  if (role !== "ADMIN") {
+    const job = await prisma.job.findUnique({ where: { id }, select: { createdById: true } });
+    if (!job) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (job.createdById !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   try {
     await prisma.job.delete({ where: { id } });
     logger.info({ jobId: id }, "API: job deleted");

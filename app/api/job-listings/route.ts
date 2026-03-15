@@ -87,7 +87,9 @@ export async function POST(req: NextRequest) {
     }
 
     const slug = await generateUniqueSlug(validation.data.title);
-    const job = await prisma.job.create({ data: { ...validation.data, slug } });
+    const job = await prisma.job.create({
+      data: { ...validation.data, slug, createdById: session.user.id },
+    });
     logger.info({ jobId: job.id, slug: job.slug }, "API: job created");
     return NextResponse.json(job, { status: 201 });
   } catch (err) {
