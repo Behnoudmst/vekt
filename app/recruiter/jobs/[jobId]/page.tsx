@@ -1,3 +1,9 @@
+import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -38,6 +44,150 @@ export default async function JobApplicationsPage({
   });
 
   const shortlistedCount = candidates.filter((c) => c.status === "SHORTLISTED").length;
+
+  type Candidate = (typeof candidates)[number];
+
+  const STATUS_GROUPS: {
+    key: string;
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+    defaultOpen: boolean;
+    filter: (c: Candidate) => boolean;
+  }[] = [
+    {
+      key: "accepted",
+      label: "Accepted",
+      variant: "default",
+      defaultOpen: false,
+      filter: (c) => c.status === "ACCEPTED",
+    },
+    {
+      key: "shortlisted",
+      label: "Shortlisted",
+      variant: "default",
+      defaultOpen: true,
+      filter: (c) => c.status === "SHORTLISTED",
+    },
+    {
+      key: "applied",
+      label: "Applied",
+      variant: "secondary",
+      defaultOpen: false,
+      filter: (c) => c.status === "APPLIED" || c.status === "ANALYZING",
+    },
+    {
+      key: "rejected",
+      label: "Rejected",
+      variant: "destructive",
+      defaultOpen: false,
+      filter: (c) => c.status === "REJECTED",
+    },
+  ];
+
+  function CandidateCard({ c, i }: { c: Candidate; i: number }) {
+    const pros: string[] = c.evaluation?.pros ? JSON.parse(c.evaluation.pros) : [];
+    const cons: string[] = c.evaluation?.cons ? JSON.parse(c.evaluation.cons) : [];
+    return (
+      <Card size="sm">
+        <CardContent className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            {/* Rank + info */}
+            <div className="flex items-start gap-3">
+              <Badge
+                variant="outline"
+                className="size-7 shrink-0 justify-center text-xs font-bold"
+              >
+                {i + 1}
+              </Badge>
+              <div className="flex flex-col gap-0.5">
+                <p className="font-medium text-sm">{c.name}</p>
+                <p className="text-xs text-muted-foreground">{c.email}</p>
+                <p className="text-xs text-muted-foreground">
+                  Applied{" "}
+                  {new Date(c.appliedAt).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+            </div>
+
+            {/* AI Score */}
+            {c.evaluation ? (
+              <div className="text-center shrink-0">
+                <p className="text-xs text-muted-foreground">AI Score</p>
+                <p
+                  className={`text-2xl font-bold tabular-nums ${
+                    c.evaluation.score >= 90
+                      ? "text-primary"
+                      : c.evaluation.score >= 75
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                  }`}
+                >
+                  {c.evaluation.score}
+                </p>
+              </div>
+            ) : (
+              <div className="text-center shrink-0">
+                <p className="text-xs text-muted-foreground">AI Score</p>
+                <p className="text-sm text-muted-foreground mt-1">—</p>
+              </div>
+            )}
+          </div>
+
+          {/* AI evaluation */}
+          {c.evaluation && (
+            <div className="rounded-lg bg-muted/40 border p-3 flex flex-col gap-2">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                {c.evaluation.reasoning}
+              </p>
+              {(pros.length > 0 || cons.length > 0) && (
+                <div className="grid grid-cols-2 gap-3 mt-1">
+                  {pros.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-green-600 mb-1">Pros</p>
+                      <ul className="flex flex-col gap-0.5">
+                        {pros.map((p, idx) => (
+                          <li key={idx} className="text-xs text-muted-foreground">
+                            + {p}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {cons.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold text-red-500 mb-1">Cons</p>
+                      <ul className="flex flex-col gap-0.5">
+                        {cons.map((con, idx) => (
+                          <li key={idx} className="text-xs text-muted-foreground">
+                            − {con}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="sm">
+              <a href={c.resumePath} target="_blank" rel="noopener noreferrer">
+                <FilePdf data-icon="inline-start" />
+                Resume
+              </a>
+            </Button>
+            <ReviewButton candidateId={c.id} />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <div className="min-h-[89vh] bg-background">
@@ -88,118 +238,40 @@ export default async function JobApplicationsPage({
             </CardContent>
           </Card>
         ) : (
-          <div className="flex flex-col gap-3">
-            {candidates.map((c, i) => {
-              const pros: string[] = c.evaluation?.pros ? JSON.parse(c.evaluation.pros) : [];
-              const cons: string[] = c.evaluation?.cons ? JSON.parse(c.evaluation.cons) : [];
-              const isShortlisted = c.status === "SHORTLISTED";
+          <Accordion
+            type="multiple"
+            defaultValue={STATUS_GROUPS.filter((g) => g.defaultOpen).map((g) => g.key)}
+            className="flex flex-col gap-1"
+          >
+            {STATUS_GROUPS.map((group) => {
+              const grouped = candidates.filter(group.filter);
               return (
-                <Card key={c.id} size="sm">
-                  <CardContent className="flex flex-col gap-4">
-                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                      {/* Rank + info */}
-                      <div className="flex items-start gap-3">
-                        <Badge
-                          variant="outline"
-                          className="size-7 shrink-0 justify-center text-xs font-bold"
-                        >
-                          {i + 1}
+                <div key={group.key} className="rounded-xl border border-border bg-card">
+                  <AccordionItem value={group.key} className="border-none px-4">
+                    <AccordionTrigger className="hover:no-underline">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium">{group.label}</span>
+                        <Badge variant={grouped.length > 0 ? group.variant : "outline"} className="text-xs tabular-nums">
+                          {grouped.length}
                         </Badge>
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium text-sm">{c.name}</p>
-                            {isShortlisted && (
-                              <Badge className="text-xs h-4.5 px-1.5">Shortlisted</Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-muted-foreground">{c.email}</p>
-                          <p className="text-xs text-muted-foreground">
-                            Applied{" "}
-                            {new Date(c.appliedAt).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "short",
-                              day: "numeric",
-                            })}
-                          </p>
-                        </div>
                       </div>
-
-                      {/* AI Score */}
-                      {c.evaluation ? (
-                        <div className="text-center shrink-0">
-                          <p className="text-xs text-muted-foreground">AI Score</p>
-                          <p
-                            className={`text-2xl font-bold tabular-nums ${
-                              c.evaluation.score >= 90
-                                ? "text-primary"
-                                : c.evaluation.score >= 75
-                                  ? "text-foreground"
-                                  : "text-muted-foreground"
-                            }`}
-                          >
-                            {c.evaluation.score}
-                          </p>
-                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pb-0">
+                      {grouped.length === 0 ? (
+                        <p className="text-xs text-muted-foreground pb-4">No candidates in this group.</p>
                       ) : (
-                        <div className="text-center shrink-0">
-                          <p className="text-xs text-muted-foreground">AI Score</p>
-                          <p className="text-sm text-muted-foreground mt-1">—</p>
+                        <div className="flex flex-col gap-3 pb-4">
+                          {grouped.map((c, i) => (
+                            <CandidateCard key={c.id} c={c} i={i} />
+                          ))}
                         </div>
                       )}
-                    </div>
-
-                    {/* AI evaluation */}
-                    {c.evaluation && (
-                      <div className="rounded-lg bg-muted/40 border p-3 flex flex-col gap-2">
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          {c.evaluation.reasoning}
-                        </p>
-                        {(pros.length > 0 || cons.length > 0) && (
-                          <div className="grid grid-cols-2 gap-3 mt-1">
-                            {pros.length > 0 && (
-                              <div>
-                                <p className="text-xs font-semibold text-green-600 mb-1">Pros</p>
-                                <ul className="flex flex-col gap-0.5">
-                                  {pros.map((p, idx) => (
-                                    <li key={idx} className="text-xs text-muted-foreground">
-                                      + {p}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                            {cons.length > 0 && (
-                              <div>
-                                <p className="text-xs font-semibold text-red-500 mb-1">Cons</p>
-                                <ul className="flex flex-col gap-0.5">
-                                  {cons.map((con, idx) => (
-                                    <li key={idx} className="text-xs text-muted-foreground">
-                                      − {con}
-                                    </li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-                      <Button asChild variant="outline" size="sm">
-                        <a href={c.resumePath} target="_blank" rel="noopener noreferrer">
-                          <FilePdf data-icon="inline-start" />
-                          Resume
-                        </a>
-                      </Button>
-                      <ReviewButton candidateId={c.id} />
-                    </div>
-                  </CardContent>
-                </Card>
+                    </AccordionContent>
+                  </AccordionItem>
+                </div>
               );
             })}
-          </div>
+          </Accordion>
         )}
       </main>
     </div>
