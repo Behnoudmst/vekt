@@ -5,45 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { reviewDecisionSchema } from "@/lib/schemas";
 import { NextRequest, NextResponse } from "next/server";
 
-/**
- * @swagger
- * /api/recruiter/review/{id}:
- *   patch:
- *     summary: Finalise a hire or reject decision for a candidate
- *     description: Marks a PRIORITY_QUEUE candidate as HUMAN_REVIEWED. Requires authentication.
- *     tags:
- *       - Recruiter
- *     security:
- *       - cookieAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Candidate ID
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - decision
- *             properties:
- *               decision:
- *                 type: string
- *                 enum: [HIRE, REJECT]
- *     responses:
- *       200:
- *         description: Decision recorded
- *       400:
- *         description: Validation error
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Candidate not found
- */
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -69,13 +30,16 @@ export async function PATCH(
     return NextResponse.json({ error: "Candidate not found" }, { status: 404 });
   }
 
+  const newStatus =
+    validation.data.decision === "ACCEPT"
+      ? CandidateStatus.ACCEPTED
+      : validation.data.decision === "SHORTLIST"
+        ? CandidateStatus.SHORTLISTED
+        : CandidateStatus.REJECTED;
+
   const updated = await prisma.candidate.update({
     where: { id },
-    data: {
-      status: validation.data.decision === "HIRE"
-        ? CandidateStatus.HUMAN_REVIEWED
-        : CandidateStatus.REJECTED,
-    },
+    data: { status: newStatus },
   });
 
   logger.info(
@@ -85,3 +49,4 @@ export async function PATCH(
 
   return NextResponse.json({ id: updated.id, status: updated.status, decision: validation.data.decision });
 }
+

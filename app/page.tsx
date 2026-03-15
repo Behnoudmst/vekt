@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { COMPANY_NAME } from "@/lib/brand";
 import { prisma } from "@/lib/prisma";
 import {
   ArrowRight,
@@ -16,7 +17,7 @@ export default async function Home({
   const { q } = await searchParams;
   const search = (q ?? "").trim();
 
-  const listings = await prisma.jobListing.findMany({
+  const listings = await prisma.job.findMany({
     where: {
       isActive: true,
       ...(search
@@ -31,6 +32,7 @@ export default async function Home({
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
+      slug: true,
       title: true,
       description: true,
       location: true,
@@ -39,7 +41,36 @@ export default async function Home({
 
   return (
     <div className="flex min-h-[89vh] flex-col bg-background">
-      
+
+      {/* Hero */}
+      <section className="relative overflow-hidden border-b border-border bg-linear-to-br from-background via-muted/30 to-background">
+        {/* Decorative grid */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right,currentColor 1px,transparent 1px),linear-gradient(to bottom,currentColor 1px,transparent 1px)",
+            backgroundSize: "40px 40px",
+          }}
+        />
+        {/* Decorative blobs */}
+        <div className="pointer-events-none absolute -top-24 -right-24 size-96 rounded-full bg-primary/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 size-72 rounded-full bg-primary/5 blur-3xl" />
+
+        <div className="relative mx-auto max-w-5xl px-6 py-16 sm:py-20 flex flex-col items-center text-center gap-5">
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-medium text-primary">
+            <Briefcase className="size-3.5" weight="fill" />
+            We&apos;re hiring
+          </div>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground">
+            <span className="text-primary">{COMPANY_NAME}</span> 
+          </h1>
+          <p className="max-w-md text-base text-muted-foreground leading-relaxed">
+            Explore open roles and find your next opportunity. Every application is reviewed thoughtfully.
+          </p>
+        </div>
+      </section>
+
       <main className="flex-1">
         <div className="mx-auto max-w-5xl px-6 py-8 flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-8">
 
@@ -83,7 +114,7 @@ export default async function Home({
               {listings.map((listing) => (
                 <Link
                   key={listing.id}
-                  href={`/apply?jobId=${listing.id}`}
+                  href={`/jobs/${listing.slug}`}
                   className="group block rounded-xl border border-border bg-card transition-all duration-150 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
                   <div className="flex items-start justify-between gap-4 p-5">
@@ -98,7 +129,7 @@ export default async function Home({
                         </div>
                       )}
                       <div
-                        className="prose prose-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed [&_*]:text-xs [&_*]:text-muted-foreground"
+                        className="prose prose-xs text-muted-foreground line-clamp-2 mt-0.5 leading-relaxed **:text-xs **:text-muted-foreground"
                         dangerouslySetInnerHTML={{ __html: listing.description }}
                       />
                     </div>

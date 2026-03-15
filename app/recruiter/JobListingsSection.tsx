@@ -23,21 +23,24 @@ import {
     Trash,
     X,
 } from "@phosphor-icons/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
-type JobListing = {
+type Job = {
   id: string;
   title: string;
   description: string;
   location: string | null;
+  customPrompt: string | null;
+  threshold: number;
   isActive: boolean;
   createdAt: Date;
   _count: { candidates: number };
 };
 
 type Props = {
-  listings: JobListing[];
+  listings: Job[];
   total: number;
   page: number;
   totalPages: number;
@@ -50,6 +53,8 @@ type EditState = {
   title: string;
   location: string;
   description: string;
+  customPrompt: string;
+  threshold: number;
 } | null;
 
 export default function JobListingsSection({ listings, total, page, totalPages, q, status }: Props) {
@@ -93,10 +98,13 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
     setIsSubmitting(true);
 
     const data = new FormData(e.currentTarget);
+    const thresholdRaw = parseInt(data.get("threshold") as string);
     const body = {
       title: data.get("title") as string,
       description,
       location: (data.get("location") as string) || undefined,
+      customPrompt: (data.get("customPrompt") as string) || undefined,
+      threshold: isNaN(thresholdRaw) ? 75 : thresholdRaw,
     };
 
     if (!body.description || body.description === "<p></p>") {
@@ -141,10 +149,13 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
     }
 
     const data = new FormData(e.currentTarget);
+    const editThresholdRaw = parseInt(data.get("edit-threshold") as string);
     const body = {
       title: data.get("edit-title") as string,
       description: editState.description,
       location: (data.get("edit-location") as string) || undefined,
+      customPrompt: (data.get("edit-customPrompt") as string) || undefined,
+      threshold: isNaN(editThresholdRaw) ? editState.threshold : editThresholdRaw,
     };
 
     try {
@@ -247,6 +258,27 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                   value={description}
                   onChange={setDescription}
                   placeholder="Describe the role, requirements, and responsibilities…"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="jl-customPrompt">AI Weighting Prompt <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                <textarea
+                  id="jl-customPrompt"
+                  name="customPrompt"
+                  className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  placeholder="e.g. Prioritize 3+ years of React experience. Penalize lack of testing knowledge."
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="jl-threshold">Score Threshold <span className="text-muted-foreground font-normal">(0–100, default 75)</span></Label>
+                <Input
+                  id="jl-threshold"
+                  name="threshold"
+                  type="number"
+                  min="0"
+                  max="100"
+                  defaultValue="75"
+                  className="w-24"
                 />
               </div>
               {formError && (
@@ -360,6 +392,28 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                           }
                         />
                       </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor={`edit-customPrompt-${listing.id}`}>AI Weighting Prompt <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                        <textarea
+                          id={`edit-customPrompt-${listing.id}`}
+                          name="edit-customPrompt"
+                          defaultValue={editState.customPrompt}
+                          className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          placeholder="e.g. Prioritize React 3+ years…"
+                        />
+                      </div>
+                      <div className="flex flex-col gap-2">
+                        <Label htmlFor={`edit-threshold-${listing.id}`}>Score Threshold</Label>
+                        <Input
+                          id={`edit-threshold-${listing.id}`}
+                          name="edit-threshold"
+                          type="number"
+                          min="0"
+                          max="100"
+                          defaultValue={editState.threshold}
+                          className="w-24"
+                        />
+                      </div>
                       {editError && (
                         <p className="text-sm text-destructive">{editError}</p>
                       )}
@@ -400,15 +454,34 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                           </div>
                         )}
                         <div
-                          className="prose prose-xs text-muted-foreground line-clamp-2 mt-0.5 [&_*]:text-xs [&_*]:text-muted-foreground"
+                          className="prose prose-xs text-muted-foreground line-clamp-2 mt-0.5 **:text-xs **:text-muted-foreground"
                           dangerouslySetInnerHTML={{ __html: listing.description }}
                         />
-                        <p className="text-xs text-muted-foreground">
-                          {listing._count.candidates}{" "}
-                          {listing._count.candidates === 1 ? "applicant" : "applicants"}
-                        </p>
+                        <div className="flex items-center gap-3 mt-0.5">
+                          <p className="text-xs text-muted-foreground">
+                            {listing._count.candidates}{" "}
+                            {listing._count.candidates === 1 ? "applicant" : "applicants"}
+                          </p>
+                          <span className="text-xs text-muted-foreground">·</span>
+                          <p className="text-xs text-muted-foreground">
+                            Threshold: <span className="font-medium text-foreground">{listing.threshold}</span>
+                          </p>
+                          {listing.customPrompt && (
+                            <>
+                              <span className="text-xs text-muted-foreground">·</span>
+                              <p className="text-xs text-primary font-medium truncate max-w-50" title={listing.customPrompt}>
+                                AI prompt set
+                              </p>
+                            </>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
+                        <Button asChild size="sm">
+                          <Link href={`/recruiter/jobs/${listing.id}`}>
+                            Applications
+                          </Link>
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
@@ -418,6 +491,8 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                               title: listing.title,
                               location: listing.location ?? "",
                               description: listing.description,
+                              customPrompt: listing.customPrompt ?? "",
+                              threshold: listing.threshold,
                             });
                             setEditError(null);
                           }}

@@ -1,8 +1,21 @@
 import { auth } from "@/lib/auth";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { jobListingSchema } from "@/lib/schemas";
+import { jobSchema } from "@/lib/schemas";
+import { generateSlug } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
+
+async function generateUniqueSlug(title: string, excludeId: string): Promise<string> {
+  const base = generateSlug(title) || "job";
+  let slug = base;
+  let counter = 2;
+  while (true) {
+    const existing = await prisma.job.findUnique({ where: { slug } });
+    if (!existing || existing.id === excludeId) break;
+    slug = `${base}-${counter++}`;
+  }
+  return slug;
+}
 
 export async function PATCH(
   req: NextRequest,
@@ -14,33 +27,45 @@ export async function PATCH(
   }
 
   const { id } = await params;
+
+  // Check ownership — admins can edit any job, recruiters only their own
+  const role = (session.user as { role?: string }).role;
+  if (role !== "ADMIN") {
+    const job = await prisma.job.findUnique({ where: { id }, select: { createdById: true } });
+    if (!job) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (job.createdById !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   try {
     const body = await req.json();
 
     // Toggle-only call (just isActive boolean)
     if (Object.keys(body).length === 1 && "isActive" in body) {
-      const listing = await prisma.jobListing.update({
+      const job = await prisma.job.update({
         where: { id },
         data: { isActive: body.isActive },
       });
-      logger.info({ listingId: id, isActive: listing.isActive }, "API: job listing toggled");
-      return NextResponse.json(listing);
+      logger.info({ jobId: id, isActive: job.isActive }, "API: job toggled");
+      return NextResponse.json(job);
     }
 
     // Full update — validate all editable fields
-    const validation = jobListingSchema.safeParse(body);
+    const validation = jobSchema.safeParse(body);
     if (!validation.success) {
       return NextResponse.json(
         { error: "Validation failed", details: validation.error.flatten() },
         { status: 400 },
       );
     }
-    const listing = await prisma.jobListing.update({
+    const slug = await generateUniqueSlug(validation.data.title, id);
+    const job = await prisma.job.update({
       where: { id },
-      data: validation.data,
+      data: { ...validation.data, slug },
     });
-    logger.info({ listingId: id }, "API: job listing updated");
-    return NextResponse.json(listing);
+    logger.info({ jobId: id }, "API: job updated");
+    return NextResponse.json(job);
   } catch (err) {
     logger.error({ err }, "API: PATCH /api/job-listings/[id] error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -57,12 +82,24 @@ export async function DELETE(
   }
 
   const { id } = await params;
+
+  // Check ownership — admins can delete any job, recruiters only their own
+  const role = (session.user as { role?: string }).role;
+  if (role !== "ADMIN") {
+    const job = await prisma.job.findUnique({ where: { id }, select: { createdById: true } });
+    if (!job) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    if (job.createdById !== session.user.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   try {
-    await prisma.jobListing.delete({ where: { id } });
-    logger.info({ listingId: id }, "API: job listing deleted");
+    await prisma.job.delete({ where: { id } });
+    logger.info({ jobId: id }, "API: job deleted");
     return NextResponse.json({ success: true });
   } catch (err) {
     logger.error({ err }, "API: DELETE /api/job-listings/[id] error");
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+

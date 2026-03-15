@@ -14,49 +14,65 @@ type Props = {
 export default async function SiteHeader({ backHref, backLabel }: Props) {
   const session = await auth();
   const email = session?.user?.email;
+  const role = (session?.user as { role?: string } | undefined)?.role;
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-card/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-[5vh] max-w-5xl items-center justify-between gap-4 px-6">
-        {/* Left: optional back link + logo */}
-        <div className="flex items-center gap-3 min-w-0">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-4 px-6">
+
+        {/* Left: back link + logo + nav */}
+        <div className="flex items-center gap-1 min-w-0">
           {backHref && (
-            <Button asChild variant="ghost" size="sm" className="-ml-2 shrink-0">
+            <Button asChild variant="ghost" size="sm" className="-ml-2 shrink-0 text-muted-foreground hover:text-foreground">
               <Link href={backHref}>← {backLabel ?? "Back"}</Link>
             </Button>
           )}
+
           <Link
-            href={"/"}
-            className="flex items-center gap-2 text-sm font-semibold text-foreground hover:text-primary transition-colors shrink-0"
+            href="/"
+            className="flex items-center gap-2 rounded-md px-2 py-1 text-sm font-semibold text-foreground hover:text-primary transition-colors shrink-0"
           >
-            <BuildingsIcon weight="fill" className="size-5 text-primary shrink-0" />
-            <span className="hidden sm:block">{COMPANY_NAME}</span>
+            <div className="flex size-6 items-center justify-center rounded-md bg-primary">
+              <BuildingsIcon weight="fill" className="size-3.5 text-primary-foreground shrink-0" />
+            </div>
+            <span className="hidden sm:block tracking-tight">{COMPANY_NAME}</span>
           </Link>
+
           {email && (
-            <Link href="/recruiter" className="ml-auto">
-              <Button size="sm" variant={"link"} className=" border-l pl-3 hidden sm:block truncate">
-                Recruiter Dashboard
+            <>
+              <span className="mx-1 hidden sm:block text-border select-none">|</span>
+              <Link href="/recruiter">
+                <Button size="sm" variant="ghost" className="hidden sm:flex text-muted-foreground hover:text-foreground h-8 px-3 text-xs font-medium">
+                  Recruiter
+                </Button>
+              </Link>
+            </>
+          )}
+          {role === "ADMIN" && (
+            <Link href="/admin">
+              <Button size="sm" variant="ghost" className="hidden sm:flex text-muted-foreground hover:text-foreground h-8 px-3 text-xs font-medium">
+                Admin
               </Button>
             </Link>
           )}
         </div>
 
-        {/* Right: sign-out if logged in, otherwise public nav */}
+        {/* Right */}
         {email ? (
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs text-muted-foreground hidden sm:block truncate max-w-50">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs text-muted-foreground hidden sm:block truncate max-w-48 bg-muted px-2.5 py-1 rounded-full">
               {email}
             </span>
             <SignOutButton />
           </div>
         ) : (
           <nav className="flex items-center gap-1 shrink-0">
-           
-            <Button asChild variant="outline" size="sm">
+            <Button asChild size="sm" className="h-8 text-xs font-medium rounded-full px-4">
               <Link href="/login">Recruiter Login</Link>
             </Button>
           </nav>
         )}
+
       </div>
     </header>
   );

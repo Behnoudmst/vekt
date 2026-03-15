@@ -1,24 +1,54 @@
 services:
+  inngest:
+    image: inngest/inngest:latest
+    ports:
+      - "8288:8288"
+    # http://app:3000 is the Docker-internal hostname for the app service
+    command: inngest start --sdk-url http://app:3000/api/inngest
+    environment:
+      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:-local-dev-event-key}"
+      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef}"
+    restart: unless-stopped
+
   app:
     build: .
     ports:
       - "3000:3000"
+    depends_on:
+      - inngest
     environment:
       # ── Required ────────────────────────────────────────────────────────────
       AUTH_SECRET: "change-me-to-a-random-32+-char-string"
       AUTH_TRUST_HOST: "true"
       NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
-      # ── Optional ────────────────────────────────────────────────────────────
-      COMPANY_NAME: "Spark-Hire"
       DATABASE_URL: "file:/data/app.db"
-      MOCK_Q1_SCORE: 80
-      MOCK_Q2_SCORE: 85
-      MOCK_Q1_FAIL: "false"
-      SEED_RECRUITER_EMAIL: "dev@example.com"
-      SEED_RECRUITER_PASSWORD: "dev@93245"
+
+      # ── Seed accounts ───────────────────────────────────────────────────────
+      SEED_ADMIN_EMAIL: "${SEED_ADMIN_EMAIL:-admin@example.com}"
+      SEED_ADMIN_PASSWORD: "${SEED_ADMIN_PASSWORD:-change-me}"
+      SEED_RECRUITER_EMAIL: "${SEED_RECRUITER_EMAIL:-recruiter@example.com}"
+      SEED_RECRUITER_PASSWORD: "${SEED_RECRUITER_PASSWORD:-change-me}"
+
+      # ── AI evaluation ───────────────────────────────────────────────────────
+      # Choices: mock (default) | openai | ollama
+      AI_PROVIDER: "${AI_PROVIDER:-mock}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      OLLAMA_BASE_URL: "${OLLAMA_BASE_URL:-}"
+      OLLAMA_MODEL: "${OLLAMA_MODEL:-}"
+
+      # ── Inngest (durable pipeline) ───────────────────────────────────────────
+      INNGEST_BASE_URL: "http://inngest:8288"
+      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:-local-dev-event-key}"
+      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef}"
+      # URL Inngest uses to call back into the app
+      INNGEST_APP_URL: "${NEXTAUTH_URL:-http://app:3000}/api/inngest"
+
+      # ── Branding & logging ──────────────────────────────────────────────────
+      COMPANY_NAME: "${COMPANY_NAME:-Vekt}"
+      LOG_LEVEL: "${LOG_LEVEL:-info}"
     volumes:
       - db-data:/data                  # SQLite database file
-      - uploads:/app/public/uploads    # Candidate resume uploads
+      - uploads:/app/private/uploads   # Candidate resume uploads
     restart: unless-stopped
 
 volumes:

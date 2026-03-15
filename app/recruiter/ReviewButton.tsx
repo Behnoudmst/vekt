@@ -20,7 +20,7 @@ export default function ReviewButton({ candidateId }: { candidateId: string }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  async function decide(decision: "HIRE" | "REJECT") {
+  async function decide(decision: "ACCEPT" | "SHORTLIST" | "REJECT") {
     setLoading(true);
     await fetch(`/api/recruiter/review/${candidateId}`, {
       method: "PATCH",
@@ -58,9 +58,15 @@ export default function ReviewButton({ candidateId }: { candidateId: string }) {
             <XCircle data-icon="inline-start" />
             Reject
           </AlertDialogAction>
-          <AlertDialogAction onClick={() => decide("HIRE")}>
+          <AlertDialogAction
+            onClick={() => decide("SHORTLIST")}
+            className="bg-blue-500/10 text-blue-700 hover:bg-blue-500/20"
+          >
+            Shortlist
+          </AlertDialogAction>
+          <AlertDialogAction onClick={() => decide("ACCEPT")}>
             <CheckCircle data-icon="inline-start" />
-            Hire
+            Accept
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

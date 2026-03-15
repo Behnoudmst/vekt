@@ -7,48 +7,71 @@ datasource db {
   provider = "sqlite"
 }
 
-model JobListing {
-  id          String      @id @default(cuid())
-  title       String
-  description String
-  location    String?
-  isActive    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  candidates  Candidate[]
+model Job {
+  id           String      @id @default(cuid())
+  slug         String      @unique
+  title        String
+  description  String
+  location     String?
+  customPrompt String?
+  threshold    Int         @default(75)
+  isActive     Boolean     @default(true)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  candidates   Candidate[]
+  createdById  String?
+  createdBy    User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
 }
 
 model Candidate {
-  id            String          @id @default(cuid())
-  name          String
-  email         String
-  resumePath    String
-  status        CandidateStatus @default(APPLIED)
-  scoreQ1       Float?
-  scoreQ2       Float?
-  scoreTotal    Float?
-  appliedAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  jobListingId  String?
-  jobListing    JobListing?     @relation(fields: [jobListingId], references: [id])
-  consentGiven         Boolean   @default(false)
+  id                   String          @id @default(cuid())
+  name                 String
+  email                String
+  resumePath           String
+  resumeText           String          @default("")
+  status               CandidateStatus @default(APPLIED)
+  appliedAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  jobId                String?
+  job                  Job?            @relation(fields: [jobId], references: [id])
+  evaluation           Evaluation?
+  consentGiven         Boolean         @default(false)
   consentAt            DateTime?
   privacyPolicyVersion String?
 }
 
+model Evaluation {
+  id             String    @id @default(cuid())
+  score          Int
+  reasoning      String
+  pros           String    // JSON array stored as string
+  cons           String    // JSON array stored as string
+  promptSnapshot String
+  createdAt      DateTime  @default(now())
+  candidateId    String    @unique
+  candidate      Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
 model User {
-  id       String @id @default(cuid())
-  email    String @unique
-  password String
-  role     String @default("RECRUITER")
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("RECRUITER")
+  createdAt DateTime @default(now())
+  jobs      Job[]
+}
+
+/// Key-value store for admin-controlled global settings (e.g. RETENTION_DAYS)
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 enum CandidateStatus {
   APPLIED
-  PENDING_Q1
-  PENDING_Q2
-  SCORED
-  PRIORITY_QUEUE
+  ANALYZING
+  SHORTLISTED
+  ACCEPTED
   REJECTED
-  HUMAN_REVIEWED
 }

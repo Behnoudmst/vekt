@@ -12,13 +12,8 @@ export default function CookieBanner() {
     () => typeof window !== "undefined" && !localStorage.getItem(CONSENT_KEY),
   );
 
-  function accept() {
-    localStorage.setItem(CONSENT_KEY, "accepted");
-    setVisible(false);
-  }
-
-  function decline() {
-    localStorage.setItem(CONSENT_KEY, "declined");
+  function dismiss() {
+    localStorage.setItem(CONSENT_KEY, "acknowledged");
     setVisible(false);
   }
 
@@ -28,7 +23,7 @@ export default function CookieBanner() {
     <div
       role="dialog"
       aria-live="polite"
-      aria-label="Cookie consent"
+      aria-label="Cookie notice"
       className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card/95 backdrop-blur-sm shadow-lg"
     >
       <div className="mx-auto flex max-w-5xl flex-col gap-4 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -37,11 +32,11 @@ export default function CookieBanner() {
           <CookieIcon weight="duotone" className="size-5 text-primary mt-0.5 shrink-0" />
           <div className="flex flex-col gap-1 min-w-0">
             <p className="text-sm font-medium text-foreground">
-              We use cookies
+              This site uses strictly necessary cookies
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              This site uses strictly necessary cookies to manage your login
-              session. No tracking or advertising cookies are used. See our{" "}
+              A session cookie is required for login to function. No tracking
+              or advertising cookies are used. See our{" "}
               <Link
                 href="/privacy"
                 className="underline underline-offset-3 hover:text-foreground transition-colors"
@@ -53,13 +48,10 @@ export default function CookieBanner() {
           </div>
         </div>
 
-        {/* Actions */}
+        {/* Action */}
         <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
-          <Button variant="ghost" size="sm" onClick={decline}>
-            Decline
-          </Button>
-          <Button size="sm" onClick={accept}>
-            Accept
+          <Button size="sm" onClick={dismiss}>
+            OK, got it
           </Button>
         </div>
       </div>

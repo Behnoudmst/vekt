@@ -51,9 +51,11 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  JobListing: 'JobListing',
+  Job: 'Job',
   Candidate: 'Candidate',
-  User: 'User'
+  Evaluation: 'Evaluation',
+  User: 'User',
+  Setting: 'Setting'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -69,17 +71,20 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const JobListingScalarFieldEnum = {
+export const JobScalarFieldEnum = {
   id: 'id',
+  slug: 'slug',
   title: 'title',
   description: 'description',
   location: 'location',
+  customPrompt: 'customPrompt',
+  threshold: 'threshold',
   isActive: 'isActive',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type JobListingScalarFieldEnum = (typeof JobListingScalarFieldEnum)[keyof typeof JobListingScalarFieldEnum]
+export type JobScalarFieldEnum = (typeof JobScalarFieldEnum)[keyof typeof JobScalarFieldEnum]
 
 
 export const CandidateScalarFieldEnum = {
@@ -87,13 +92,11 @@ export const CandidateScalarFieldEnum = {
   name: 'name',
   email: 'email',
   resumePath: 'resumePath',
+  resumeText: 'resumeText',
   status: 'status',
-  scoreQ1: 'scoreQ1',
-  scoreQ2: 'scoreQ2',
-  scoreTotal: 'scoreTotal',
   appliedAt: 'appliedAt',
   updatedAt: 'updatedAt',
-  jobListingId: 'jobListingId',
+  jobId: 'jobId',
   consentGiven: 'consentGiven',
   consentAt: 'consentAt',
   privacyPolicyVersion: 'privacyPolicyVersion'
@@ -102,14 +105,38 @@ export const CandidateScalarFieldEnum = {
 export type CandidateScalarFieldEnum = (typeof CandidateScalarFieldEnum)[keyof typeof CandidateScalarFieldEnum]
 
 
+export const EvaluationScalarFieldEnum = {
+  id: 'id',
+  score: 'score',
+  reasoning: 'reasoning',
+  pros: 'pros',
+  cons: 'cons',
+  promptSnapshot: 'promptSnapshot',
+  createdAt: 'createdAt',
+  candidateId: 'candidateId'
+} as const
+
+export type EvaluationScalarFieldEnum = (typeof EvaluationScalarFieldEnum)[keyof typeof EvaluationScalarFieldEnum]
+
+
 export const UserScalarFieldEnum = {
   id: 'id',
   email: 'email',
   password: 'password',
-  role: 'role'
+  role: 'role',
+  createdAt: 'createdAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const SettingScalarFieldEnum = {
+  key: 'key',
+  value: 'value',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SettingScalarFieldEnum = (typeof SettingScalarFieldEnum)[keyof typeof SettingScalarFieldEnum]
 
 
 export const SortOrder = {

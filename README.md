@@ -1,26 +1,56 @@
-# ⚡ Spark-Hire — Automated Recruitment Orchestration Engine (AROE)
+# Vekt — AI-Powered Recruitment Platform
 
-A backend-heavy Next.js application that automates candidate screening and ranking via two sequential evaluation services, a weighted scoring algorithm, and a protected recruiter dashboard.
+[![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
+[![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma)](https://prisma.io)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
+
+Vekt is a self-hosted recruitment platform that automates candidate screening using AI. Recruiters post jobs, candidates apply with a CV, and an AI pipeline scores and ranks applicants — surfacing the best ones for human review.
 
 ---
 
-## Architecture Overview
+## Features
+
+- **AI resume scoring** — pluggable provider: `mock` (default), OpenAI, or local Ollama
+- **Durable evaluation pipeline** — powered by [Inngest](https://inngest.com) (self-hostable); falls back to direct in-process execution when Inngest is not configured
+- **Recruiter dashboard** — per-job applications view sorted by AI score; shortlist, accept, or reject candidates with AI reasoning
+- **Admin dashboard** — manage recruiter accounts, configure data retention
+- **Automated data purge** — Inngest cron job deletes candidate records and resume files that exceed the configured retention window
+- **GDPR-compliant** — strictly necessary cookies only, configurable auto-deletion of candidate data, privacy policy included
+- **Secure file handling** — resume PDFs stored outside the web root (`private/uploads/`), served only to authenticated users via a protected API route
+- **Job slugs** — human-readable URLs for every job listing (e.g. `/jobs/ux-ui-designer`)
+- **Swagger UI** — full API documentation at `/api-docs`
+- **Docker-ready** — single `docker-compose up` to run the app + Inngest together
+
+---
+
+## How It Works
 
 ```
-Candidate applies → PDF stored on disk → DB record created (APPLIED)
-  → Queue Pipeline starts (fire-and-forget)
-    → Service 1: Questionnaire score (PENDING_Q1 → score saved)
-    → Service 2: Automated Call score (PENDING_Q2 → score saved)
-    → Scoring Engine: Total = (Q1 × 0.4) + (Q2 × 0.6)
-    → Score ≥ 75 → PRIORITY_QUEUE  |  Score < 75 → REJECTED
-  → Recruiter reviews Priority Queue → HUMAN_REVIEWED
+Candidate submits application (name, email, PDF CV)
+  └─ PDF stored in private/uploads/ (UUID filename, max 5 MB)
+  └─ DB record created  →  status: APPLIED
+
+Inngest pipeline triggers (or direct fallback in dev)
+  └─ PDF text extracted (unpdf)
+  └─ AI scores the CV against the job description
+  └─ Score ≥ threshold  →  status: SHORTLISTED
+     Score < threshold  →  status: REJECTED
+
+Recruiter reviews candidates (per-job applications page)
+  └─ Accept   →  status: ACCEPTED
+  └─ Reject   →  status: REJECTED
+
+Inngest cron (daily at 02:00 UTC)
+  └─ Reads RETENTION_DAYS from admin settings
+  └─ Deletes candidates + resume files older than the window
 ```
 
 ### Scoring Formula
 
-$$Score_{total} = (Score_{Q1} \times 0.4) + (Score_{Q2} \times 0.6)$$
+$$Score_{total} = (Score_{relevance} \times 0.4) + (Score_{experience} \times 0.6)$$
 
-Candidates with $Score_{total} \ge 75$ are surfaced in the **Priority Queue**.
+Candidates with $Score_{total} \ge threshold$ (default 75) are marked **Shortlisted**.
 
 ---
 
@@ -28,58 +58,68 @@ Candidates with $Score_{total} \ge 75$ are surfaced in the **Priority Queue**.
 
 | Concern | Technology |
 |---|---|
-| Framework | Next.js 16 (App Router) |
-| Database | SQLite via **Prisma 7** + `@prisma/adapter-better-sqlite3` |
-| Auth | **NextAuth v5** — credentials (email + password) |
+| Framework | Next.js 15 (App Router) |
+| Database | SQLite via **Prisma 7** + `better-sqlite3` |
+| Auth | **NextAuth v5** — credentials (email + bcrypt password) |
+| AI Pipeline | **Inngest** (durable functions + cron) |
+| AI Providers | Mock · OpenAI · Ollama |
+| PDF Extraction | **unpdf** |
 | Validation | **Zod** |
-| Logging | **Pino** (structured, pretty-printed in dev) |
-| API Docs | **Swagger UI** (`swagger-ui-react`) |
-| Styling | Tailwind CSS v4 |
+| Logging | **Pino** (structured JSON; pretty-printed in dev) |
+| UI Components | **shadcn/ui** + Tailwind CSS v4 + Phosphor Icons |
+| Rich Text | **Tiptap** |
+| API Docs | **Swagger UI** |
 
 ---
 
 ## Getting Started
 
-### 1. Install dependencies
+### Prerequisites
+
+- Node.js 20+
+- npm 10+
+
+### 1. Clone & install
 
 ```bash
+git clone https://github.com/Behnoudmst/vekta.git
+cd vekta
 npm install
 ```
 
 ### 2. Configure environment
 
-Copy `.env.example` to `.env` and set an **absolute** path for the database:
-
 ```bash
 cp .env.example .env
 ```
 
+Minimum required variables:
+
 ```env
-# .env
-DATABASE_URL="file:/absolute/path/to/spark-hire/dev.db"
+DATABASE_URL="file:/absolute/path/to/dev.db"
 AUTH_SECRET="your-secret-min-32-chars"
 
-# Mock service scores (0–100). Leave blank for random.
-MOCK_Q1_SCORE=80
-MOCK_Q2_SCORE=85
-
-# Set to "true" to simulate Service 1 being down (tests retry logic)
-MOCK_Q1_FAIL=false
+SEED_ADMIN_EMAIL="admin@example.com"
+SEED_ADMIN_PASSWORD="change-me"
+SEED_RECRUITER_EMAIL="recruiter@example.com"
+SEED_RECRUITER_PASSWORD="change-me"
 ```
 
-### 3. Run database migration
+See [`.env.example`](.env.example) for all options including AI provider and Inngest configuration.
+
+### 3. Run database migrations
 
 ```bash
 npm run db:migrate
 ```
 
-### 4. Seed the recruiter account
+### 4. Seed the database
+
+Creates one **Admin** and one **Recruiter** account using the credentials from `.env`.
 
 ```bash
 npm run db:seed
 ```
-
-Default credentials: `recruiter@sparkhire.com` / `recruiter123`
 
 ### 5. Start the dev server
 
@@ -89,18 +129,91 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+> Inngest is **not required** in development. When `INNGEST_EVENT_KEY` is blank the evaluation pipeline runs directly in-process. Note: the data-retention cron only runs when Inngest is active.
+
 ---
 
-## Pages
+## AI Providers
 
-| Route | Description |
-|---|---|
-| `/` | Home — links to all sections |
-| `/apply` | Candidate application form (name, email, PDF resume) |
-| `/login` | Recruiter login |
-| `/recruiter` | **Priority Queue** — candidates with score ≥ 75, sorted by score desc |
-| `/recruiter/all` | All candidates with status and scores |
-| `/api-docs` | Swagger UI — interactive API documentation |
+Set `AI_PROVIDER` in `.env`:
+
+| Value | Description | Required env vars |
+|---|---|---|
+| `mock` (default) | Random deterministic scores — no external calls | — |
+| `openai` | GPT-4o via OpenAI API | `OPENAI_API_KEY` |
+| `ollama` | Local model via Ollama | `OLLAMA_BASE_URL`, `OLLAMA_MODEL` |
+
+---
+
+## Inngest
+
+Inngest powers two background jobs:
+
+| Function | Trigger | Description |
+|---|---|---|
+| `analyze-candidate` | `vekt/candidate.created` event | AI evaluation pipeline |
+| `purge-expired-candidates` | Cron — daily 02:00 UTC | Deletes candidates + resume files past `RETENTION_DAYS` |
+
+### Self-hosted (Docker — recommended)
+
+The included `docker-compose.yml` runs an Inngest container alongside the app. No external account needed.
+
+```bash
+docker-compose up --build
+```
+
+Default keys (`local-dev-event-key` / `local-dev-signing-key`) are used automatically. Override in `.env` or shell for production:
+
+```env
+INNGEST_EVENT_KEY=your-production-key
+INNGEST_SIGNING_KEY=your-production-signing-key
+```
+
+### Inngest Cloud (optional)
+
+Sign up at [inngest.com](https://inngest.com), create an app, and set `INNGEST_EVENT_KEY` + `INNGEST_SIGNING_KEY` from the dashboard. Remove `INNGEST_BASE_URL` (or leave it unset) to point the SDK at Inngest Cloud.
+
+### Local dev without Docker
+
+```bash
+npx inngest-cli@latest dev
+```
+
+The dev server auto-discovers the handler at `http://localhost:3000/api/inngest`.
+
+---
+
+## Docker
+
+```bash
+docker-compose up --build
+```
+
+The compose file starts two services:
+
+- **`inngest`** — self-hosted Inngest server on port `8288`
+- **`app`** — Next.js application on port `3000`
+
+Persistent volumes:
+- `db-data` → SQLite database
+- `uploads` → Candidate resume PDFs (`private/uploads/`)
+
+---
+
+## Routes
+
+| Route | Access | Description |
+|---|---|---|
+| `/` | Public | Home page — active job listings |
+| `/jobs/[slug]` | Public | Job detail + application form |
+| `/status/[id]` | Public | Application status tracker |
+| `/privacy` | Public | GDPR privacy policy |
+| `/login` | Public | Recruiter / admin login |
+| `/recruiter` | Recruiter | Job listings dashboard |
+| `/recruiter/jobs/[jobId]` | Recruiter | All applicants for a job, sorted by AI score |
+| `/recruiter/all` | Recruiter | All candidates across all jobs |
+| `/admin` | Admin | User management + data retention settings |
+| `/api-docs` | Public | Swagger UI — full API reference |
 
 ---
 
@@ -108,10 +221,20 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Method | Route | Auth | Description |
 |---|---|---|---|
-| `POST` | `/api/candidates` | — | Submit application (multipart/form-data) |
-| `GET` | `/api/candidates` | — | List all candidates (debug) |
-| `GET` | `/api/recruiter/queue` | ✅ | Priority queue (score ≥ 75) |
-| `PATCH` | `/api/recruiter/review/:id` | ✅ | Record HIRE / REJECT decision |
+| `POST` | `/api/candidates` | — | Submit application (multipart/form-data, max 5 MB PDF) |
+| `GET` | `/api/candidates` | ✅ | List all candidates |
+| `GET` | `/api/uploads/[filename]` | ✅ | Serve a candidate resume PDF |
+| `GET` | `/api/job-listings` | — | List all active job listings |
+| `POST` | `/api/job-listings` | ✅ | Create a job listing (slug auto-generated) |
+| `PATCH` | `/api/job-listings/[id]` | ✅ | Update a job listing |
+| `DELETE` | `/api/job-listings/[id]` | ✅ | Delete a job listing |
+| `GET` | `/api/recruiter/queue` | ✅ | Shortlisted candidates (score ≥ threshold) |
+| `PATCH` | `/api/recruiter/review/[id]` | ✅ | Record ACCEPT / REJECT decision |
+| `GET` | `/api/admin/settings` | ✅ Admin | Read global settings |
+| `PATCH` | `/api/admin/settings` | ✅ Admin | Update global settings (e.g. `RETENTION_DAYS`) |
+| `GET` | `/api/admin/users` | ✅ Admin | List recruiter accounts |
+| `POST` | `/api/admin/users` | ✅ Admin | Create recruiter account |
+| `DELETE` | `/api/admin/users/[id]` | ✅ Admin | Delete recruiter account |
 | `GET` | `/api/swagger` | — | OpenAPI 3.0 JSON spec |
 
 ---
@@ -119,26 +242,25 @@ Open [http://localhost:3000](http://localhost:3000).
 ## Candidate Status Flow
 
 ```
-APPLIED → PENDING_Q1 → PENDING_Q2 → PRIORITY_QUEUE → HUMAN_REVIEWED
-                                  ↘ REJECTED (score < 75 or service failure)
+APPLIED → ANALYZING → SHORTLISTED → ACCEPTED
+                    ↘ REJECTED
 ```
 
 ---
 
-## Resilience
+## Scripts
 
-- Each external service call is retried up to **3 times** with exponential back-off.
-- If Service 1 fails all retries, the candidate is marked `REJECTED` and the pipeline exits gracefully.
-- Set `MOCK_Q1_FAIL=true` in `.env` to test this path.
+| Command | Description |
+|---|---|
+| `npm run dev` | Start dev server with hot reload |
+| `npm run build` | Production build |
+| `npm run db:migrate` | Run Prisma migrations |
+| `npm run db:seed` | Seed admin + recruiter accounts |
+| `npm run db:generate` | Regenerate Prisma client after schema changes |
 
 ---
 
-## NPM Scripts
+## License
 
-```bash
-npm run dev          # Start dev server
-npm run build        # Production build
-npm run db:migrate   # Run Prisma migrations
-npm run db:seed      # Seed default recruiter user
-npm run db:generate  # Regenerate Prisma client after schema changes
-```
+MIT — see [LICENSE](LICENSE).
+
