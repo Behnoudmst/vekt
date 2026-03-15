@@ -19,8 +19,17 @@ model Job {
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   candidates   Candidate[]
+  views        JobView[]
   createdById  String?
   createdBy    User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+}
+
+model JobView {
+  id       String   @id @default(cuid())
+  jobId    String
+  job      Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  referrer String?
+  viewedAt DateTime @default(now())
 }
 
 model Candidate {
