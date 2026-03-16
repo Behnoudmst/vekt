@@ -2,10 +2,50 @@
 
 [![Next.js](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
 [![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?logo=prisma)](https://prisma.io)
+[![Self-Hosted](https://img.shields.io/badge/Self--Hosted-Yes-1f7a1f)](#docker)
+[![Open Source](https://img.shields.io/badge/Open%20Source-MIT-blue)](LICENSE)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
 
-Vekt is a self-hosted recruitment platform that automates candidate screening using AI. Recruiters post jobs, candidates apply with a CV, and an AI pipeline scores and ranks applicants — surfacing the best ones for human review.
+Vekt is an open source, self-hosted recruitment platform that automates candidate screening using AI.
+
+Recruiters publish jobs, candidates apply with a CV, and a durable pipeline scores and ranks applicants to speed up hiring decisions while keeping humans in control.
+
+Use Vekt if you need:
+- Full ownership of applicant data and infrastructure
+- A modern ATS-like workflow without SaaS lock-in
+- A hackable TypeScript codebase for custom hiring logic
+
+## Why Vekt
+
+- **Self-host first**: run the full stack with Docker (`app` + `inngest`) on your own infrastructure
+- **Open source MIT**: fork, extend, and ship your own recruiting workflow
+- **Privacy-aware by default**: protected file serving, consent capture, and configurable retention policy
+- **Production-ready primitives**: auth, role-based admin/recruiter UX, API docs, background jobs, and observability
+
+---
+
+## Screenshots
+
+### Public jobs home
+
+![Public jobs home](/screenShots/public-home-page.png)
+
+### Job listing page
+
+![Job listing page](/screenShots/listing-page.png)
+
+### Recruiter dashboard
+
+![Recruiter dashboard](/screenShots/recruiter-dashboard.png)
+
+### Add listing form
+
+![Add listing form](/screenShots/add-listing-form.png)
+
+### Recruiter applications page
+
+![Recruiter applications page](/screenShots/recruiter-applications-page.png)
 
 ---
 
