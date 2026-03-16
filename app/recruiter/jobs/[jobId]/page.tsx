@@ -182,7 +182,7 @@ export default async function JobApplicationsPage({
                 Resume
               </a>
             </Button>
-            <ReviewButton candidateId={c.id} />
+            <ReviewButton candidateId={c.id} currentStatus={c.status} />
           </div>
         </CardContent>
       </Card>
