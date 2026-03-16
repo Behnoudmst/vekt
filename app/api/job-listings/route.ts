@@ -3,9 +3,10 @@ import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { jobSchema } from "@/lib/schemas";
 import { generateSlug } from "@/lib/utils";
+import type { Session } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 
-async function getCurrentDbUser(session: Awaited<ReturnType<typeof auth>>) {
+async function getCurrentDbUser(session: Session | null) {
   const email = session?.user?.email;
   if (!email) return null;
 
