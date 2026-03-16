@@ -6,6 +6,9 @@
 [![Open Source](https://img.shields.io/badge/Open%20Source-MIT-blue)](LICENSE)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-vekt--demo.behnoud.net-6366f1)](https://vekt-demo.behnoud.net)
+
+> **[Live Demo →](https://vekt-demo.behnoud.net)**
 
 Vekt is an open source, self-hosted recruitment platform that automates candidate screening using AI.
 
