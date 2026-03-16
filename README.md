@@ -32,23 +32,23 @@ Use Vekt if you need:
 
 ### Public jobs home
 
-![Public jobs home](/screenShots/public-home-page.png)
+![Public jobs home](public/screenShots/public-home-page.png)
 
 ### Job listing page
 
-![Job listing page](/screenShots/listing-page.png)
+![Job listing page](public/screenShots/listing-page.png)
 
 ### Recruiter dashboard
 
-![Recruiter dashboard](/screenShots/recruiter-dashboard.png)
+![Recruiter dashboard](public/screenShots/recruiter-dashboard.png)
 
 ### Add listing form
 
-![Add listing form](/screenShots/add-listing-form.png)
+![Add listing form](public/screenShots/add-listing-form.png)
 
 ### Recruiter applications page
 
-![Recruiter applications page](/screenShots/recruiter-applications-page.png)
+![Recruiter applications page](public/screenShots/recruiter-applications-page.png)
 
 ---
 
