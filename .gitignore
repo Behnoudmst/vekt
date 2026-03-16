@@ -48,3 +48,5 @@ next-env.d.ts
 # uploaded resumes
 /public/uploads/*
 !/public/uploads/.gitkeep
+/private/*
+*.pdf

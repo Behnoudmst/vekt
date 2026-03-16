@@ -5,6 +5,16 @@ import { jobSchema } from "@/lib/schemas";
 import { generateSlug } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
+async function getCurrentDbUser(session: Awaited<ReturnType<typeof auth>>) {
+  const email = session?.user?.email;
+  if (!email) return null;
+
+  return prisma.user.findUnique({
+    where: { email },
+    select: { id: true, role: true, email: true },
+  });
+}
+
 async function generateUniqueSlug(title: string, excludeId?: string): Promise<string> {
   const base = generateSlug(title) || "job";
   let slug = base;
@@ -76,6 +86,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const currentUser = await getCurrentDbUser(session);
+  if (!currentUser) {
+    return NextResponse.json({ error: "Session is stale. Please sign in again." }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const validation = jobSchema.safeParse(body);
@@ -87,9 +102,8 @@ export async function POST(req: NextRequest) {
     }
 
     const slug = await generateUniqueSlug(validation.data.title);
-    const userId = (session.user as { id: string }).id;
     const job = await prisma.job.create({
-      data: { ...validation.data, slug, createdById: userId },
+      data: { ...validation.data, slug, createdById: currentUser.id },
     });
     logger.info({ jobId: job.id, slug: job.slug }, "API: job created");
     return NextResponse.json(job, { status: 201 });

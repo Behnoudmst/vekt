@@ -5,6 +5,16 @@ import { jobSchema } from "@/lib/schemas";
 import { generateSlug } from "@/lib/utils";
 import { NextRequest, NextResponse } from "next/server";
 
+async function getCurrentDbUser(session: Awaited<ReturnType<typeof auth>>) {
+  const email = session?.user?.email;
+  if (!email) return null;
+
+  return prisma.user.findUnique({
+    where: { email },
+    select: { id: true, role: true, email: true },
+  });
+}
+
 async function generateUniqueSlug(title: string, excludeId: string): Promise<string> {
   const base = generateSlug(title) || "job";
   let slug = base;
@@ -26,14 +36,18 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const currentUser = await getCurrentDbUser(session);
+  if (!currentUser) {
+    return NextResponse.json({ error: "Session is stale. Please sign in again." }, { status: 401 });
+  }
+
   const { id } = await params;
 
   // Check ownership — admins can edit any job, recruiters only their own
-  const user = session.user as { id: string; role?: string };
-  if (user.role !== "ADMIN") {
+  if (currentUser.role !== "ADMIN") {
     const job = await prisma.job.findUnique({ where: { id }, select: { createdById: true } });
     if (!job) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    if (job.createdById !== user.id) {
+    if (job.createdById !== currentUser.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }
@@ -81,14 +95,18 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const currentUser = await getCurrentDbUser(session);
+  if (!currentUser) {
+    return NextResponse.json({ error: "Session is stale. Please sign in again." }, { status: 401 });
+  }
+
   const { id } = await params;
 
   // Check ownership — admins can delete any job, recruiters only their own
-  const user = session.user as { id: string; role?: string };
-  if (user.role !== "ADMIN") {
+  if (currentUser.role !== "ADMIN") {
     const job = await prisma.job.findUnique({ where: { id }, select: { createdById: true } });
     if (!job) return NextResponse.json({ error: "Not found" }, { status: 404 });
-    if (job.createdById !== user.id) {
+    if (job.createdById !== currentUser.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   }
