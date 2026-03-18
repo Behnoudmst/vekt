@@ -1,4 +1,5 @@
 import SignOutButton from "@/app/recruiter/SignOutButton";
+import MobileMenu from "@/components/mobile-menu";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { COMPANY_NAME } from "@/lib/brand";
@@ -63,13 +64,17 @@ export default async function SiteHeader({ backHref, backLabel }: Props) {
             <span className="text-xs text-muted-foreground hidden sm:block truncate max-w-48 bg-muted px-2.5 py-1 rounded-full">
               {email}
             </span>
-            <SignOutButton />
+            <span className="hidden sm:inline-flex">
+              <SignOutButton />
+            </span>
+            <MobileMenu email={email} role={role} />
           </div>
         ) : (
           <nav className="flex items-center gap-1 shrink-0">
-            <Button asChild size="sm" className="h-8 text-xs font-medium rounded-full px-4">
+            <Button asChild size="sm" className="hidden sm:flex h-8 text-xs font-medium rounded-full px-4">
               <Link href="/login">Recruiter Login</Link>
             </Button>
+            <MobileMenu email={email} role={role} />
           </nav>
         )}
 
