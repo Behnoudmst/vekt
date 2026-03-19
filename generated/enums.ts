@@ -18,3 +18,14 @@ export const CandidateStatus = {
 } as const
 
 export type CandidateStatus = (typeof CandidateStatus)[keyof typeof CandidateStatus]
+
+
+export const EmailType = {
+  APPLIED: 'APPLIED',
+  SHORTLISTED: 'SHORTLISTED',
+  REJECTED: 'REJECTED',
+  ACCEPTED: 'ACCEPTED',
+  DATA_RETENTION_WARNING: 'DATA_RETENTION_WARNING'
+} as const
+
+export type EmailType = (typeof EmailType)[keyof typeof EmailType]

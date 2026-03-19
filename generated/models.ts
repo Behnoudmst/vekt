@@ -9,8 +9,11 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/Job'
+export type * from './models/JobView'
 export type * from './models/Candidate'
 export type * from './models/Evaluation'
 export type * from './models/User'
 export type * from './models/Setting'
+export type * from './models/EmailTemplate'
+export type * from './models/EmailLog'
 export type * from './commonInputTypes'

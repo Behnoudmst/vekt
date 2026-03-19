@@ -47,6 +47,8 @@ model Candidate {
   consentGiven         Boolean         @default(false)
   consentAt            DateTime?
   privacyPolicyVersion String?
+  emailOptOut          Boolean         @default(false)
+  emailLogs            EmailLog[]
 }
 
 model Evaluation {
@@ -77,10 +79,36 @@ model Setting {
   updatedAt DateTime @updatedAt
 }
 
+/// Email template stored in the database and editable by admins
+model EmailTemplate {
+  type      EmailType @id
+  subject   String
+  body      String // HTML; supports {{candidateName}}, {{jobTitle}}, {{companyName}}, {{statusPageUrl}}, {{retentionDate}}
+  updatedAt DateTime  @updatedAt
+}
+
+/// Audit log of every outbound candidate email
+model EmailLog {
+  id          String    @id @default(cuid())
+  candidateId String
+  type        EmailType
+  sentAt      DateTime  @default(now())
+  resendId    String? // Resend delivery ID for tracking
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
 enum CandidateStatus {
   APPLIED
   ANALYZING
   SHORTLISTED
   ACCEPTED
   REJECTED
+}
+
+enum EmailType {
+  APPLIED
+  SHORTLISTED
+  REJECTED
+  ACCEPTED
+  DATA_RETENTION_WARNING
 }

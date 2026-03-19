@@ -1,5 +1,6 @@
 import { CandidateStatus } from "@/generated/client";
 import { auth } from "@/lib/auth";
+import { sendCandidateEmail } from "@/lib/email";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { reviewDecisionSchema } from "@/lib/schemas";
@@ -46,6 +47,20 @@ export async function PATCH(
     { candidateId: id, decision: validation.data.decision, reviewerId: session.user?.email },
     "API: recruiter review decision recorded",
   );
+
+  // Send candidate email for ACCEPTED, SHORTLISTED, and REJECTED transitions
+  const emailTypeMap: Partial<Record<CandidateStatus, "ACCEPTED" | "SHORTLISTED" | "REJECTED">> = {
+    [CandidateStatus.ACCEPTED]: "ACCEPTED",
+    [CandidateStatus.SHORTLISTED]: "SHORTLISTED",
+    [CandidateStatus.REJECTED]: "REJECTED",
+  };
+  const emailTypeName = emailTypeMap[newStatus];
+  if (emailTypeName) {
+    const { EmailType } = await import("@/generated/client");
+    sendCandidateEmail({ candidateId: id, type: EmailType[emailTypeName] }).catch((err) =>
+      logger.warn({ candidateId: id, emailTypeName, err }, "API: review email failed"),
+    );
+  }
 
   return NextResponse.json({ id: updated.id, status: updated.status, decision: validation.data.decision });
 }

@@ -1,6 +1,6 @@
 # 📝 PRD: Vekt – Automated Recruitment Orchestration Engine
 
-**Version:** 2.2 (Finalized Rebrand)
+**Version:** 0.10 (Finalized Rebrand)
 
 **Project Name:** **Vekt** (derived from "Weight")
 
@@ -62,12 +62,38 @@
 * `APPLIED` $\rightarrow$ `ANALYZING` $\rightarrow$ `QUEUED` (High Score) **OR** `FLAGGED` (Low Score).
 
 
-* **Magic Links:** Candidates receive a secure link to view their application status without a password.
+* **Magic Links:** The status page link (`/status/{candidateId}`) is delivered via transactional email at each stage transition — candidates never need to know or copy their ID manually.
 
 ### 4.4 Dashboards
 
 * **Recruiter Dashboard:** A "Priority Queue" showing high-scoring candidates first. Includes an "Override" button to manually move candidates.
-* **Admin Dashboard:** Manage recruiter accounts, set global `RETENTION_DAYS` for data scrubbing, and monitor API token usage.
+* **Admin Dashboard:** Manage recruiter accounts, set global `RETENTION_DAYS` for data scrubbing, monitor API token usage, and edit candidate email templates.
+
+### 4.5 Email Notifications
+
+Vekt sends automated transactional emails to candidates at each major lifecycle stage via **Resend**. Templates are stored in the database and editable by admins through the Admin Dashboard.
+
+| Trigger | Email Type | When Sent |
+| --- | --- | --- |
+| Application submitted | `APPLIED` | Immediately after the candidate submits their application |
+| AI evaluation complete (high score) | `SHORTLISTED` | After the Inngest `save-evaluation` step sets status to `SHORTLISTED` |
+| AI evaluation complete (low score) | `REJECTED` | After the Inngest `save-evaluation` step sets status to `REJECTED` |
+| Recruiter manually accepts | `ACCEPTED` | After a recruiter marks the candidate as accepted via the dashboard |
+| Data deletion approaching | `DATA_RETENTION_WARNING` | 7 days before the candidate's data is scheduled for deletion |
+
+**Template System:**
+
+* Templates are stored in the `EmailTemplate` database model, one row per `EmailType` enum value.
+* Admins edit subject and HTML body via the Admin Dashboard.
+* Templates support interpolation variables: `{{candidateName}}`, `{{jobTitle}}`, `{{companyName}}`, `{{statusPageUrl}}`, `{{retentionDate}}`.
+* Default templates are seeded automatically on first run via `npm run db:seed`.
+
+**Opt-Out & GDPR:**
+
+* Every email includes a one-click **Unsubscribe** link (`/api/unsubscribe?id=<candidateId>`).
+* Opt-out preference is stored as `emailOptOut` on the `Candidate` model.
+* `DATA_RETENTION_WARNING` is dispatched regardless of opt-out status — it fulfils a legal GDPR data-retention obligation.
+* No personally identifiable information (e.g. resume content) is ever included in email subjects.
 
 ---
 
@@ -80,6 +106,7 @@
 * **Orchestration:** **Inngest** (handles retries, delays, and background AI processing).
 * **Styling:** Tailwind CSS + shadcn/ui.
 * **Auth:** NextAuth.js (supporting `.env` based admin credentials).
+* **Email:** Resend (transactional email delivery; templates stored in DB).
 
 ### 5.2 Data Model (Key Entities)
 
@@ -98,6 +125,8 @@ model Candidate {
   resumeText       String      // Extracted PDF text
   status           Status      @default(APPLIED)
   evaluation       Evaluation?
+  emailOptOut      Boolean     @default(false)
+  emailLogs        EmailLog[]
 }
 
 model Evaluation {
@@ -105,6 +134,32 @@ model Evaluation {
   reasoning        String
   promptSnapshot   String      // The prompt used at time of scoring
   candidateId      String      @unique
+}
+
+/// Admin-editable email template; one row per EmailType
+model EmailTemplate {
+  type      EmailType @id
+  subject   String
+  body      String    // HTML; supports {{variable}} interpolation
+  updatedAt DateTime  @updatedAt
+}
+
+/// Audit log of every outbound candidate email
+model EmailLog {
+  id          String    @id @default(cuid())
+  candidateId String
+  type        EmailType
+  sentAt      DateTime  @default(now())
+  resendId    String?   // Resend delivery ID
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+enum EmailType {
+  APPLIED
+  SHORTLISTED
+  REJECTED
+  ACCEPTED
+  DATA_RETENTION_WARNING
 }
 
 ```
@@ -118,32 +173,54 @@ Vekt uses a layered prompt approach to calculate the final score ($S$):
 $$S = f(\text{System Prompt}, \text{Recruiter Context}, \text{Job Prompt}, \text{Resume})$$
 
 1. **Ingest:** Candidate uploads PDF $\rightarrow$ Text extracted using unpdf package $\rightarrow$ File stored in `/uploads`.
-2. **Trigger:** Inngest sends a webhook to the `analyze_candidate` worker.
-3. **Context Assembly:** System pulls the **Job Custom Prompt** and **Recruiter Preferences**.
-4. **AI Request:**
+2. **Trigger:** Inngest event `vekt/candidate.created` starts the durable pipeline.
+3. **Email (APPLIED):** Inngest step `send-applied-email` dispatches a confirmation email with the status page link.
+4. **Analyze:** Step `mark-analyzing` transitions candidate to `ANALYZING`.
+5. **Context Assembly:** Step `fetch-candidate` loads the candidate plus **Job Custom Prompt**.
+6. **AI Request:**
 * If `AI_PROVIDER=ollama`, send to local endpoint.
 * If `AI_PROVIDER=openai`, send to GPT-4o.
 
 
-5. **State Update:** Candidate is moved to `QUEUED` if $S \ge \text{threshold}$, else `FLAGGED`.
+7. **State Update:** Step `save-evaluation` moves candidate to `SHORTLISTED` if $S \ge \text{threshold}$, else `REJECTED`.
+8. **Email (SHORTLISTED / REJECTED):** Step `send-evaluation-email` dispatches the outcome notification.
+9. **Recruiter Override:** When a recruiter accepts via the dashboard, `PATCH /api/recruiter/review/[id]` updates the status and fires an `ACCEPTED` email.
+
+**GDPR Retention Warning (daily cron `purgeExpiredCandidates`):**
+
+* Step `send-retention-warnings`: finds candidates whose `appliedAt` falls within the next 7 days of the retention cutoff, checks `EmailLog` to avoid duplicates, and dispatches `DATA_RETENTION_WARNING` emails.
+* Subsequent step `delete-candidate-records` permanently removes expired records.
 
 ---
 
 ## 7. Non-Functional Requirements
 
-* **Auditability:** Every score must be accompanied by the `promptSnapshot` so recruiters know *why* the AI gave that score.
-* **Resilience:** If the OpenAI API is down, Inngest will back off and retry for up to 24 hours.
-* **Observability:** Structured logging using `pino` for every state transition.
-* **Compliance:** Automatic deletion of `resumeText` and PDF files after `RETENTION_DAYS`.
+* **Auditability:** Every score must be accompanied by the `promptSnapshot` so recruiters know *why* the AI gave that score. Every sent email is logged in `EmailLog` with the Resend delivery ID.
+* **Resilience:** If the OpenAI API or Resend is unavailable, Inngest backs off and retries for up to 24 hours.
+* **Observability:** Structured logging using `pino` for every state transition and email dispatch event.
+* **Compliance:** Automatic deletion of `resumeText` and PDF files after `RETENTION_DAYS`. Candidates are warned 7 days in advance via email. Opt-out preferences are honoured; `DATA_RETENTION_WARNING` is the sole exception (legal obligation).
+* **Privacy:** No PII (e.g. resume content) is included in email subjects.
 
 ---
 
-## 8. Success Metrics
+## 8. Configuration Reference
+
+| Variable | Description | Default |
+| --- | --- | --- |
+| `RESEND_API_KEY` | Resend API key for transactional email delivery | *(required for email)* |
+| `EMAIL_FROM` | Sender address shown on all outbound emails | `noreply@vekt.io` |
+| `APP_URL` | Public base URL used to build status page and unsubscribe links | `http://localhost:3000` |
+| `AI_PROVIDER` | `mock` \| `openai` \| `ollama` | `mock` |
+| `OPENAI_API_KEY` | OpenAI API key (required when `AI_PROVIDER=openai`) | — |
+| `OLLAMA_BASE_URL` | Local Ollama endpoint | `http://localhost:11434` |
+| `DATABASE_URL` | SQLite path or Turso connection string | `file:./dev.db` |
+| `AUTH_SECRET` | NextAuth secret (min 32 chars) | *(required)* |
+
+---
+
+## 9. Success Metrics
 
 * **Recruiter Efficiency:** Reduction in time spent on initial resume screening by $>70\%$.
 * **DevX:** Ability to go from `git clone` to "First Evaluation" in under 3 minutes.
 * **Reliability:** 0% "Zombie" applications (applications stuck in `ANALYZING` state).
 
----
-
-### Would you like me to generate the **`README.md`** for the GitHub repository based on this PRD to help you start the project?
