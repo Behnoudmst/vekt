@@ -1,5 +1,6 @@
-import { CandidateStatus } from "@/generated/client";
+import { CandidateStatus, EmailType } from "@/generated/client";
 import { evaluateCandidate } from "@/lib/ai";
+import { sendCandidateEmail } from "@/lib/email";
 import { inngest } from "@/lib/inngest";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
@@ -16,6 +17,11 @@ export const analyzeCandidate = inngest.createFunction(
   { event: "vekt/candidate.created" },
   async ({ event, step }) => {
     const { candidateId } = event.data as { candidateId: string };
+
+    // Send application confirmation email
+    await step.run("send-applied-email", async () => {
+      await sendCandidateEmail({ candidateId, type: EmailType.APPLIED });
+    });
 
     // Mark as ANALYZING
     await step.run("mark-analyzing", async () => {
@@ -73,6 +79,58 @@ export const analyzeCandidate = inngest.createFunction(
 
       logger.info({ candidateId, score: result.score, status }, "Pipeline: evaluation saved");
     });
+
+    // Schedule SHORTLISTED or REJECTED notification email, delayed by the configured hours.
+    // The sendDelayedStatusEmail function will cancel itself if a
+    // "vekt/candidate.status.updated" event arrives before the delay elapses.
+    const delaySetting = await step.run("read-email-delay-setting", async () => {
+      return prisma.setting.findUnique({ where: { key: "STATUS_EMAIL_DELAY_HOURS" } });
+    });
+    const delayHours = delaySetting ? parseInt(delaySetting.value, 10) : 48;
+
+    const evaluationEmailType = meetsThreshold(evaluated.result.score, candidate.job?.threshold ?? 75)
+      ? EmailType.SHORTLISTED
+      : EmailType.REJECTED;
+    await step.sendEvent("schedule-evaluation-email", {
+      name: "vekt/candidate.status.email.scheduled",
+      data: { candidateId, emailType: evaluationEmailType, delayHours },
+    });
+  },
+);
+
+/**
+ * Inngest function: sends a status-change email to a candidate after a 48-hour delay.
+ *
+ * Triggered by "vekt/candidate.status.email.scheduled".
+ * Automatically cancelled (via cancelOn) if a "vekt/candidate.status.updated" event
+ * arrives for the same candidate before the delay elapses — meaning the recruiter
+ * changed the candidate's status in the meantime.
+ */
+export const sendDelayedStatusEmail = inngest.createFunction(
+  {
+    id: "send-delayed-status-email",
+    cancelOn: [
+      {
+        event: "vekt/candidate.status.updated",
+        match: "data.candidateId",
+      },
+    ],
+  },
+  { event: "vekt/candidate.status.email.scheduled" },
+  async ({ event, step }) => {
+    const { candidateId, emailType, delayHours = 48 } = event.data as {
+      candidateId: string;
+      emailType: EmailType;
+      delayHours?: number;
+    };
+
+    if (delayHours > 0) {
+      await step.sleep("wait-for-delay", `${delayHours} hours`);
+    }
+
+    await step.run("send-status-email", async () => {
+      await sendCandidateEmail({ candidateId, type: emailType });
+    });
   },
 );
 
@@ -106,6 +164,32 @@ export const purgeExpiredCandidates = inngest.createFunction(
       return { deleted: 0 };
     }
 
+    // Send GDPR data retention warning to candidates expiring in ≤7 days
+    await step.run("send-retention-warnings", async () => {
+      if (retentionDays < 7) return { warned: 0 };
+
+      const warnCutoff = new Date();
+      warnCutoff.setDate(warnCutoff.getDate() - (retentionDays - 7));
+
+      const aboutToExpire = await prisma.candidate.findMany({
+        where: { appliedAt: { gte: cutoff, lt: warnCutoff } },
+        select: {
+          id: true,
+          emailLogs: { where: { type: EmailType.DATA_RETENTION_WARNING }, select: { id: true } },
+        },
+      });
+
+      let warned = 0;
+      for (const c of aboutToExpire) {
+        if (c.emailLogs.length > 0) continue; // warning already sent
+        await sendCandidateEmail({ candidateId: c.id, type: EmailType.DATA_RETENTION_WARNING });
+        warned++;
+      }
+
+      logger.info({ warned, total: aboutToExpire.length }, "Purge: sent retention warnings");
+      return { warned };
+    });
+
     // Delete resume files from disk
     await step.run("delete-resume-files", async () => {
       const uploadsDir = path.join(process.cwd(), "private", "uploads");
@@ -138,6 +222,11 @@ export const purgeExpiredCandidates = inngest.createFunction(
  */
 export async function runEvaluationPipelineDirect(candidateId: string): Promise<void> {
   logger.info({ candidateId }, "Pipeline: starting direct evaluation");
+
+  // Send APPLIED confirmation email (best effort)
+  sendCandidateEmail({ candidateId, type: EmailType.APPLIED }).catch((err) =>
+    logger.warn({ candidateId, err }, "Pipeline: applied email failed"),
+  );
 
   await prisma.candidate.update({
     where: { id: candidateId },
@@ -179,4 +268,10 @@ export async function runEvaluationPipelineDirect(candidateId: string): Promise<
   ]);
 
   logger.info({ candidateId, score: result.score, status }, "Pipeline: direct evaluation complete");
+
+  // Send SHORTLISTED or REJECTED notification email (best effort)
+  const emailType = status === CandidateStatus.SHORTLISTED ? EmailType.SHORTLISTED : EmailType.REJECTED;
+  sendCandidateEmail({ candidateId, type: emailType }).catch((err) =>
+    logger.warn({ candidateId, emailType, err }, "Pipeline: evaluation email failed"),
+  );
 }

@@ -188,6 +188,23 @@ export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
 }
 
+export type EnumEmailTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmailType | Prisma.EnumEmailTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.EmailType[]
+  notIn?: $Enums.EmailType[]
+  not?: Prisma.NestedEnumEmailTypeFilter<$PrismaModel> | $Enums.EmailType
+}
+
+export type EnumEmailTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmailType | Prisma.EnumEmailTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.EmailType[]
+  notIn?: $Enums.EmailType[]
+  not?: Prisma.NestedEnumEmailTypeWithAggregatesFilter<$PrismaModel> | $Enums.EmailType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEmailTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEmailTypeFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[]
@@ -377,6 +394,23 @@ export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumEmailTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmailType | Prisma.EnumEmailTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.EmailType[]
+  notIn?: $Enums.EmailType[]
+  not?: Prisma.NestedEnumEmailTypeFilter<$PrismaModel> | $Enums.EmailType
+}
+
+export type NestedEnumEmailTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.EmailType | Prisma.EnumEmailTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.EmailType[]
+  notIn?: $Enums.EmailType[]
+  not?: Prisma.NestedEnumEmailTypeWithAggregatesFilter<$PrismaModel> | $Enums.EmailType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumEmailTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumEmailTypeFilter<$PrismaModel>
 }
 
 

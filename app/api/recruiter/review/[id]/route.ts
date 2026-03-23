@@ -1,5 +1,7 @@
 import { CandidateStatus } from "@/generated/client";
 import { auth } from "@/lib/auth";
+import { sendCandidateEmail } from "@/lib/email";
+import { inngest } from "@/lib/inngest";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { reviewDecisionSchema } from "@/lib/schemas";
@@ -46,6 +48,38 @@ export async function PATCH(
     { candidateId: id, decision: validation.data.decision, reviewerId: session.user?.email },
     "API: recruiter review decision recorded",
   );
+
+  // Send candidate email for ACCEPTED, SHORTLISTED, and REJECTED transitions
+  const emailTypeMap: Partial<Record<CandidateStatus, "ACCEPTED" | "SHORTLISTED" | "REJECTED">> = {
+    [CandidateStatus.ACCEPTED]: "ACCEPTED",
+    [CandidateStatus.SHORTLISTED]: "SHORTLISTED",
+    [CandidateStatus.REJECTED]: "REJECTED",
+  };
+  const emailTypeName = emailTypeMap[newStatus];
+  if (emailTypeName) {
+    const { EmailType } = await import("@/generated/client");
+    const inngestConfigured = process.env.INNGEST_EVENT_KEY || process.env.INNGEST_BASE_URL;
+    if (inngestConfigured) {
+      // Cancel any pending status email for this candidate, then schedule the new one
+      // delayed by the configured hours via the sendDelayedStatusEmail Inngest function.
+      const delaySetting = await prisma.setting.findUnique({ where: { key: "STATUS_EMAIL_DELAY_HOURS" } });
+      const delayHours = delaySetting ? parseInt(delaySetting.value, 10) : 48;
+
+      inngest
+        .send([
+          { name: "vekt/candidate.status.updated", data: { candidateId: id } },
+          {
+            name: "vekt/candidate.status.email.scheduled",
+            data: { candidateId: id, emailType: EmailType[emailTypeName], delayHours },
+          },
+        ])
+        .catch((err) => logger.warn({ candidateId: id, err }, "API: Inngest send error"));
+    } else {
+      sendCandidateEmail({ candidateId: id, type: EmailType[emailTypeName] }).catch((err) =>
+        logger.warn({ candidateId: id, emailTypeName, err }, "API: review email failed"),
+      );
+    }
+  }
 
   return NextResponse.json({ id: updated.id, status: updated.status, decision: validation.data.decision });
 }

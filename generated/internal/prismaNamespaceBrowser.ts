@@ -52,10 +52,13 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Job: 'Job',
+  JobView: 'JobView',
   Candidate: 'Candidate',
   Evaluation: 'Evaluation',
   User: 'User',
-  Setting: 'Setting'
+  Setting: 'Setting',
+  EmailTemplate: 'EmailTemplate',
+  EmailLog: 'EmailLog'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -88,6 +91,16 @@ export const JobScalarFieldEnum = {
 export type JobScalarFieldEnum = (typeof JobScalarFieldEnum)[keyof typeof JobScalarFieldEnum]
 
 
+export const JobViewScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  referrer: 'referrer',
+  viewedAt: 'viewedAt'
+} as const
+
+export type JobViewScalarFieldEnum = (typeof JobViewScalarFieldEnum)[keyof typeof JobViewScalarFieldEnum]
+
+
 export const CandidateScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -100,7 +113,8 @@ export const CandidateScalarFieldEnum = {
   jobId: 'jobId',
   consentGiven: 'consentGiven',
   consentAt: 'consentAt',
-  privacyPolicyVersion: 'privacyPolicyVersion'
+  privacyPolicyVersion: 'privacyPolicyVersion',
+  emailOptOut: 'emailOptOut'
 } as const
 
 export type CandidateScalarFieldEnum = (typeof CandidateScalarFieldEnum)[keyof typeof CandidateScalarFieldEnum]
@@ -138,6 +152,27 @@ export const SettingScalarFieldEnum = {
 } as const
 
 export type SettingScalarFieldEnum = (typeof SettingScalarFieldEnum)[keyof typeof SettingScalarFieldEnum]
+
+
+export const EmailTemplateScalarFieldEnum = {
+  type: 'type',
+  subject: 'subject',
+  body: 'body',
+  updatedAt: 'updatedAt'
+} as const
+
+export type EmailTemplateScalarFieldEnum = (typeof EmailTemplateScalarFieldEnum)[keyof typeof EmailTemplateScalarFieldEnum]
+
+
+export const EmailLogScalarFieldEnum = {
+  id: 'id',
+  candidateId: 'candidateId',
+  type: 'type',
+  sentAt: 'sentAt',
+  resendId: 'resendId'
+} as const
+
+export type EmailLogScalarFieldEnum = (typeof EmailLogScalarFieldEnum)[keyof typeof EmailLogScalarFieldEnum]
 
 
 export const SortOrder = {

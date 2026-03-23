@@ -37,6 +37,7 @@ export type CandidateMinAggregateOutputType = {
   consentGiven: boolean | null
   consentAt: Date | null
   privacyPolicyVersion: string | null
+  emailOptOut: boolean | null
 }
 
 export type CandidateMaxAggregateOutputType = {
@@ -52,6 +53,7 @@ export type CandidateMaxAggregateOutputType = {
   consentGiven: boolean | null
   consentAt: Date | null
   privacyPolicyVersion: string | null
+  emailOptOut: boolean | null
 }
 
 export type CandidateCountAggregateOutputType = {
@@ -67,6 +69,7 @@ export type CandidateCountAggregateOutputType = {
   consentGiven: number
   consentAt: number
   privacyPolicyVersion: number
+  emailOptOut: number
   _all: number
 }
 
@@ -84,6 +87,7 @@ export type CandidateMinAggregateInputType = {
   consentGiven?: true
   consentAt?: true
   privacyPolicyVersion?: true
+  emailOptOut?: true
 }
 
 export type CandidateMaxAggregateInputType = {
@@ -99,6 +103,7 @@ export type CandidateMaxAggregateInputType = {
   consentGiven?: true
   consentAt?: true
   privacyPolicyVersion?: true
+  emailOptOut?: true
 }
 
 export type CandidateCountAggregateInputType = {
@@ -114,6 +119,7 @@ export type CandidateCountAggregateInputType = {
   consentGiven?: true
   consentAt?: true
   privacyPolicyVersion?: true
+  emailOptOut?: true
   _all?: true
 }
 
@@ -202,6 +208,7 @@ export type CandidateGroupByOutputType = {
   consentGiven: boolean
   consentAt: Date | null
   privacyPolicyVersion: string | null
+  emailOptOut: boolean
   _count: CandidateCountAggregateOutputType | null
   _min: CandidateMinAggregateOutputType | null
   _max: CandidateMaxAggregateOutputType | null
@@ -238,8 +245,10 @@ export type CandidateWhereInput = {
   consentGiven?: Prisma.BoolFilter<"Candidate"> | boolean
   consentAt?: Prisma.DateTimeNullableFilter<"Candidate"> | Date | string | null
   privacyPolicyVersion?: Prisma.StringNullableFilter<"Candidate"> | string | null
+  emailOptOut?: Prisma.BoolFilter<"Candidate"> | boolean
   job?: Prisma.XOR<Prisma.JobNullableScalarRelationFilter, Prisma.JobWhereInput> | null
   evaluation?: Prisma.XOR<Prisma.EvaluationNullableScalarRelationFilter, Prisma.EvaluationWhereInput> | null
+  emailLogs?: Prisma.EmailLogListRelationFilter
 }
 
 export type CandidateOrderByWithRelationInput = {
@@ -255,8 +264,10 @@ export type CandidateOrderByWithRelationInput = {
   consentGiven?: Prisma.SortOrder
   consentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   privacyPolicyVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  emailOptOut?: Prisma.SortOrder
   job?: Prisma.JobOrderByWithRelationInput
   evaluation?: Prisma.EvaluationOrderByWithRelationInput
+  emailLogs?: Prisma.EmailLogOrderByRelationAggregateInput
 }
 
 export type CandidateWhereUniqueInput = Prisma.AtLeast<{
@@ -275,8 +286,10 @@ export type CandidateWhereUniqueInput = Prisma.AtLeast<{
   consentGiven?: Prisma.BoolFilter<"Candidate"> | boolean
   consentAt?: Prisma.DateTimeNullableFilter<"Candidate"> | Date | string | null
   privacyPolicyVersion?: Prisma.StringNullableFilter<"Candidate"> | string | null
+  emailOptOut?: Prisma.BoolFilter<"Candidate"> | boolean
   job?: Prisma.XOR<Prisma.JobNullableScalarRelationFilter, Prisma.JobWhereInput> | null
   evaluation?: Prisma.XOR<Prisma.EvaluationNullableScalarRelationFilter, Prisma.EvaluationWhereInput> | null
+  emailLogs?: Prisma.EmailLogListRelationFilter
 }, "id">
 
 export type CandidateOrderByWithAggregationInput = {
@@ -292,6 +305,7 @@ export type CandidateOrderByWithAggregationInput = {
   consentGiven?: Prisma.SortOrder
   consentAt?: Prisma.SortOrderInput | Prisma.SortOrder
   privacyPolicyVersion?: Prisma.SortOrderInput | Prisma.SortOrder
+  emailOptOut?: Prisma.SortOrder
   _count?: Prisma.CandidateCountOrderByAggregateInput
   _max?: Prisma.CandidateMaxOrderByAggregateInput
   _min?: Prisma.CandidateMinOrderByAggregateInput
@@ -313,6 +327,7 @@ export type CandidateScalarWhereWithAggregatesInput = {
   consentGiven?: Prisma.BoolWithAggregatesFilter<"Candidate"> | boolean
   consentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Candidate"> | Date | string | null
   privacyPolicyVersion?: Prisma.StringNullableWithAggregatesFilter<"Candidate"> | string | null
+  emailOptOut?: Prisma.BoolWithAggregatesFilter<"Candidate"> | boolean
 }
 
 export type CandidateCreateInput = {
@@ -327,8 +342,10 @@ export type CandidateCreateInput = {
   consentGiven?: boolean
   consentAt?: Date | string | null
   privacyPolicyVersion?: string | null
+  emailOptOut?: boolean
   job?: Prisma.JobCreateNestedOneWithoutCandidatesInput
   evaluation?: Prisma.EvaluationCreateNestedOneWithoutCandidateInput
+  emailLogs?: Prisma.EmailLogCreateNestedManyWithoutCandidateInput
 }
 
 export type CandidateUncheckedCreateInput = {
@@ -344,7 +361,9 @@ export type CandidateUncheckedCreateInput = {
   consentGiven?: boolean
   consentAt?: Date | string | null
   privacyPolicyVersion?: string | null
+  emailOptOut?: boolean
   evaluation?: Prisma.EvaluationUncheckedCreateNestedOneWithoutCandidateInput
+  emailLogs?: Prisma.EmailLogUncheckedCreateNestedManyWithoutCandidateInput
 }
 
 export type CandidateUpdateInput = {
@@ -359,8 +378,10 @@ export type CandidateUpdateInput = {
   consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
   consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   job?: Prisma.JobUpdateOneWithoutCandidatesNestedInput
   evaluation?: Prisma.EvaluationUpdateOneWithoutCandidateNestedInput
+  emailLogs?: Prisma.EmailLogUpdateManyWithoutCandidateNestedInput
 }
 
 export type CandidateUncheckedUpdateInput = {
@@ -376,7 +397,9 @@ export type CandidateUncheckedUpdateInput = {
   consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
   consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluation?: Prisma.EvaluationUncheckedUpdateOneWithoutCandidateNestedInput
+  emailLogs?: Prisma.EmailLogUncheckedUpdateManyWithoutCandidateNestedInput
 }
 
 export type CandidateCreateManyInput = {
@@ -392,6 +415,7 @@ export type CandidateCreateManyInput = {
   consentGiven?: boolean
   consentAt?: Date | string | null
   privacyPolicyVersion?: string | null
+  emailOptOut?: boolean
 }
 
 export type CandidateUpdateManyMutationInput = {
@@ -406,6 +430,7 @@ export type CandidateUpdateManyMutationInput = {
   consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
   consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type CandidateUncheckedUpdateManyInput = {
@@ -421,6 +446,7 @@ export type CandidateUncheckedUpdateManyInput = {
   consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
   consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
 export type CandidateListRelationFilter = {
@@ -446,6 +472,7 @@ export type CandidateCountOrderByAggregateInput = {
   consentGiven?: Prisma.SortOrder
   consentAt?: Prisma.SortOrder
   privacyPolicyVersion?: Prisma.SortOrder
+  emailOptOut?: Prisma.SortOrder
 }
 
 export type CandidateMaxOrderByAggregateInput = {
@@ -461,6 +488,7 @@ export type CandidateMaxOrderByAggregateInput = {
   consentGiven?: Prisma.SortOrder
   consentAt?: Prisma.SortOrder
   privacyPolicyVersion?: Prisma.SortOrder
+  emailOptOut?: Prisma.SortOrder
 }
 
 export type CandidateMinOrderByAggregateInput = {
@@ -476,6 +504,7 @@ export type CandidateMinOrderByAggregateInput = {
   consentGiven?: Prisma.SortOrder
   consentAt?: Prisma.SortOrder
   privacyPolicyVersion?: Prisma.SortOrder
+  emailOptOut?: Prisma.SortOrder
 }
 
 export type CandidateScalarRelationFilter = {
@@ -547,6 +576,20 @@ export type CandidateUpdateOneRequiredWithoutEvaluationNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.CandidateUpdateToOneWithWhereWithoutEvaluationInput, Prisma.CandidateUpdateWithoutEvaluationInput>, Prisma.CandidateUncheckedUpdateWithoutEvaluationInput>
 }
 
+export type CandidateCreateNestedOneWithoutEmailLogsInput = {
+  create?: Prisma.XOR<Prisma.CandidateCreateWithoutEmailLogsInput, Prisma.CandidateUncheckedCreateWithoutEmailLogsInput>
+  connectOrCreate?: Prisma.CandidateCreateOrConnectWithoutEmailLogsInput
+  connect?: Prisma.CandidateWhereUniqueInput
+}
+
+export type CandidateUpdateOneRequiredWithoutEmailLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.CandidateCreateWithoutEmailLogsInput, Prisma.CandidateUncheckedCreateWithoutEmailLogsInput>
+  connectOrCreate?: Prisma.CandidateCreateOrConnectWithoutEmailLogsInput
+  upsert?: Prisma.CandidateUpsertWithoutEmailLogsInput
+  connect?: Prisma.CandidateWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.CandidateUpdateToOneWithWhereWithoutEmailLogsInput, Prisma.CandidateUpdateWithoutEmailLogsInput>, Prisma.CandidateUncheckedUpdateWithoutEmailLogsInput>
+}
+
 export type CandidateCreateWithoutJobInput = {
   id?: string
   name: string
@@ -559,7 +602,9 @@ export type CandidateCreateWithoutJobInput = {
   consentGiven?: boolean
   consentAt?: Date | string | null
   privacyPolicyVersion?: string | null
+  emailOptOut?: boolean
   evaluation?: Prisma.EvaluationCreateNestedOneWithoutCandidateInput
+  emailLogs?: Prisma.EmailLogCreateNestedManyWithoutCandidateInput
 }
 
 export type CandidateUncheckedCreateWithoutJobInput = {
@@ -574,7 +619,9 @@ export type CandidateUncheckedCreateWithoutJobInput = {
   consentGiven?: boolean
   consentAt?: Date | string | null
   privacyPolicyVersion?: string | null
+  emailOptOut?: boolean
   evaluation?: Prisma.EvaluationUncheckedCreateNestedOneWithoutCandidateInput
+  emailLogs?: Prisma.EmailLogUncheckedCreateNestedManyWithoutCandidateInput
 }
 
 export type CandidateCreateOrConnectWithoutJobInput = {
@@ -618,6 +665,7 @@ export type CandidateScalarWhereInput = {
   consentGiven?: Prisma.BoolFilter<"Candidate"> | boolean
   consentAt?: Prisma.DateTimeNullableFilter<"Candidate"> | Date | string | null
   privacyPolicyVersion?: Prisma.StringNullableFilter<"Candidate"> | string | null
+  emailOptOut?: Prisma.BoolFilter<"Candidate"> | boolean
 }
 
 export type CandidateCreateWithoutEvaluationInput = {
@@ -632,7 +680,9 @@ export type CandidateCreateWithoutEvaluationInput = {
   consentGiven?: boolean
   consentAt?: Date | string | null
   privacyPolicyVersion?: string | null
+  emailOptOut?: boolean
   job?: Prisma.JobCreateNestedOneWithoutCandidatesInput
+  emailLogs?: Prisma.EmailLogCreateNestedManyWithoutCandidateInput
 }
 
 export type CandidateUncheckedCreateWithoutEvaluationInput = {
@@ -648,6 +698,8 @@ export type CandidateUncheckedCreateWithoutEvaluationInput = {
   consentGiven?: boolean
   consentAt?: Date | string | null
   privacyPolicyVersion?: string | null
+  emailOptOut?: boolean
+  emailLogs?: Prisma.EmailLogUncheckedCreateNestedManyWithoutCandidateInput
 }
 
 export type CandidateCreateOrConnectWithoutEvaluationInput = {
@@ -678,7 +730,9 @@ export type CandidateUpdateWithoutEvaluationInput = {
   consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
   consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   job?: Prisma.JobUpdateOneWithoutCandidatesNestedInput
+  emailLogs?: Prisma.EmailLogUpdateManyWithoutCandidateNestedInput
 }
 
 export type CandidateUncheckedUpdateWithoutEvaluationInput = {
@@ -694,6 +748,92 @@ export type CandidateUncheckedUpdateWithoutEvaluationInput = {
   consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
   consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  emailLogs?: Prisma.EmailLogUncheckedUpdateManyWithoutCandidateNestedInput
+}
+
+export type CandidateCreateWithoutEmailLogsInput = {
+  id?: string
+  name: string
+  email: string
+  resumePath: string
+  resumeText?: string
+  status?: $Enums.CandidateStatus
+  appliedAt?: Date | string
+  updatedAt?: Date | string
+  consentGiven?: boolean
+  consentAt?: Date | string | null
+  privacyPolicyVersion?: string | null
+  emailOptOut?: boolean
+  job?: Prisma.JobCreateNestedOneWithoutCandidatesInput
+  evaluation?: Prisma.EvaluationCreateNestedOneWithoutCandidateInput
+}
+
+export type CandidateUncheckedCreateWithoutEmailLogsInput = {
+  id?: string
+  name: string
+  email: string
+  resumePath: string
+  resumeText?: string
+  status?: $Enums.CandidateStatus
+  appliedAt?: Date | string
+  updatedAt?: Date | string
+  jobId?: string | null
+  consentGiven?: boolean
+  consentAt?: Date | string | null
+  privacyPolicyVersion?: string | null
+  emailOptOut?: boolean
+  evaluation?: Prisma.EvaluationUncheckedCreateNestedOneWithoutCandidateInput
+}
+
+export type CandidateCreateOrConnectWithoutEmailLogsInput = {
+  where: Prisma.CandidateWhereUniqueInput
+  create: Prisma.XOR<Prisma.CandidateCreateWithoutEmailLogsInput, Prisma.CandidateUncheckedCreateWithoutEmailLogsInput>
+}
+
+export type CandidateUpsertWithoutEmailLogsInput = {
+  update: Prisma.XOR<Prisma.CandidateUpdateWithoutEmailLogsInput, Prisma.CandidateUncheckedUpdateWithoutEmailLogsInput>
+  create: Prisma.XOR<Prisma.CandidateCreateWithoutEmailLogsInput, Prisma.CandidateUncheckedCreateWithoutEmailLogsInput>
+  where?: Prisma.CandidateWhereInput
+}
+
+export type CandidateUpdateToOneWithWhereWithoutEmailLogsInput = {
+  where?: Prisma.CandidateWhereInput
+  data: Prisma.XOR<Prisma.CandidateUpdateWithoutEmailLogsInput, Prisma.CandidateUncheckedUpdateWithoutEmailLogsInput>
+}
+
+export type CandidateUpdateWithoutEmailLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  resumePath?: Prisma.StringFieldUpdateOperationsInput | string
+  resumeText?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus
+  appliedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  job?: Prisma.JobUpdateOneWithoutCandidatesNestedInput
+  evaluation?: Prisma.EvaluationUpdateOneWithoutCandidateNestedInput
+}
+
+export type CandidateUncheckedUpdateWithoutEmailLogsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  resumePath?: Prisma.StringFieldUpdateOperationsInput | string
+  resumeText?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumCandidateStatusFieldUpdateOperationsInput | $Enums.CandidateStatus
+  appliedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  jobId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  evaluation?: Prisma.EvaluationUncheckedUpdateOneWithoutCandidateNestedInput
 }
 
 export type CandidateCreateManyJobInput = {
@@ -708,6 +848,7 @@ export type CandidateCreateManyJobInput = {
   consentGiven?: boolean
   consentAt?: Date | string | null
   privacyPolicyVersion?: string | null
+  emailOptOut?: boolean
 }
 
 export type CandidateUpdateWithoutJobInput = {
@@ -722,7 +863,9 @@ export type CandidateUpdateWithoutJobInput = {
   consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
   consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluation?: Prisma.EvaluationUpdateOneWithoutCandidateNestedInput
+  emailLogs?: Prisma.EmailLogUpdateManyWithoutCandidateNestedInput
 }
 
 export type CandidateUncheckedUpdateWithoutJobInput = {
@@ -737,7 +880,9 @@ export type CandidateUncheckedUpdateWithoutJobInput = {
   consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
   consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
   evaluation?: Prisma.EvaluationUncheckedUpdateOneWithoutCandidateNestedInput
+  emailLogs?: Prisma.EmailLogUncheckedUpdateManyWithoutCandidateNestedInput
 }
 
 export type CandidateUncheckedUpdateManyWithoutJobInput = {
@@ -752,8 +897,38 @@ export type CandidateUncheckedUpdateManyWithoutJobInput = {
   consentGiven?: Prisma.BoolFieldUpdateOperationsInput | boolean
   consentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   privacyPolicyVersion?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailOptOut?: Prisma.BoolFieldUpdateOperationsInput | boolean
 }
 
+
+/**
+ * Count Type CandidateCountOutputType
+ */
+
+export type CandidateCountOutputType = {
+  emailLogs: number
+}
+
+export type CandidateCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  emailLogs?: boolean | CandidateCountOutputTypeCountEmailLogsArgs
+}
+
+/**
+ * CandidateCountOutputType without action
+ */
+export type CandidateCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the CandidateCountOutputType
+   */
+  select?: Prisma.CandidateCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * CandidateCountOutputType without action
+ */
+export type CandidateCountOutputTypeCountEmailLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.EmailLogWhereInput
+}
 
 
 export type CandidateSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -769,8 +944,11 @@ export type CandidateSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   consentGiven?: boolean
   consentAt?: boolean
   privacyPolicyVersion?: boolean
+  emailOptOut?: boolean
   job?: boolean | Prisma.Candidate$jobArgs<ExtArgs>
   evaluation?: boolean | Prisma.Candidate$evaluationArgs<ExtArgs>
+  emailLogs?: boolean | Prisma.Candidate$emailLogsArgs<ExtArgs>
+  _count?: boolean | Prisma.CandidateCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["candidate"]>
 
 export type CandidateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -786,6 +964,7 @@ export type CandidateSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   consentGiven?: boolean
   consentAt?: boolean
   privacyPolicyVersion?: boolean
+  emailOptOut?: boolean
   job?: boolean | Prisma.Candidate$jobArgs<ExtArgs>
 }, ExtArgs["result"]["candidate"]>
 
@@ -802,6 +981,7 @@ export type CandidateSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   consentGiven?: boolean
   consentAt?: boolean
   privacyPolicyVersion?: boolean
+  emailOptOut?: boolean
   job?: boolean | Prisma.Candidate$jobArgs<ExtArgs>
 }, ExtArgs["result"]["candidate"]>
 
@@ -818,12 +998,15 @@ export type CandidateSelectScalar = {
   consentGiven?: boolean
   consentAt?: boolean
   privacyPolicyVersion?: boolean
+  emailOptOut?: boolean
 }
 
-export type CandidateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "resumePath" | "resumeText" | "status" | "appliedAt" | "updatedAt" | "jobId" | "consentGiven" | "consentAt" | "privacyPolicyVersion", ExtArgs["result"]["candidate"]>
+export type CandidateOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "resumePath" | "resumeText" | "status" | "appliedAt" | "updatedAt" | "jobId" | "consentGiven" | "consentAt" | "privacyPolicyVersion" | "emailOptOut", ExtArgs["result"]["candidate"]>
 export type CandidateInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   job?: boolean | Prisma.Candidate$jobArgs<ExtArgs>
   evaluation?: boolean | Prisma.Candidate$evaluationArgs<ExtArgs>
+  emailLogs?: boolean | Prisma.Candidate$emailLogsArgs<ExtArgs>
+  _count?: boolean | Prisma.CandidateCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type CandidateIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   job?: boolean | Prisma.Candidate$jobArgs<ExtArgs>
@@ -837,6 +1020,7 @@ export type $CandidatePayload<ExtArgs extends runtime.Types.Extensions.InternalA
   objects: {
     job: Prisma.$JobPayload<ExtArgs> | null
     evaluation: Prisma.$EvaluationPayload<ExtArgs> | null
+    emailLogs: Prisma.$EmailLogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -851,6 +1035,7 @@ export type $CandidatePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     consentGiven: boolean
     consentAt: Date | null
     privacyPolicyVersion: string | null
+    emailOptOut: boolean
   }, ExtArgs["result"]["candidate"]>
   composites: {}
 }
@@ -1247,6 +1432,7 @@ export interface Prisma__CandidateClient<T, Null = never, ExtArgs extends runtim
   readonly [Symbol.toStringTag]: "PrismaPromise"
   job<T extends Prisma.Candidate$jobArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Candidate$jobArgs<ExtArgs>>): Prisma.Prisma__JobClient<runtime.Types.Result.GetResult<Prisma.$JobPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   evaluation<T extends Prisma.Candidate$evaluationArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Candidate$evaluationArgs<ExtArgs>>): Prisma.Prisma__EvaluationClient<runtime.Types.Result.GetResult<Prisma.$EvaluationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  emailLogs<T extends Prisma.Candidate$emailLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Candidate$emailLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$EmailLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1288,6 +1474,7 @@ export interface CandidateFieldRefs {
   readonly consentGiven: Prisma.FieldRef<"Candidate", 'Boolean'>
   readonly consentAt: Prisma.FieldRef<"Candidate", 'DateTime'>
   readonly privacyPolicyVersion: Prisma.FieldRef<"Candidate", 'String'>
+  readonly emailOptOut: Prisma.FieldRef<"Candidate", 'Boolean'>
 }
     
 
@@ -1717,6 +1904,30 @@ export type Candidate$evaluationArgs<ExtArgs extends runtime.Types.Extensions.In
    */
   include?: Prisma.EvaluationInclude<ExtArgs> | null
   where?: Prisma.EvaluationWhereInput
+}
+
+/**
+ * Candidate.emailLogs
+ */
+export type Candidate$emailLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the EmailLog
+   */
+  select?: Prisma.EmailLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the EmailLog
+   */
+  omit?: Prisma.EmailLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.EmailLogInclude<ExtArgs> | null
+  where?: Prisma.EmailLogWhereInput
+  orderBy?: Prisma.EmailLogOrderByWithRelationInput | Prisma.EmailLogOrderByWithRelationInput[]
+  cursor?: Prisma.EmailLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.EmailLogScalarFieldEnum | Prisma.EmailLogScalarFieldEnum[]
 }
 
 /**

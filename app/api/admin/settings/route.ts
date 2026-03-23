@@ -6,6 +6,7 @@ import { z } from "zod";
 
 const DEFAULTS: Record<string, string> = {
   RETENTION_DAYS: "90",
+  STATUS_EMAIL_DELAY_HOURS: "48",
 };
 
 function adminOnly(session: Session | null) {
@@ -28,6 +29,7 @@ export async function GET() {
 
 const updateSchema = z.object({
   RETENTION_DAYS: z.coerce.number().int().min(1).max(3650),
+  STATUS_EMAIL_DELAY_HOURS: z.coerce.number().int().min(0).max(168).optional(),
 });
 
 export async function PUT(req: NextRequest) {
@@ -40,11 +42,29 @@ export async function PUT(req: NextRequest) {
   if (!parsed.success)
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
-  await prisma.setting.upsert({
-    where: { key: "RETENTION_DAYS" },
-    update: { value: String(parsed.data.RETENTION_DAYS) },
-    create: { key: "RETENTION_DAYS", value: String(parsed.data.RETENTION_DAYS) },
-  });
+  const ops = [
+    prisma.setting.upsert({
+      where: { key: "RETENTION_DAYS" },
+      update: { value: String(parsed.data.RETENTION_DAYS) },
+      create: { key: "RETENTION_DAYS", value: String(parsed.data.RETENTION_DAYS) },
+    }),
+  ];
 
-  return NextResponse.json({ RETENTION_DAYS: parsed.data.RETENTION_DAYS });
+  if (parsed.data.STATUS_EMAIL_DELAY_HOURS !== undefined) {
+    ops.push(
+      prisma.setting.upsert({
+        where: { key: "STATUS_EMAIL_DELAY_HOURS" },
+        update: { value: String(parsed.data.STATUS_EMAIL_DELAY_HOURS) },
+        create: { key: "STATUS_EMAIL_DELAY_HOURS", value: String(parsed.data.STATUS_EMAIL_DELAY_HOURS) },
+      }),
+    );
+  }
+
+  await prisma.$transaction(ops);
+
+  const updated: Record<string, number> = { RETENTION_DAYS: parsed.data.RETENTION_DAYS };
+  if (parsed.data.STATUS_EMAIL_DELAY_HOURS !== undefined)
+    updated.STATUS_EMAIL_DELAY_HOURS = parsed.data.STATUS_EMAIL_DELAY_HOURS;
+
+  return NextResponse.json(updated);
 }

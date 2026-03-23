@@ -23,6 +23,11 @@ export * from './enums';
  */
 export type Job = Prisma.JobModel
 /**
+ * Model JobView
+ * 
+ */
+export type JobView = Prisma.JobViewModel
+/**
  * Model Candidate
  * 
  */
@@ -42,3 +47,13 @@ export type User = Prisma.UserModel
  * Key-value store for admin-controlled global settings (e.g. RETENTION_DAYS)
  */
 export type Setting = Prisma.SettingModel
+/**
+ * Model EmailTemplate
+ * Email template stored in the database and editable by admins
+ */
+export type EmailTemplate = Prisma.EmailTemplateModel
+/**
+ * Model EmailLog
+ * Audit log of every outbound candidate email
+ */
+export type EmailLog = Prisma.EmailLogModel
