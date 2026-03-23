@@ -24,10 +24,18 @@ export default async function JobApplicationsPage({
   const session = await auth();
   if (!session) redirect("/login");
 
+  const isAdmin = (session.user as { role?: string }).role === "ADMIN";
+  const currentUserId = session.user?.id;
+
+  if (!isAdmin && !currentUserId) redirect("/login");
+
   const { jobId } = await params;
 
-  const job = await prisma.job.findUnique({
-    where: { id: jobId },
+  const job = await prisma.job.findFirst({
+    where: {
+      id: jobId,
+      ...(!isAdmin && currentUserId ? { createdById: currentUserId } : {}),
+    },
     select: { id: true, title: true, location: true, isActive: true, threshold: true },
   });
 

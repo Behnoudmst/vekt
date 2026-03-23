@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { sanitizeRichText } from "@/lib/sanitize-html";
 import { jobSchema } from "@/lib/schemas";
 import { generateSlug } from "@/lib/utils";
 import type { Session } from "next-auth";
@@ -103,8 +104,9 @@ export async function POST(req: NextRequest) {
     }
 
     const slug = await generateUniqueSlug(validation.data.title);
+    const description = sanitizeRichText(validation.data.description);
     const job = await prisma.job.create({
-      data: { ...validation.data, slug, createdById: currentUser.id },
+      data: { ...validation.data, description, slug, createdById: currentUser.id },
     });
     logger.info({ jobId: job.id, slug: job.slug }, "API: job created");
     return NextResponse.json(job, { status: 201 });

@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sanitizeRichText } from "@/lib/sanitize-html";
 import { redirect } from "next/navigation";
 import JobListingsSection from "./JobListingsSection";
 
@@ -13,6 +14,13 @@ export default async function RecruiterPage({
   const session = await auth();
 
   if (!session) {
+    redirect("/login");
+  }
+
+  const isAdmin = (session.user as { role?: string }).role === "ADMIN";
+  const currentUserId = session.user?.id;
+
+  if (!isAdmin && !currentUserId) {
     redirect("/login");
   }
 
@@ -30,6 +38,7 @@ export default async function RecruiterPage({
       : listingStatus === "inactive"
         ? { isActive: false }
         : {}),
+      ...(!isAdmin && currentUserId ? { createdById: currentUserId } : {}),
   };
 
   const [jobs, listingTotal] = await Promise.all([
@@ -52,6 +61,10 @@ export default async function RecruiterPage({
     }),
     prisma.job.count({ where: listingWhere }),
   ]);
+  const safeJobs = jobs.map((job) => ({
+    ...job,
+    description: sanitizeRichText(job.description),
+  }));
 
   const listingTotalPages = Math.max(1, Math.ceil(listingTotal / PAGE_SIZE));
 
@@ -59,7 +72,7 @@ export default async function RecruiterPage({
     <div className="min-h-[89vh] bg-background">
       <main className="mx-auto max-w-4xl p-6">
         <JobListingsSection
-          listings={jobs}
+          listings={safeJobs}
           total={listingTotal}
           page={listingPage}
           totalPages={listingTotalPages}

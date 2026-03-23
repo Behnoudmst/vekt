@@ -145,9 +145,7 @@ DATABASE_URL="file:/absolute/path/to/dev.db"
 AUTH_SECRET="your-secret-min-32-chars"
 
 SEED_ADMIN_EMAIL="admin@example.com"
-SEED_ADMIN_PASSWORD="change-me"
-SEED_RECRUITER_EMAIL="recruiter@example.com"
-SEED_RECRUITER_PASSWORD="change-me"
+SEED_ADMIN_PASSWORD="change-me-to-a-long-random-password"
 ```
 
 See [`.env.example`](.env.example) for all options including AI provider and Inngest configuration.
@@ -160,7 +158,7 @@ npm run db:migrate
 
 ### 4. Seed the database
 
-Creates one **Admin** and one **Recruiter** account using the credentials from `.env`.
+Creates the initial **Admin** account, sample job listing, and email templates using the credentials from `.env`.
 
 ```bash
 npm run db:seed
@@ -204,15 +202,24 @@ Inngest powers three background jobs:
 
 The included `docker-compose.yml` runs an Inngest container alongside the app. No external account needed.
 
-```bash
-docker-compose up --build
-```
-
-Default keys (`local-dev-event-key` / `local-dev-signing-key`) are used automatically. Override in `.env` or shell for production:
+Before starting Docker, set these required secrets in your shell or `.env` file:
 
 ```env
-INNGEST_EVENT_KEY=your-production-key
-INNGEST_SIGNING_KEY=your-production-signing-key
+AUTH_SECRET=generate-a-random-32+-char-secret
+INNGEST_EVENT_KEY=generate-a-random-event-key
+INNGEST_SIGNING_KEY=generate-a-random-hex-signing-key
+```
+
+If you want the container to seed the database on first boot, also set:
+
+```env
+SEED_ON_START=true
+SEED_ADMIN_EMAIL=admin@example.com
+SEED_ADMIN_PASSWORD=change-me-to-a-long-random-password
+```
+
+```bash
+docker-compose up --build
 ```
 
 ### Inngest Cloud (optional)

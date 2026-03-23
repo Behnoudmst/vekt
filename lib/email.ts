@@ -2,6 +2,7 @@ import { EmailType } from "@/generated/client";
 import { COMPANY_NAME } from "@/lib/brand";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { createStatusToken, createUnsubscribeToken } from "@/lib/public-tokens";
 import { Resend } from "resend";
 
 const APP_URL = process.env.APP_URL ?? "http://localhost:3000";
@@ -18,11 +19,11 @@ function interpolate(template: string, vars: Record<string, string>): string {
 }
 
 export function getStatusPageUrl(candidateId: string): string {
-  return `${APP_URL}/status/${candidateId}`;
+  return `${APP_URL}/status/${createStatusToken(candidateId)}`;
 }
 
 export function getUnsubscribeUrl(candidateId: string): string {
-  return `${APP_URL}/api/unsubscribe?id=${candidateId}`;
+  return `${APP_URL}/api/unsubscribe?token=${createUnsubscribeToken(candidateId)}`;
 }
 
 interface SendEmailOptions {
