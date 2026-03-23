@@ -1,6 +1,6 @@
 # 📝 PRD: Vekt – Automated Recruitment Orchestration Engine
 
-**Version:** 0.10 (Finalized Rebrand)
+**Version:** 0.11 (Delayed Status Emails)
 
 **Project Name:** **Vekt** (derived from "Weight")
 
@@ -67,7 +67,7 @@
 ### 4.4 Dashboards
 
 * **Recruiter Dashboard:** A "Priority Queue" showing high-scoring candidates first. Includes an "Override" button to manually move candidates.
-* **Admin Dashboard:** Manage recruiter accounts, set global `RETENTION_DAYS` for data scrubbing, monitor API token usage, and edit candidate email templates.
+* **Admin Dashboard:** Manage recruiter accounts, set global `RETENTION_DAYS` for data scrubbing, configure the status email delay (`STATUS_EMAIL_DELAY_HOURS`), monitor API token usage, and edit candidate email templates.
 
 ### 4.5 Email Notifications
 
@@ -76,10 +76,18 @@ Vekt sends automated transactional emails to candidates at each major lifecycle 
 | Trigger | Email Type | When Sent |
 | --- | --- | --- |
 | Application submitted | `APPLIED` | Immediately after the candidate submits their application |
-| AI evaluation complete (high score) | `SHORTLISTED` | After the Inngest `save-evaluation` step sets status to `SHORTLISTED` |
-| AI evaluation complete (low score) | `REJECTED` | After the Inngest `save-evaluation` step sets status to `REJECTED` |
-| Recruiter manually accepts | `ACCEPTED` | After a recruiter marks the candidate as accepted via the dashboard |
+| AI evaluation complete (high score) | `SHORTLISTED` | After `STATUS_EMAIL_DELAY_HOURS` hours (default 48 h) |
+| AI evaluation complete (low score) | `REJECTED` | After `STATUS_EMAIL_DELAY_HOURS` hours (default 48 h) |
+| Recruiter manually accepts/rejects/shortlists | `ACCEPTED` / `REJECTED` / `SHORTLISTED` | After `STATUS_EMAIL_DELAY_HOURS` hours (default 48 h) |
 | Data deletion approaching | `DATA_RETENTION_WARNING` | 7 days before the candidate's data is scheduled for deletion |
+
+**Delayed Dispatch & Cancellation:**
+
+* Status-change emails (`SHORTLISTED`, `REJECTED`, `ACCEPTED`) are **not sent immediately**. When a status is set, Vekt fires a `vekt/candidate.status.email.scheduled` Inngest event carrying the `candidateId`, `emailType`, and `delayHours`.
+* The `sendDelayedStatusEmail` Inngest function sleeps for `delayHours` and then dispatches the email.
+* If a recruiter changes the candidate's status before the delay elapses, a `vekt/candidate.status.updated` event is fired. Inngest's `cancelOn` mechanism intercepts this and **cancels the pending email** automatically, then schedules a new delayed email for the updated status.
+* Setting `STATUS_EMAIL_DELAY_HOURS` to `0` causes the email to be sent without any sleep (effectively immediate).
+* The delay is configurable per-deployment from **Admin Dashboard → Email Templates → Status email delay** and is stored in the `Setting` table.
 
 **Template System:**
 
@@ -183,8 +191,8 @@ $$S = f(\text{System Prompt}, \text{Recruiter Context}, \text{Job Prompt}, \text
 
 
 7. **State Update:** Step `save-evaluation` moves candidate to `SHORTLISTED` if $S \ge \text{threshold}$, else `REJECTED`.
-8. **Email (SHORTLISTED / REJECTED):** Step `send-evaluation-email` dispatches the outcome notification.
-9. **Recruiter Override:** When a recruiter accepts via the dashboard, `PATCH /api/recruiter/review/[id]` updates the status and fires an `ACCEPTED` email.
+8. **Email Scheduling:** Step `schedule-evaluation-email` reads `STATUS_EMAIL_DELAY_HOURS` from the DB and fires `vekt/candidate.status.email.scheduled`. The `sendDelayedStatusEmail` function sleeps for the configured hours, then sends the `SHORTLISTED` or `REJECTED` email.
+9. **Recruiter Override:** When a recruiter acts via the dashboard, `PATCH /api/recruiter/review/[id]` updates the status, fires `vekt/candidate.status.updated` (cancelling any pending email for the previous status), and schedules a new `vekt/candidate.status.email.scheduled` event for the new status.
 
 **GDPR Retention Warning (daily cron `purgeExpiredCandidates`):**
 
@@ -215,6 +223,13 @@ $$S = f(\text{System Prompt}, \text{Recruiter Context}, \text{Job Prompt}, \text
 | `OLLAMA_BASE_URL` | Local Ollama endpoint | `http://localhost:11434` |
 | `DATABASE_URL` | SQLite path or Turso connection string | `file:./dev.db` |
 | `AUTH_SECRET` | NextAuth secret (min 32 chars) | *(required)* |
+
+**Runtime settings (stored in DB, editable via Admin Dashboard):**
+
+| Key | Description | Default |
+| --- | --- | --- |
+| `RETENTION_DAYS` | Days before a candidate record is eligible for automated scrubbing | `90` |
+| `STATUS_EMAIL_DELAY_HOURS` | Hours to wait before sending a status-change email; `0` = immediate | `48` |
 
 ---
 

@@ -33,21 +33,6 @@ async function main() {
   });
   console.log(`✅ Seeded admin user:     ${adminEmail}`);
 
-  // --- Recruiter ---
-  const recruiterEmail = process.env.SEED_RECRUITER_EMAIL ?? "recruiter@vekt.io";
-  const recruiterRaw = process.env.SEED_RECRUITER_PASSWORD ?? "Recruiter123!";
-  if (!recruiterRaw) {
-    console.error("❌ SEED_RECRUITER_PASSWORD env var is required. Add it to your .env file.");
-    process.exit(1);
-  }
-  const recruiterPassword = await bcrypt.hash(recruiterRaw, 10);
-  await prisma.user.upsert({
-    where: { email: recruiterEmail },
-    update: { password: recruiterPassword },
-    create: { email: recruiterEmail, password: recruiterPassword, role: "RECRUITER" },
-  });
-  console.log(`✅ Seeded recruiter user: ${recruiterEmail}`);
-
   // --- Dummy job listing ---
   await prisma.job.upsert({
     where: { id: "seed-job-ux-ui-designer" },

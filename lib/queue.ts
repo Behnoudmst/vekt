@@ -80,15 +80,20 @@ export const analyzeCandidate = inngest.createFunction(
       logger.info({ candidateId, score: result.score, status }, "Pipeline: evaluation saved");
     });
 
-    // Schedule SHORTLISTED or REJECTED notification email, delayed 48 hours.
+    // Schedule SHORTLISTED or REJECTED notification email, delayed by the configured hours.
     // The sendDelayedStatusEmail function will cancel itself if a
     // "vekt/candidate.status.updated" event arrives before the delay elapses.
+    const delaySetting = await step.run("read-email-delay-setting", async () => {
+      return prisma.setting.findUnique({ where: { key: "STATUS_EMAIL_DELAY_HOURS" } });
+    });
+    const delayHours = delaySetting ? parseInt(delaySetting.value, 10) : 48;
+
     const evaluationEmailType = meetsThreshold(evaluated.result.score, candidate.job?.threshold ?? 75)
       ? EmailType.SHORTLISTED
       : EmailType.REJECTED;
     await step.sendEvent("schedule-evaluation-email", {
       name: "vekt/candidate.status.email.scheduled",
-      data: { candidateId, emailType: evaluationEmailType },
+      data: { candidateId, emailType: evaluationEmailType, delayHours },
     });
   },
 );
@@ -113,9 +118,15 @@ export const sendDelayedStatusEmail = inngest.createFunction(
   },
   { event: "vekt/candidate.status.email.scheduled" },
   async ({ event, step }) => {
-    const { candidateId, emailType } = event.data as { candidateId: string; emailType: EmailType };
+    const { candidateId, emailType, delayHours = 48 } = event.data as {
+      candidateId: string;
+      emailType: EmailType;
+      delayHours?: number;
+    };
 
-    await step.sleep("wait-48-hours", "48 hours");
+    if (delayHours > 0) {
+      await step.sleep("wait-for-delay", `${delayHours} hours`);
+    }
 
     await step.run("send-status-email", async () => {
       await sendCandidateEmail({ candidateId, type: emailType });

@@ -61,13 +61,16 @@ export async function PATCH(
     const inngestConfigured = process.env.INNGEST_EVENT_KEY || process.env.INNGEST_BASE_URL;
     if (inngestConfigured) {
       // Cancel any pending status email for this candidate, then schedule the new one
-      // delayed 48 hours via the sendDelayedStatusEmail Inngest function.
+      // delayed by the configured hours via the sendDelayedStatusEmail Inngest function.
+      const delaySetting = await prisma.setting.findUnique({ where: { key: "STATUS_EMAIL_DELAY_HOURS" } });
+      const delayHours = delaySetting ? parseInt(delaySetting.value, 10) : 48;
+
       inngest
         .send([
           { name: "vekt/candidate.status.updated", data: { candidateId: id } },
           {
             name: "vekt/candidate.status.email.scheduled",
-            data: { candidateId: id, emailType: EmailType[emailTypeName] },
+            data: { candidateId: id, emailType: EmailType[emailTypeName], delayHours },
           },
         ])
         .catch((err) => logger.warn({ candidateId: id, err }, "API: Inngest send error"));

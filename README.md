@@ -56,8 +56,9 @@ Use Vekt if you need:
 
 - **AI resume scoring** — pluggable provider: `mock` (default), OpenAI, or local Ollama
 - **Durable evaluation pipeline** — powered by [Inngest](https://inngest.com) (self-hostable); falls back to direct in-process execution when Inngest is not configured
+- **Delayed status emails** — status-change emails are held for a configurable delay (default 48 h); if a recruiter overrides the decision before the delay elapses the pending email is automatically cancelled and a new one is scheduled
 - **Recruiter dashboard** — per-job applications view sorted by AI score; shortlist, accept, or reject candidates with AI reasoning
-- **Admin dashboard** — manage recruiter accounts, configure data retention
+- **Admin dashboard** — manage recruiter accounts, configure data retention and status email delay, edit email templates
 - **Automated data purge** — Inngest cron job deletes candidate records and resume files that exceed the configured retention window
 - **GDPR-compliant** — strictly necessary cookies only, configurable auto-deletion of candidate data, privacy policy included
 - **Secure file handling** — resume PDFs stored outside the web root (`private/uploads/`), served only to authenticated users via a protected API route
@@ -79,10 +80,11 @@ Inngest pipeline triggers (or direct fallback in dev)
   └─ AI scores the CV against the job description
   └─ Score ≥ threshold  →  status: SHORTLISTED
      Score < threshold  →  status: REJECTED
+  └─ Status email scheduled (delayed by STATUS_EMAIL_DELAY_HOURS, default 48 h)
 
 Recruiter reviews candidates (per-job applications page)
-  └─ Accept   →  status: ACCEPTED
-  └─ Reject   →  status: REJECTED
+  └─ Accept / Reject / Shortlist  →  status updated
+  └─ Pending email cancelled  →  new email scheduled for updated status
 
 Inngest cron (daily at 02:00 UTC)
   └─ Reads RETENTION_DAYS from admin settings
@@ -190,11 +192,12 @@ Set `AI_PROVIDER` in `.env`:
 
 ## Inngest
 
-Inngest powers two background jobs:
+Inngest powers three background jobs:
 
 | Function | Trigger | Description |
 |---|---|---|
 | `analyze-candidate` | `vekt/candidate.created` event | AI evaluation pipeline |
+| `send-delayed-status-email` | `vekt/candidate.status.email.scheduled` event | Sleeps for the configured delay, then sends the status email; cancelled automatically via `vekt/candidate.status.updated` if the status changes before the delay elapses |
 | `purge-expired-candidates` | Cron — daily 02:00 UTC | Deletes candidates + resume files past `RETENTION_DAYS` |
 
 ### Self-hosted (Docker — recommended)
@@ -273,8 +276,8 @@ Persistent volumes:
 | `DELETE` | `/api/job-listings/[id]` | ✅ | Delete a job listing |
 | `GET` | `/api/recruiter/queue` | ✅ | Shortlisted candidates (score ≥ threshold) |
 | `PATCH` | `/api/recruiter/review/[id]` | ✅ | Record ACCEPT / REJECT decision |
-| `GET` | `/api/admin/settings` | ✅ Admin | Read global settings |
-| `PATCH` | `/api/admin/settings` | ✅ Admin | Update global settings (e.g. `RETENTION_DAYS`) |
+| `GET` | `/api/admin/settings` | ✅ Admin | Read global settings (`RETENTION_DAYS`, `STATUS_EMAIL_DELAY_HOURS`) |
+| `PUT` | `/api/admin/settings` | ✅ Admin | Update global settings |
 | `GET` | `/api/admin/users` | ✅ Admin | List recruiter accounts |
 | `POST` | `/api/admin/users` | ✅ Admin | Create recruiter account |
 | `DELETE` | `/api/admin/users/[id]` | ✅ Admin | Delete recruiter account |
@@ -288,6 +291,8 @@ Persistent volumes:
 APPLIED → ANALYZING → SHORTLISTED → ACCEPTED
                     ↘ REJECTED
 ```
+
+Status-change emails (`SHORTLISTED`, `REJECTED`, `ACCEPTED`) are queued and delivered after a configurable delay (default **48 hours**). If a recruiter changes the status before the delay elapses, the pending email is cancelled and a new delayed email is scheduled for the updated status. Set `STATUS_EMAIL_DELAY_HOURS` to `0` in the Admin Dashboard to send immediately.
 
 ---
 

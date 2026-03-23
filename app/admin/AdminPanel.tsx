@@ -4,43 +4,43 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Briefcase,
-  ChartBar,
-  CircleNotch,
-  ClipboardText,
-  Envelope,
-  Eye,
-  Gear,
-  PlusCircle,
-  Trash,
-  UserCircle,
-  Users,
-  Warning,
+    Briefcase,
+    ChartBar,
+    CircleNotch,
+    ClipboardText,
+    Envelope,
+    Eye,
+    Gear,
+    PlusCircle,
+    Trash,
+    UserCircle,
+    Users,
+    Warning,
 } from "@phosphor-icons/react";
 import { useState, useTransition } from "react";
 
@@ -101,7 +101,11 @@ export default function AdminPanel({
   const [retentionDays, setRetentionDays] = useState(
     String(settings.RETENTION_DAYS ?? "90"),
   );
+  const [emailDelayHours, setEmailDelayHours] = useState(
+    String(settings.STATUS_EMAIL_DELAY_HOURS ?? "48"),
+  );
   const [isSavingSettings, startSavingSettings] = useTransition();
+  const [isSavingEmailDelay, startSavingEmailDelay] = useTransition();
 
   // Email templates
   const [templates, setTemplates] = useState<Record<string, TemplateEntry>>(initialTemplates);
@@ -175,6 +179,29 @@ export default function AdminPanel({
       const data = await res.json();
       setSettings((prev) => ({ ...prev, RETENTION_DAYS: String(data.RETENTION_DAYS) }));
       flash("Settings saved", "ok");
+    });
+  }
+
+  // ── Save email delay ──────────────────────────────────────────────────────
+  function handleSaveEmailDelay(e: React.FormEvent) {
+    e.preventDefault();
+    startSavingEmailDelay(async () => {
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          RETENTION_DAYS: Number(retentionDays),
+          STATUS_EMAIL_DELAY_HOURS: Number(emailDelayHours),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        flash(data.error ?? "Failed to save settings", "err");
+        return;
+      }
+      const data = await res.json();
+      setSettings((prev) => ({ ...prev, STATUS_EMAIL_DELAY_HOURS: String(data.STATUS_EMAIL_DELAY_HOURS) }));
+      flash("Email delay saved", "ok");
     });
   }
 
@@ -395,9 +422,7 @@ export default function AdminPanel({
             <CardContent>
               <form onSubmit={handleSaveSettings} className="flex items-end gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="retention-days" className="text-xs">
-                    RETENTION_DAYS
-                  </Label>
+                  <Label htmlFor="retention-days" className="text-xs">Retention period (days)</Label>
                   <Input
                     id="retention-days"
                     type="number"
@@ -430,6 +455,36 @@ export default function AdminPanel({
             Customise the emails sent to candidates at each stage. Supported variables:{" "}
             <code className="bg-muted px-1 py-0.5 rounded text-[11px]">{TEMPLATE_VARS}</code>
           </p>
+
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium">Status email delay</CardTitle>
+              <CardDescription className="text-xs">
+                Status-change emails (e.g. shortlisted, rejected) are held for this many hours before sending. Set to <strong>0</strong> to send immediately.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSaveEmailDelay} className="flex items-end gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="email-delay-hours" className="text-xs">Delay (hours)</Label>
+                  <Input
+                    id="email-delay-hours"
+                    type="number"
+                    min={0}
+                    max={168}
+                    required
+                    value={emailDelayHours}
+                    onChange={(e) => setEmailDelayHours(e.target.value)}
+                    className="h-8 w-28 text-sm"
+                  />
+                </div>
+                <Button type="submit" size="sm" disabled={isSavingEmailDelay}>
+                  {isSavingEmailDelay && <CircleNotch className="size-4 animate-spin mr-1" />}
+                  Save
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
 
           <div className="grid grid-cols-1 gap-2">
             {EMAIL_TYPES.map(({ key, label, description }) => (
