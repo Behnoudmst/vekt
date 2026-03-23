@@ -1,6 +1,7 @@
 import { CandidateStatus } from "@/generated/client";
 import { auth } from "@/lib/auth";
 import { sendCandidateEmail } from "@/lib/email";
+import { inngest } from "@/lib/inngest";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
 import { reviewDecisionSchema } from "@/lib/schemas";
@@ -57,9 +58,24 @@ export async function PATCH(
   const emailTypeName = emailTypeMap[newStatus];
   if (emailTypeName) {
     const { EmailType } = await import("@/generated/client");
-    sendCandidateEmail({ candidateId: id, type: EmailType[emailTypeName] }).catch((err) =>
-      logger.warn({ candidateId: id, emailTypeName, err }, "API: review email failed"),
-    );
+    const inngestConfigured = process.env.INNGEST_EVENT_KEY || process.env.INNGEST_BASE_URL;
+    if (inngestConfigured) {
+      // Cancel any pending status email for this candidate, then schedule the new one
+      // delayed 48 hours via the sendDelayedStatusEmail Inngest function.
+      inngest
+        .send([
+          { name: "vekt/candidate.status.updated", data: { candidateId: id } },
+          {
+            name: "vekt/candidate.status.email.scheduled",
+            data: { candidateId: id, emailType: EmailType[emailTypeName] },
+          },
+        ])
+        .catch((err) => logger.warn({ candidateId: id, err }, "API: Inngest send error"));
+    } else {
+      sendCandidateEmail({ candidateId: id, type: EmailType[emailTypeName] }).catch((err) =>
+        logger.warn({ candidateId: id, emailTypeName, err }, "API: review email failed"),
+      );
+    }
   }
 
   return NextResponse.json({ id: updated.id, status: updated.status, decision: validation.data.decision });

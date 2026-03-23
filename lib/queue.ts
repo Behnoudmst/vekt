@@ -80,13 +80,44 @@ export const analyzeCandidate = inngest.createFunction(
       logger.info({ candidateId, score: result.score, status }, "Pipeline: evaluation saved");
     });
 
-    // Send SHORTLISTED or REJECTED notification email
-    await step.run("send-evaluation-email", async () => {
-      const threshold = candidate.job?.threshold ?? 75;
-      const status = meetsThreshold(evaluated.result.score, threshold)
-        ? CandidateStatus.SHORTLISTED
-        : CandidateStatus.REJECTED;
-      const emailType = status === CandidateStatus.SHORTLISTED ? EmailType.SHORTLISTED : EmailType.REJECTED;
+    // Schedule SHORTLISTED or REJECTED notification email, delayed 48 hours.
+    // The sendDelayedStatusEmail function will cancel itself if a
+    // "vekt/candidate.status.updated" event arrives before the delay elapses.
+    const evaluationEmailType = meetsThreshold(evaluated.result.score, candidate.job?.threshold ?? 75)
+      ? EmailType.SHORTLISTED
+      : EmailType.REJECTED;
+    await step.sendEvent("schedule-evaluation-email", {
+      name: "vekt/candidate.status.email.scheduled",
+      data: { candidateId, emailType: evaluationEmailType },
+    });
+  },
+);
+
+/**
+ * Inngest function: sends a status-change email to a candidate after a 48-hour delay.
+ *
+ * Triggered by "vekt/candidate.status.email.scheduled".
+ * Automatically cancelled (via cancelOn) if a "vekt/candidate.status.updated" event
+ * arrives for the same candidate before the delay elapses — meaning the recruiter
+ * changed the candidate's status in the meantime.
+ */
+export const sendDelayedStatusEmail = inngest.createFunction(
+  {
+    id: "send-delayed-status-email",
+    cancelOn: [
+      {
+        event: "vekt/candidate.status.updated",
+        match: "data.candidateId",
+      },
+    ],
+  },
+  { event: "vekt/candidate.status.email.scheduled" },
+  async ({ event, step }) => {
+    const { candidateId, emailType } = event.data as { candidateId: string; emailType: EmailType };
+
+    await step.sleep("wait-48-hours", "48 hours");
+
+    await step.run("send-status-email", async () => {
       await sendCandidateEmail({ candidateId, type: emailType });
     });
   },
