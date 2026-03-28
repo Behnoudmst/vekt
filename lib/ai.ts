@@ -166,8 +166,6 @@ export async function evaluateCandidate(params: {
     params.resumeText,
   );
 
-  logger.info({ provider }, "AI: starting evaluation");
-
   let result: EvaluationResult;
 
   try {
@@ -216,8 +214,6 @@ export async function evaluateCandidate(params: {
 
   // Clamp score
   result.score = Math.max(0, Math.min(100, Math.round(result.score)));
-
-  logger.info({ score: result.score, provider }, "AI: evaluation complete");
 
   return { result, promptSnapshot: `${SYSTEM_PROMPT}\n\n---\n\n${prompt}` };
 }
