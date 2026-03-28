@@ -19,13 +19,12 @@ export const analyzeCandidate = inngest.createFunction(
     const { candidateId } = event.data as { candidateId: string };
     logger.info({ candidateId }, "Pipeline: analyzeCandidate started");
 
-    // Send application confirmation email
+    // Send application confirmation email (best-effort — does not block evaluation)
     await step.run("send-applied-email", async () => {
       try {
         await sendCandidateEmail({ candidateId, type: EmailType.APPLIED });
       } catch (error) {
-        logger.error({ candidateId, step: "send-applied-email", error }, "Pipeline: step failed");
-        throw error;
+        logger.warn({ candidateId, step: "send-applied-email", error }, "Pipeline: applied email failed — continuing evaluation");
       }
     });
 
@@ -113,8 +112,8 @@ export const analyzeCandidate = inngest.createFunction(
       try {
         return await prisma.setting.findUnique({ where: { key: "STATUS_EMAIL_DELAY_HOURS" } });
       } catch (error) {
-        logger.error({ candidateId, step: "read-email-delay-setting", error }, "Pipeline: step failed");
-        throw error;
+        logger.warn({ candidateId, step: "read-email-delay-setting", error }, "Pipeline: could not read delay setting, using default 48h");
+        return null;
       }
     });
     const delayHours = delaySetting ? parseInt(delaySetting.value, 10) : 48;
@@ -175,11 +174,10 @@ export const sendDelayedStatusEmail = inngest.createFunction(
       try {
         await sendCandidateEmail({ candidateId, type: emailType });
       } catch (error) {
-        logger.error(
+        logger.warn(
           { candidateId, emailType, step: "send-status-email", error },
-          "Pipeline: delayed email step failed",
+          "Pipeline: status email failed — skipping",
         );
-        throw error;
       }
     });
   },
@@ -233,8 +231,12 @@ export const purgeExpiredCandidates = inngest.createFunction(
       let warned = 0;
       for (const c of aboutToExpire) {
         if (c.emailLogs.length > 0) continue; // warning already sent
-        await sendCandidateEmail({ candidateId: c.id, type: EmailType.DATA_RETENTION_WARNING });
-        warned++;
+          try {
+            await sendCandidateEmail({ candidateId: c.id, type: EmailType.DATA_RETENTION_WARNING });
+            warned++;
+          } catch (error) {
+            logger.warn({ candidateId: c.id, error }, "Purge: retention warning email failed — skipping candidate");
+          }
       }
 
       logger.info({ warned, total: aboutToExpire.length }, "Purge: sent retention warnings");
