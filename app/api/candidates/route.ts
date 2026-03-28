@@ -19,6 +19,23 @@ const CANDIDATE_SUBMISSION_WINDOW_MS = 60 * 60 * 1000;
 const CANDIDATE_SUBMISSION_IP_LIMIT = 5;
 const CANDIDATE_SUBMISSION_EMAIL_LIMIT = 3;
 
+async function triggerCandidateEvaluation(candidateId: string) {
+  const inngestConfigured = Boolean(process.env.INNGEST_EVENT_KEY);
+
+  if (!inngestConfigured) {
+    await runEvaluationPipelineDirect(candidateId);
+    return;
+  }
+
+  try {
+    await inngest.send({ name: "vekt/candidate.created", data: { candidateId } });
+    logger.info({ candidateId }, "API: candidate evaluation queued");
+  } catch (err) {
+    logger.error({ candidateId, err }, "API: Inngest send error; falling back to direct evaluation");
+    await runEvaluationPipelineDirect(candidateId);
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -115,17 +132,9 @@ export async function POST(req: NextRequest) {
 
     logger.info({ candidateId: candidate.id }, "API: candidate created");
 
-    // Trigger evaluation — via Inngest if configured, else direct fallback
-    const inngestEventKey = process.env.INNGEST_EVENT_KEY;
-    if (inngestEventKey) {
-      inngest.send({ name: "vekt/candidate.created", data: { candidateId: candidate.id } }).catch(
-        (err) => logger.error({ candidateId: candidate.id, err }, "API: Inngest send error"),
-      );
-    } else {
-      runEvaluationPipelineDirect(candidate.id).catch((err) =>
-        logger.error({ candidateId: candidate.id, err }, "API: pipeline error"),
-      );
-    }
+    void triggerCandidateEvaluation(candidate.id).catch((err) =>
+      logger.error({ candidateId: candidate.id, err }, "API: pipeline error"),
+    );
 
     return NextResponse.json(
       {
