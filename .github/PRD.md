@@ -1,10 +1,6 @@
-# 📝 PRD: Vekt – Automated Recruitment Orchestration Engine
-
-**Version:** 0.11 (Delayed Status Emails)
+# Vekt – Automated Recruitment Orchestration Engine
 
 **Project Name:** **Vekt** (derived from "Weight")
-
-**Status:** Implementation Ready
 
 ---
 
