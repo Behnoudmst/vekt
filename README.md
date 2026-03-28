@@ -56,6 +56,7 @@ Use Vekt if you need:
 
 - **AI resume scoring** — pluggable provider: `mock` (default), OpenAI, or local Ollama
 - **Durable evaluation pipeline** — powered by [Inngest](https://inngest.com) (self-hostable); falls back to direct in-process execution when Inngest is not configured
+- **Structured failure logging** — AI provider/API failures, JSON parsing errors, and pipeline step failures are logged with candidate/step/provider context for faster debugging
 - **Delayed status emails** — status-change emails are held for a configurable delay (default 48 h); if a recruiter overrides the decision before the delay elapses the pending email is automatically cancelled and a new one is scheduled
 - **Recruiter dashboard** — per-job applications view sorted by AI score; shortlist, accept, or reject candidates with AI reasoning
 - **Admin dashboard** — manage recruiter accounts, configure data retention and status email delay, edit email templates
@@ -110,7 +111,7 @@ Candidates with $Score_{total} \ge threshold$ (default 75) are marked **Shortlis
 | AI Providers | Mock · OpenAI · Ollama |
 | PDF Extraction | **unpdf** |
 | Validation | **Zod** |
-| Logging | **Pino** (structured JSON; pretty-printed in dev) |
+| Logging | **Pino** (structured JSON; pretty-printed in dev) + step-level AI/pipeline error context |
 | UI Components | **shadcn/ui** + Tailwind CSS v4 + Phosphor Icons |
 | Rich Text | **Tiptap** |
 | API Docs | **Swagger UI** |
@@ -300,6 +301,15 @@ APPLIED → ANALYZING → SHORTLISTED → ACCEPTED
 ```
 
 Status-change emails (`SHORTLISTED`, `REJECTED`, `ACCEPTED`) are queued and delivered after a configurable delay (default **48 hours**). If a recruiter changes the status before the delay elapses, the pending email is cancelled and a new delayed email is scheduled for the updated status. Set `STATUS_EMAIL_DELAY_HOURS` to `0` in the Admin Dashboard to send immediately.
+
+---
+
+## Observability
+
+- AI evaluation logs include provider-level failure context (status code, model, and safely truncated response snippets) for OpenAI and Ollama requests.
+- AI response validation logs malformed or non-JSON payloads before surfacing errors.
+- Inngest pipeline logs include candidate-aware step failure context (for example: `ai-evaluate`, `save-evaluation`, `schedule-evaluation-email`).
+- Direct fallback evaluation mode logs top-level pipeline failures with candidate context.
 
 ---
 

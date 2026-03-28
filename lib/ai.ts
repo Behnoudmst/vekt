@@ -18,6 +18,11 @@ The JSON must have exactly these fields:
   "cons": ["<bullet 1>", "<bullet 2>", ...]
 }`;
 
+function truncateForLog(value: string, max = 600): string {
+  if (value.length <= max) return value;
+  return `${value.slice(0, max)}... [truncated ${value.length - max} chars]`;
+}
+
 function buildPrompt(
   jobTitle: string,
   jobDescription: string,
@@ -60,6 +65,15 @@ async function evaluateWithOpenAI(
 
   if (!res.ok) {
     const body = await res.text();
+    logger.error(
+      {
+        provider: "openai",
+        model,
+        status: res.status,
+        body: truncateForLog(body),
+      },
+      "AI: OpenAI request failed",
+    );
     throw new Error(`OpenAI API error ${res.status}: ${body}`);
   }
 
@@ -67,7 +81,20 @@ async function evaluateWithOpenAI(
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error("Empty response from OpenAI");
 
-  return JSON.parse(content) as EvaluationResult;
+  try {
+    return JSON.parse(content) as EvaluationResult;
+  } catch (error) {
+    logger.error(
+      {
+        provider: "openai",
+        model,
+        content: truncateForLog(String(content)),
+        error,
+      },
+      "AI: failed to parse OpenAI JSON response",
+    );
+    throw error;
+  }
 }
 
 async function evaluateWithOllama(
@@ -93,6 +120,15 @@ async function evaluateWithOllama(
 
   if (!res.ok) {
     const body = await res.text();
+    logger.error(
+      {
+        provider: "ollama",
+        model: ollamaModel,
+        status: res.status,
+        body: truncateForLog(body),
+      },
+      "AI: Ollama request failed",
+    );
     throw new Error(`Ollama API error ${res.status}: ${body}`);
   }
 
@@ -100,7 +136,20 @@ async function evaluateWithOllama(
   const content = data.message?.content;
   if (!content) throw new Error("Empty response from Ollama");
 
-  return JSON.parse(content) as EvaluationResult;
+  try {
+    return JSON.parse(content) as EvaluationResult;
+  } catch (error) {
+    logger.error(
+      {
+        provider: "ollama",
+        model: ollamaModel,
+        content: truncateForLog(String(content)),
+        error,
+      },
+      "AI: failed to parse Ollama JSON response",
+    );
+    throw error;
+  }
 }
 
 export async function evaluateCandidate(params: {
@@ -121,20 +170,34 @@ export async function evaluateCandidate(params: {
 
   let result: EvaluationResult;
 
-  if (provider === "openai") {
-    result = await evaluateWithOpenAI(prompt);
-  } else if (provider === "ollama") {
-    result = await evaluateWithOllama(prompt);
-  } else {
-    // Mock provider — returns a deterministic-ish score for development
-    await new Promise((r) => setTimeout(r, 600));
-    const score = Math.round(40 + Math.random() * 60);
-    result = {
-      score,
-      reasoning: `The candidate demonstrates relevant experience for the ${params.jobTitle} role. The resume shows a mix of matching skills and areas for growth.`,
-      pros: ["Relevant domain experience", "Clear communication in resume"],
-      cons: ["Some required skills not explicitly mentioned", "Limited evidence of testing knowledge"],
-    };
+  try {
+    if (provider === "openai") {
+      result = await evaluateWithOpenAI(prompt);
+    } else if (provider === "ollama") {
+      result = await evaluateWithOllama(prompt);
+    } else {
+      // Mock provider — returns a deterministic-ish score for development
+      await new Promise((r) => setTimeout(r, 600));
+      const score = Math.round(40 + Math.random() * 60);
+      result = {
+        score,
+        reasoning: `The candidate demonstrates relevant experience for the ${params.jobTitle} role. The resume shows a mix of matching skills and areas for growth.`,
+        pros: ["Relevant domain experience", "Clear communication in resume"],
+        cons: ["Some required skills not explicitly mentioned", "Limited evidence of testing knowledge"],
+      };
+    }
+  } catch (error) {
+    logger.error(
+      {
+        provider,
+        jobTitle: params.jobTitle,
+        hasCustomPrompt: Boolean(params.customPrompt),
+        resumeLength: params.resumeText.length,
+        error,
+      },
+      "AI: evaluation provider failed",
+    );
+    throw error;
   }
 
   // Validate required fields
@@ -144,6 +207,10 @@ export async function evaluateCandidate(params: {
     !Array.isArray(result.pros) ||
     !Array.isArray(result.cons)
   ) {
+    logger.error(
+      { provider, result },
+      "AI: evaluation response missing required fields",
+    );
     throw new Error(`AI returned malformed evaluation: ${JSON.stringify(result)}`);
   }
 
