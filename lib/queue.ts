@@ -17,84 +17,120 @@ export const analyzeCandidate = inngest.createFunction(
   { event: "vekt/candidate.created" },
   async ({ event, step }) => {
     const { candidateId } = event.data as { candidateId: string };
+    logger.info({ candidateId }, "Pipeline: analyzeCandidate started");
 
     // Send application confirmation email
     await step.run("send-applied-email", async () => {
-      await sendCandidateEmail({ candidateId, type: EmailType.APPLIED });
+      try {
+        await sendCandidateEmail({ candidateId, type: EmailType.APPLIED });
+      } catch (error) {
+        logger.error({ candidateId, step: "send-applied-email", error }, "Pipeline: step failed");
+        throw error;
+      }
     });
 
     // Mark as ANALYZING
     await step.run("mark-analyzing", async () => {
-      await prisma.candidate.update({
-        where: { id: candidateId },
-        data: { status: CandidateStatus.ANALYZING },
-      });
-      logger.info({ candidateId }, "Pipeline: marked ANALYZING");
+      try {
+        await prisma.candidate.update({
+          where: { id: candidateId },
+          data: { status: CandidateStatus.ANALYZING },
+        });
+        logger.info({ candidateId }, "Pipeline: marked ANALYZING");
+      } catch (error) {
+        logger.error({ candidateId, step: "mark-analyzing", error }, "Pipeline: step failed");
+        throw error;
+      }
     });
 
     // Fetch candidate + job
     const candidate = await step.run("fetch-candidate", async () => {
-      return prisma.candidate.findUniqueOrThrow({
-        where: { id: candidateId },
-        include: { job: true },
-      });
+      try {
+        return await prisma.candidate.findUniqueOrThrow({
+          where: { id: candidateId },
+          include: { job: true },
+        });
+      } catch (error) {
+        logger.error({ candidateId, step: "fetch-candidate", error }, "Pipeline: step failed");
+        throw error;
+      }
     });
 
     // Run AI evaluation
     const evaluated = await step.run("ai-evaluate", async () => {
-      const job = candidate.job;
-      const { result, promptSnapshot } = await evaluateCandidate({
-        jobTitle: job?.title ?? "General Position",
-        jobDescription: job?.description ?? "",
-        customPrompt: job?.customPrompt ?? null,
-        resumeText: candidate.resumeText,
-      });
-      return { result, promptSnapshot };
+      try {
+        const job = candidate.job;
+        const { result, promptSnapshot } = await evaluateCandidate({
+          jobTitle: job?.title ?? "General Position",
+          jobDescription: job?.description ?? "",
+          customPrompt: job?.customPrompt ?? null,
+          resumeText: candidate.resumeText,
+        });
+        return { result, promptSnapshot };
+      } catch (error) {
+        logger.error({ candidateId, step: "ai-evaluate", error }, "Pipeline: step failed");
+        throw error;
+      }
     });
 
     // Save evaluation & update status
     await step.run("save-evaluation", async () => {
-      const { result, promptSnapshot } = evaluated;
-      const threshold = candidate.job?.threshold ?? 75;
-      const status = meetsThreshold(result.score, threshold)
-        ? CandidateStatus.SHORTLISTED
-        : CandidateStatus.REJECTED;
+      try {
+        const { result, promptSnapshot } = evaluated;
+        const threshold = candidate.job?.threshold ?? 75;
+        const status = meetsThreshold(result.score, threshold)
+          ? CandidateStatus.SHORTLISTED
+          : CandidateStatus.REJECTED;
 
-      await prisma.$transaction([
-        prisma.evaluation.create({
-          data: {
-            candidateId,
-            score: result.score,
-            reasoning: result.reasoning,
-            pros: JSON.stringify(result.pros),
-            cons: JSON.stringify(result.cons),
-            promptSnapshot,
-          },
-        }),
-        prisma.candidate.update({
-          where: { id: candidateId },
-          data: { status },
-        }),
-      ]);
+        await prisma.$transaction([
+          prisma.evaluation.create({
+            data: {
+              candidateId,
+              score: result.score,
+              reasoning: result.reasoning,
+              pros: JSON.stringify(result.pros),
+              cons: JSON.stringify(result.cons),
+              promptSnapshot,
+            },
+          }),
+          prisma.candidate.update({
+            where: { id: candidateId },
+            data: { status },
+          }),
+        ]);
 
-      logger.info({ candidateId, score: result.score, status }, "Pipeline: evaluation saved");
+        logger.info({ candidateId, score: result.score, status }, "Pipeline: evaluation saved");
+      } catch (error) {
+        logger.error({ candidateId, step: "save-evaluation", error }, "Pipeline: step failed");
+        throw error;
+      }
     });
 
     // Schedule SHORTLISTED or REJECTED notification email, delayed by the configured hours.
     // The sendDelayedStatusEmail function will cancel itself if a
     // "vekt/candidate.status.updated" event arrives before the delay elapses.
     const delaySetting = await step.run("read-email-delay-setting", async () => {
-      return prisma.setting.findUnique({ where: { key: "STATUS_EMAIL_DELAY_HOURS" } });
+      try {
+        return await prisma.setting.findUnique({ where: { key: "STATUS_EMAIL_DELAY_HOURS" } });
+      } catch (error) {
+        logger.error({ candidateId, step: "read-email-delay-setting", error }, "Pipeline: step failed");
+        throw error;
+      }
     });
     const delayHours = delaySetting ? parseInt(delaySetting.value, 10) : 48;
 
     const evaluationEmailType = meetsThreshold(evaluated.result.score, candidate.job?.threshold ?? 75)
       ? EmailType.SHORTLISTED
       : EmailType.REJECTED;
-    await step.sendEvent("schedule-evaluation-email", {
-      name: "vekt/candidate.status.email.scheduled",
-      data: { candidateId, emailType: evaluationEmailType, delayHours },
-    });
+    try {
+      await step.sendEvent("schedule-evaluation-email", {
+        name: "vekt/candidate.status.email.scheduled",
+        data: { candidateId, emailType: evaluationEmailType, delayHours },
+      });
+    } catch (error) {
+      logger.error({ candidateId, step: "schedule-evaluation-email", error }, "Pipeline: step failed");
+      throw error;
+    }
   },
 );
 
@@ -124,12 +160,27 @@ export const sendDelayedStatusEmail = inngest.createFunction(
       delayHours?: number;
     };
 
+    logger.info({ candidateId, emailType, delayHours }, "Pipeline: delayed status email scheduled");
+
     if (delayHours > 0) {
-      await step.sleep("wait-for-delay", `${delayHours} hours`);
+      try {
+        await step.sleep("wait-for-delay", `${delayHours} hours`);
+      } catch (error) {
+        logger.error({ candidateId, step: "wait-for-delay", error }, "Pipeline: delayed email step failed");
+        throw error;
+      }
     }
 
     await step.run("send-status-email", async () => {
-      await sendCandidateEmail({ candidateId, type: emailType });
+      try {
+        await sendCandidateEmail({ candidateId, type: emailType });
+      } catch (error) {
+        logger.error(
+          { candidateId, emailType, step: "send-status-email", error },
+          "Pipeline: delayed email step failed",
+        );
+        throw error;
+      }
     });
   },
 );
@@ -228,50 +279,55 @@ export async function runEvaluationPipelineDirect(candidateId: string): Promise<
     logger.warn({ candidateId, err }, "Pipeline: applied email failed"),
   );
 
-  await prisma.candidate.update({
-    where: { id: candidateId },
-    data: { status: CandidateStatus.ANALYZING },
-  });
-
-  const candidate = await prisma.candidate.findUniqueOrThrow({
-    where: { id: candidateId },
-    include: { job: true },
-  });
-
-  const { result, promptSnapshot } = await evaluateCandidate({
-    jobTitle: candidate.job?.title ?? "General Position",
-    jobDescription: candidate.job?.description ?? "",
-    customPrompt: candidate.job?.customPrompt ?? null,
-    resumeText: candidate.resumeText,
-  });
-
-  const threshold = candidate.job?.threshold ?? 75;
-  const status = meetsThreshold(result.score, threshold)
-    ? CandidateStatus.SHORTLISTED
-    : CandidateStatus.REJECTED;
-
-  await prisma.$transaction([
-    prisma.evaluation.create({
-      data: {
-        candidateId,
-        score: result.score,
-        reasoning: result.reasoning,
-        pros: JSON.stringify(result.pros),
-        cons: JSON.stringify(result.cons),
-        promptSnapshot,
-      },
-    }),
-    prisma.candidate.update({
+  try {
+    await prisma.candidate.update({
       where: { id: candidateId },
-      data: { status },
-    }),
-  ]);
+      data: { status: CandidateStatus.ANALYZING },
+    });
 
-  logger.info({ candidateId, score: result.score, status }, "Pipeline: direct evaluation complete");
+    const candidate = await prisma.candidate.findUniqueOrThrow({
+      where: { id: candidateId },
+      include: { job: true },
+    });
 
-  // Send SHORTLISTED or REJECTED notification email (best effort)
-  const emailType = status === CandidateStatus.SHORTLISTED ? EmailType.SHORTLISTED : EmailType.REJECTED;
-  sendCandidateEmail({ candidateId, type: emailType }).catch((err) =>
-    logger.warn({ candidateId, emailType, err }, "Pipeline: evaluation email failed"),
-  );
+    const { result, promptSnapshot } = await evaluateCandidate({
+      jobTitle: candidate.job?.title ?? "General Position",
+      jobDescription: candidate.job?.description ?? "",
+      customPrompt: candidate.job?.customPrompt ?? null,
+      resumeText: candidate.resumeText,
+    });
+
+    const threshold = candidate.job?.threshold ?? 75;
+    const status = meetsThreshold(result.score, threshold)
+      ? CandidateStatus.SHORTLISTED
+      : CandidateStatus.REJECTED;
+
+    await prisma.$transaction([
+      prisma.evaluation.create({
+        data: {
+          candidateId,
+          score: result.score,
+          reasoning: result.reasoning,
+          pros: JSON.stringify(result.pros),
+          cons: JSON.stringify(result.cons),
+          promptSnapshot,
+        },
+      }),
+      prisma.candidate.update({
+        where: { id: candidateId },
+        data: { status },
+      }),
+    ]);
+
+    logger.info({ candidateId, score: result.score, status }, "Pipeline: direct evaluation complete");
+
+    // Send SHORTLISTED or REJECTED notification email (best effort)
+    const emailType = status === CandidateStatus.SHORTLISTED ? EmailType.SHORTLISTED : EmailType.REJECTED;
+    sendCandidateEmail({ candidateId, type: emailType }).catch((err) =>
+      logger.warn({ candidateId, emailType, err }, "Pipeline: evaluation email failed"),
+    );
+  } catch (error) {
+    logger.error({ candidateId, error }, "Pipeline: direct evaluation failed");
+    throw error;
+  }
 }
