@@ -6,8 +6,8 @@ services:
     # http://app:3000 is the Docker-internal hostname for the app service
     command: inngest start --sdk-url http://app:3000/api/inngest
     environment:
-      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:-local-dev-event-key}"
-      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef}"
+      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:?INNGEST_EVENT_KEY is required}"
+      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:?INNGEST_SIGNING_KEY is required}"
     restart: unless-stopped
 
   app:
@@ -18,16 +18,15 @@ services:
       - inngest
     environment:
       # ── Required ────────────────────────────────────────────────────────────
-      AUTH_SECRET: "change-me-to-a-random-32+-char-string"
+      AUTH_SECRET: "${AUTH_SECRET:?AUTH_SECRET is required}"
       AUTH_TRUST_HOST: "true"
       NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
       DATABASE_URL: "file:/data/app.db"
 
       # ── Seed accounts ───────────────────────────────────────────────────────
+      SEED_ON_START: "${SEED_ON_START:-false}"
       SEED_ADMIN_EMAIL: "${SEED_ADMIN_EMAIL:-admin@example.com}"
-      SEED_ADMIN_PASSWORD: "${SEED_ADMIN_PASSWORD:-change-me}"
-      SEED_RECRUITER_EMAIL: "${SEED_RECRUITER_EMAIL:-recruiter@example.com}"
-      SEED_RECRUITER_PASSWORD: "${SEED_RECRUITER_PASSWORD:-change-me}"
+      SEED_ADMIN_PASSWORD: "${SEED_ADMIN_PASSWORD:-}"
 
       # ── AI evaluation ───────────────────────────────────────────────────────
       # Choices: mock (default) | openai | ollama
@@ -38,8 +37,8 @@ services:
 
       # ── Inngest (durable pipeline) ───────────────────────────────────────────
       INNGEST_BASE_URL: "http://inngest:8288"
-      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:-local-dev-event-key}"
-      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:-deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef}"
+      INNGEST_EVENT_KEY: "${INNGEST_EVENT_KEY:?INNGEST_EVENT_KEY is required}"
+      INNGEST_SIGNING_KEY: "${INNGEST_SIGNING_KEY:?INNGEST_SIGNING_KEY is required}"
       # URL Inngest uses to call back into the app
       INNGEST_APP_URL: "${NEXTAUTH_URL:-http://app:3000}/api/inngest"
 

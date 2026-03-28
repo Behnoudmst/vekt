@@ -1,10 +1,11 @@
 import { Badge } from "@/components/ui/badge";
 import { COMPANY_NAME } from "@/lib/brand";
 import { prisma } from "@/lib/prisma";
+import { sanitizeRichText } from "@/lib/sanitize-html";
 import {
-  ArrowRight,
-  Briefcase,
-  MapPin
+    ArrowRight,
+    Briefcase,
+    MapPin
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import JobSearchInput from "./JobSearchInput";
@@ -38,6 +39,10 @@ export default async function Home({
       location: true,
     },
   });
+  const safeListings = listings.map((listing) => ({
+    ...listing,
+    description: sanitizeRichText(listing.description),
+  }));
 
   return (
     <div className="flex min-h-[89vh] flex-col bg-background">
@@ -111,7 +116,7 @@ export default async function Home({
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {listings.map((listing) => (
+              {safeListings.map((listing) => (
                 <Link
                   key={listing.id}
                   href={`/jobs/${listing.slug}`}

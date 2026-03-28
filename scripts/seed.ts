@@ -1,12 +1,10 @@
 /**
- * Seeds the database with default accounts and email templates.
+ * Seeds the database with an initial admin account, sample job, and email templates.
  * Run with: npx tsx scripts/seed.ts
  *
  * Credentials are read from env vars:
  *   SEED_ADMIN_EMAIL        (default: admin@vekt.io)
  *   SEED_ADMIN_PASSWORD     (required)
- *   SEED_RECRUITER_EMAIL    (default: recruiter@vekt.io)
- *   SEED_RECRUITER_PASSWORD (required)
  */
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import bcrypt from "bcryptjs";
@@ -20,7 +18,7 @@ const prisma = new PrismaClient({ adapter });
 async function main() {
   // --- Admin ---
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@vekt.io";
-  const adminRaw = process.env.SEED_ADMIN_PASSWORD ?? "Admin123!";
+  const adminRaw = process.env.SEED_ADMIN_PASSWORD;
   if (!adminRaw) {
     console.error("❌ SEED_ADMIN_PASSWORD env var is required. Add it to your .env file.");
     process.exit(1);

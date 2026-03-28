@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { sanitizeRichText } from "@/lib/sanitize-html";
 import { jobSchema } from "@/lib/schemas";
 import { generateSlug } from "@/lib/utils";
 import type { Session } from "next-auth";
@@ -74,10 +75,11 @@ export async function PATCH(
         { status: 400 },
       );
     }
+    const description = sanitizeRichText(validation.data.description);
     const slug = await generateUniqueSlug(validation.data.title, id);
     const job = await prisma.job.update({
       where: { id },
-      data: { ...validation.data, slug },
+      data: { ...validation.data, description, slug },
     });
     logger.info({ jobId: id }, "API: job updated");
     return NextResponse.json(job);

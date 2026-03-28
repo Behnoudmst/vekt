@@ -3,7 +3,9 @@ import { PRIVACY_POLICY_VERSION } from "@/lib/brand";
 import { inngest } from "@/lib/inngest";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
+import { createStatusToken } from "@/lib/public-tokens";
 import { runEvaluationPipelineDirect } from "@/lib/queue";
+import { consumeRateLimit, getRequestIp } from "@/lib/rate-limit";
 import { candidateApplicationSchema } from "@/lib/schemas";
 import { randomUUID } from "crypto";
 import { mkdir, writeFile } from "fs/promises";
@@ -13,6 +15,26 @@ import { extractText } from "unpdf";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const UPLOADS_DIR = path.join(process.cwd(), "private", "uploads");
+const CANDIDATE_SUBMISSION_WINDOW_MS = 60 * 60 * 1000;
+const CANDIDATE_SUBMISSION_IP_LIMIT = 5;
+const CANDIDATE_SUBMISSION_EMAIL_LIMIT = 3;
+
+async function triggerCandidateEvaluation(candidateId: string) {
+  const inngestConfigured = Boolean(process.env.INNGEST_EVENT_KEY);
+
+  if (!inngestConfigured) {
+    await runEvaluationPipelineDirect(candidateId);
+    return;
+  }
+
+  try {
+    await inngest.send({ name: "vekt/candidate.created", data: { candidateId } });
+    logger.info({ candidateId }, "API: candidate evaluation queued");
+  } catch (err) {
+    logger.error({ candidateId, err }, "API: Inngest send error; falling back to direct evaluation");
+    await runEvaluationPipelineDirect(candidateId);
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -27,6 +49,33 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "Validation failed", details: validation.error.flatten() },
         { status: 400 },
+      );
+    }
+
+    const requestIp = getRequestIp(req.headers);
+    const ipLimit = consumeRateLimit(
+      "candidate-submission:ip",
+      requestIp,
+      CANDIDATE_SUBMISSION_IP_LIMIT,
+      CANDIDATE_SUBMISSION_WINDOW_MS,
+    );
+    if (!ipLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many applications from this IP. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(ipLimit.retryAfterSeconds) } },
+      );
+    }
+
+    const emailLimit = consumeRateLimit(
+      "candidate-submission:email",
+      validation.data.email.toLowerCase(),
+      CANDIDATE_SUBMISSION_EMAIL_LIMIT,
+      CANDIDATE_SUBMISSION_WINDOW_MS,
+    );
+    if (!emailLimit.allowed) {
+      return NextResponse.json(
+        { error: "Too many applications for this email address. Please try again later." },
+        { status: 429, headers: { "Retry-After": String(emailLimit.retryAfterSeconds) } },
       );
     }
 
@@ -83,20 +132,18 @@ export async function POST(req: NextRequest) {
 
     logger.info({ candidateId: candidate.id }, "API: candidate created");
 
-    // Trigger evaluation — via Inngest if configured, else direct fallback
-    const inngestEventKey = process.env.INNGEST_EVENT_KEY;
-    if (inngestEventKey) {
-      inngest.send({ name: "vekt/candidate.created", data: { candidateId: candidate.id } }).catch(
-        (err) => logger.error({ candidateId: candidate.id, err }, "API: Inngest send error"),
-      );
-    } else {
-      runEvaluationPipelineDirect(candidate.id).catch((err) =>
-        logger.error({ candidateId: candidate.id, err }, "API: pipeline error"),
-      );
-    }
+    void triggerCandidateEvaluation(candidate.id).catch((err) =>
+      logger.error({ candidateId: candidate.id, err }, "API: pipeline error"),
+    );
 
     return NextResponse.json(
-      { id: candidate.id, name: candidate.name, email: candidate.email, status: candidate.status },
+      {
+        id: candidate.id,
+        name: candidate.name,
+        email: candidate.email,
+        status: candidate.status,
+        statusPath: `/status/${createStatusToken(candidate.id)}`,
+      },
       { status: 201 },
     );
   } catch (err) {
@@ -111,7 +158,17 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const isAdmin = (session.user as { role?: string }).role === "ADMIN";
+  const currentUserId = session.user?.id;
+
+  if (!isAdmin && !currentUserId) {
+    return NextResponse.json({ error: "Session is stale. Please sign in again." }, { status: 401 });
+  }
+
   const candidates = await prisma.candidate.findMany({
+    where: !isAdmin && currentUserId
+      ? { job: { is: { createdById: currentUserId } } }
+      : undefined,
     orderBy: { appliedAt: "desc" },
     select: {
       id: true,

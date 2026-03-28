@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { sanitizeRichText } from "@/lib/sanitize-html";
 import { notFound } from "next/navigation";
 import ApplyForm from "./ApplyForm";
 
@@ -18,5 +19,5 @@ export default async function JobApplyPage({
     notFound();
   }
 
-  return <ApplyForm job={job} />;
+  return <ApplyForm job={{ ...job, description: sanitizeRichText(job.description) }} />;
 }

@@ -16,6 +16,13 @@ export async function PATCH(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const isAdmin = (session.user as { role?: string }).role === "ADMIN";
+  const currentUserId = session.user?.id;
+
+  if (!isAdmin && !currentUserId) {
+    return NextResponse.json({ error: "Session is stale. Please sign in again." }, { status: 401 });
+  }
+
   const { id } = await params;
 
   const body = await req.json();
@@ -27,9 +34,19 @@ export async function PATCH(
     );
   }
 
-  const candidate = await prisma.candidate.findUnique({ where: { id } });
+  const candidate = await prisma.candidate.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      job: { select: { createdById: true } },
+    },
+  });
   if (!candidate) {
     return NextResponse.json({ error: "Candidate not found" }, { status: 404 });
+  }
+
+  if (!isAdmin && candidate.job?.createdById !== currentUserId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const newStatus =

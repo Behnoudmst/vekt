@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
+import { verifyStatusToken } from "@/lib/public-tokens";
 import {
     CheckCircle,
     Clock,
@@ -14,10 +15,13 @@ export default async function StatusPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const { id: token } = await params;
+  const candidateId = verifyStatusToken(token);
+
+  if (!candidateId) return notFound();
 
   const candidate = await prisma.candidate.findUnique({
-    where: { id },
+    where: { id: candidateId },
     select: {
       id: true,
       name: true,
@@ -108,11 +112,6 @@ export default async function StatusPage({
                 </Badge>
               </div>
             </div>
-
-            <p className="text-xs text-center text-muted-foreground">
-              Application ID:{" "}
-              <code className="font-mono bg-muted px-1 py-0.5 rounded">{candidate.id}</code>
-            </p>
           </CardContent>
         </Card>
       </div>

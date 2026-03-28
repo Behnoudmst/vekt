@@ -36,7 +36,7 @@ type Props = {
 type SubmissionState =
   | { status: "idle" }
   | { status: "loading" }
-  | { status: "success"; candidateId: string }
+  | { status: "success"; statusPath: string }
   | { status: "error"; message: string };
 
 export default function ApplyForm({ job }: Props) {
@@ -70,7 +70,7 @@ export default function ApplyForm({ job }: Props) {
         return;
       }
 
-      setState({ status: "success", candidateId: data.id });
+      setState({ status: "success", statusPath: data.statusPath });
       formRef.current?.reset();
     } catch {
       setState({ status: "error", message: "Network error. Please try again." });
@@ -121,16 +121,13 @@ export default function ApplyForm({ job }: Props) {
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <p className="text-muted-foreground text-xs">
-                  Track your application status using your candidate ID:
+                  Track your application status using your private status page:
                 </p>
                 <Link
-                  href={`/status/${state.candidateId}`}
+                  href={state.statusPath}
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-primary underline underline-offset-3"
                 >
-                  <code className="font-mono bg-muted px-1.5 py-0.5 rounded text-xs text-foreground">
-                    {state.candidateId}
-                  </code>
-                  → View Status
+                  View Status
                 </Link>
               </CardContent>
               <CardFooter>

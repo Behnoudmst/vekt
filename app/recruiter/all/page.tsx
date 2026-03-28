@@ -8,7 +8,15 @@ export default async function AllCandidatesPage() {
   const session = await auth();
   if (!session) redirect("/login");
 
+  const isAdmin = (session.user as { role?: string }).role === "ADMIN";
+  const currentUserId = session.user?.id;
+
+  if (!isAdmin && !currentUserId) redirect("/login");
+
   const candidates = await prisma.candidate.findMany({
+    where: !isAdmin && currentUserId
+      ? { job: { is: { createdById: currentUserId } } }
+      : undefined,
     orderBy: { appliedAt: "desc" },
     include: {
       job: { select: { id: true, title: true } },

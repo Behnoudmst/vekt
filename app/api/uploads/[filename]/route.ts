@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { createReadStream } from "fs";
 import { stat } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
@@ -17,9 +18,28 @@ export async function GET(
   }
 
   const { filename } = await params;
+  const isAdmin = (session.user as { role?: string }).role === "ADMIN";
+  const currentUserId = session.user?.id;
+
+  if (!isAdmin && !currentUserId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   // Prevent path traversal — only allow plain filenames (UUID.pdf)
   if (!/^[a-f0-9-]{36}\.pdf$/i.test(filename)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  const resumePath = `/api/uploads/${filename}`;
+  const candidate = await prisma.candidate.findFirst({
+    where: {
+      resumePath,
+      ...(!isAdmin && currentUserId ? { job: { is: { createdById: currentUserId } } } : {}),
+    },
+    select: { id: true },
+  });
+
+  if (!candidate) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
