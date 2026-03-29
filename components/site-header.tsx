@@ -3,9 +3,8 @@ import MobileMenu from "@/components/mobile-menu";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import { COMPANY_NAME } from "@/lib/brand";
-import { BuildingsIcon } from "@phosphor-icons/react/dist/ssr";
+import Image from "next/image";
 import Link from "next/link";
-
 type Props = {
   /** Optional back link shown left of the logo area */
   backHref?: string;
@@ -34,7 +33,7 @@ export default async function SiteHeader({ backHref, backLabel }: Props) {
             className="flex items-center gap-2 rounded-md px-2 py-1 text-sm font-semibold text-foreground hover:text-primary transition-colors shrink-0"
           >
             <div className="flex size-6 items-center justify-center rounded-md bg-primary">
-              <BuildingsIcon weight="fill" className="size-3.5 text-primary-foreground shrink-0" />
+              <Image src="/logo.png" alt="Logo" width={24} height={24} className="shrink-0" />
             </div>
             <span className="hidden sm:block tracking-tight">{COMPANY_NAME}</span>
           </Link>

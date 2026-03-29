@@ -17,7 +17,11 @@ export const analyzeCandidate = inngest.createFunction(
   { event: "vekt/candidate.created" },
   async ({ event, step }) => {
     const { candidateId } = event.data as { candidateId: string };
-    logger.info({ candidateId }, "Pipeline: analyzeCandidate started");
+
+    // Log inside a durable step so it runs once even when Inngest replays the function body.
+    await step.run("log-pipeline-start", async () => {
+      logger.info({ candidateId }, "Pipeline: analyzeCandidate started");
+    });
 
     // Send application confirmation email (best-effort — does not block evaluation)
     await step.run("send-applied-email", async () => {
@@ -35,7 +39,6 @@ export const analyzeCandidate = inngest.createFunction(
           where: { id: candidateId },
           data: { status: CandidateStatus.ANALYZING },
         });
-        logger.info({ candidateId }, "Pipeline: marked ANALYZING");
       } catch (error) {
         logger.error({ candidateId, step: "mark-analyzing", error }, "Pipeline: step failed");
         throw error;
@@ -97,8 +100,6 @@ export const analyzeCandidate = inngest.createFunction(
             data: { status },
           }),
         ]);
-
-        logger.info({ candidateId, score: result.score, status }, "Pipeline: evaluation saved");
       } catch (error) {
         logger.error({ candidateId, step: "save-evaluation", error }, "Pipeline: step failed");
         throw error;
@@ -130,6 +131,10 @@ export const analyzeCandidate = inngest.createFunction(
       logger.error({ candidateId, step: "schedule-evaluation-email", error }, "Pipeline: step failed");
       throw error;
     }
+
+    await step.run("log-pipeline-complete", async () => {
+      logger.info({ candidateId, score: evaluated.result.score, status: evaluationEmailType }, "Pipeline: analyzeCandidate completed");
+    });
   },
 );
 
@@ -144,6 +149,7 @@ export const analyzeCandidate = inngest.createFunction(
 export const sendDelayedStatusEmail = inngest.createFunction(
   {
     id: "send-delayed-status-email",
+    retries: 3, // Max 3 attempts for delayed email
     cancelOn: [
       {
         event: "vekt/candidate.status.updated",
@@ -158,8 +164,6 @@ export const sendDelayedStatusEmail = inngest.createFunction(
       emailType: EmailType;
       delayHours?: number;
     };
-
-    logger.info({ candidateId, emailType, delayHours }, "Pipeline: delayed status email scheduled");
 
     if (delayHours > 0) {
       try {
@@ -185,7 +189,7 @@ export const sendDelayedStatusEmail = inngest.createFunction(
 
 /** Inngest cron function: delete candidate records (+ resume files) past the retention window */
 export const purgeExpiredCandidates = inngest.createFunction(
-  { id: "purge-expired-candidates" },
+  { id: "purge-expired-candidates", retries: 2 }, // Max 2 attempts for daily purge
   { cron: "0 2 * * *" }, // runs daily at 02:00 UTC
   async ({ step }) => {
     const setting = await step.run("read-retention-setting", async () => {
