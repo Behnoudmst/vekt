@@ -38,11 +38,10 @@ export default function RootLayout({
       >
         <AuthProvider>
           <SiteHeader />
-
           {children}
           <SiteFooter />
         </AuthProvider>
-        <Toaster />
+        <Toaster richColors={true} theme="light" position="top-center"/>
         <CookieBanner />
       </body>
     </html>
