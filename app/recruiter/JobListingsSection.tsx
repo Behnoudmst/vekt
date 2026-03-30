@@ -222,7 +222,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
             setDescription("");
           }}
         >
-          <PlusCircleIcon data-icon="inline-start" />
+          {showForm ? <XIcon data-icon="inline-start" /> : <PlusCircleIcon data-icon="inline-start" />}
           {showForm ? "Cancel" : "Add Listing"}
         </Button>
       </div>
