@@ -4,43 +4,42 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import {
-    Briefcase,
-    ChartBar,
-    CircleNotch,
-    ClipboardText,
-    Envelope,
-    Eye,
-    Gear,
-    PlusCircle,
-    Trash,
-    UserCircle,
-    Users,
-    Warning,
+  BriefcaseIcon,
+  ChartBarIcon,
+  CircleNotchIcon,
+  ClipboardTextIcon,
+  EnvelopeIcon,
+  EyeIcon,
+  PlusCircleIcon,
+  TrashIcon,
+  UserCircleIcon,
+  UsersIcon,
+  WarningIcon
 } from "@phosphor-icons/react";
 import { useState, useTransition } from "react";
 
@@ -256,7 +255,7 @@ export default function AdminPanel({
         )}
         {error && (
           <Alert variant="destructive">
-            <Warning className="size-4" />
+            <WarningIcon className="size-4" />
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
@@ -264,17 +263,17 @@ export default function AdminPanel({
         {/* Stats row */}
         <div className="grid grid-cols-3 gap-4">
           <StatCard
-            icon={<Briefcase weight="duotone" className="size-5 text-primary" />}
+            icon={<BriefcaseIcon weight="duotone" className="size-5 text-primary" />}
             label="Active Jobs"
             value={stats.jobCount}
           />
           <StatCard
-            icon={<Users weight="duotone" className="size-5 text-primary" />}
+            icon={<UsersIcon weight="duotone" className="size-5 text-primary" />}
             label="Candidates"
             value={stats.candidateCount}
           />
           <StatCard
-            icon={<ChartBar weight="duotone" className="size-5 text-primary" />}
+            icon={<ChartBarIcon weight="duotone" className="size-5 text-primary" />}
             label="Evaluations Run"
             value={stats.evaluationCount}
           />
@@ -285,7 +284,7 @@ export default function AdminPanel({
         {/* Users section */}
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <UserCircle weight="duotone" className="size-5 text-primary" />
+            <UserCircleIcon weight="duotone" className="size-5 text-primary" />
             <h2 className="text-base font-semibold">User Accounts</h2>
           </div>
 
@@ -325,7 +324,7 @@ export default function AdminPanel({
                             disabled={isAdding}
                             aria-label={`Delete ${u.email}`}
                           >
-                            <Trash className="size-4" />
+                            <TrashIcon className="size-4" />
                           </Button>
                         )}
                       </TableCell>
@@ -340,7 +339,7 @@ export default function AdminPanel({
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <PlusCircle weight="duotone" className="size-4 text-primary" />
+                <PlusCircleIcon weight="duotone" className="size-4 text-primary" />
                 Add User
               </CardTitle>
               <CardDescription className="text-xs">
@@ -393,7 +392,7 @@ export default function AdminPanel({
                 )}
                 <div className="flex justify-end">
                   <Button type="submit" size="sm" disabled={isAdding}>
-                    {isAdding && <CircleNotch className="size-4 animate-spin mr-1" />}
+                    {isAdding && <CircleNotchIcon className="size-4 animate-spin mr-1" />}
                     Create User
                   </Button>
                 </div>
@@ -407,7 +406,7 @@ export default function AdminPanel({
         {/* Settings section */}
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <ClipboardText weight="duotone" className="size-5 text-primary" />
+            <ClipboardTextIcon weight="duotone" className="size-5 text-primary" />
             <h2 className="text-base font-semibold">Data Retention</h2>
           </div>
 
@@ -435,7 +434,7 @@ export default function AdminPanel({
                   />
                 </div>
                 <Button type="submit" size="sm" disabled={isSavingSettings}>
-                  {isSavingSettings && <CircleNotch className="size-4 animate-spin mr-1" />}
+                  {isSavingSettings && <CircleNotchIcon className="size-4 animate-spin mr-1" />}
                   Save
                 </Button>
               </form>
@@ -448,7 +447,7 @@ export default function AdminPanel({
         {/* Email Templates section */}
         <section className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <Envelope weight="duotone" className="size-5 text-primary" />
+            <EnvelopeIcon weight="duotone" className="size-5 text-primary" />
             <h2 className="text-base font-semibold">Email Templates</h2>
           </div>
           <p className="text-xs text-muted-foreground -mt-2">
@@ -479,7 +478,7 @@ export default function AdminPanel({
                   />
                 </div>
                 <Button type="submit" size="sm" disabled={isSavingEmailDelay}>
-                  {isSavingEmailDelay && <CircleNotch className="size-4 animate-spin mr-1" />}
+                  {isSavingEmailDelay && <CircleNotchIcon className="size-4 animate-spin mr-1" />}
                   Save
                 </Button>
               </form>
@@ -540,7 +539,7 @@ export default function AdminPanel({
                           onClick={() => setShowPreview(true)}
                           disabled={!editBody}
                         >
-                          <Eye className="size-4 mr-1" />
+                          <EyeIcon className="size-4 mr-1" />
                           Preview
                         </Button>
                         <div className="flex gap-2">
@@ -553,7 +552,7 @@ export default function AdminPanel({
                             Cancel
                           </Button>
                           <Button type="submit" size="sm" disabled={isSavingTemplate}>
-                            {isSavingTemplate && <CircleNotch className="size-4 animate-spin mr-1" />}
+                            {isSavingTemplate && <CircleNotchIcon className="size-4 animate-spin mr-1" />}
                             Save Template
                           </Button>
                         </div>
