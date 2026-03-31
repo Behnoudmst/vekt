@@ -35,6 +35,7 @@ import {
   ClipboardTextIcon,
   EnvelopeIcon,
   EyeIcon,
+  GearIcon,
   PlusCircleIcon,
   TrashIcon,
   UserCircleIcon,
@@ -237,7 +238,7 @@ export default function AdminPanel({
         {/* Header */}
         <div>
           <h1 className="text-xl font-semibold flex items-center gap-2">
-            <Gear weight="duotone" className="size-5 text-primary" />
+            <GearIcon weight="duotone" className="size-5 text-primary" />
             Admin Dashboard
           </h1>
           <p className="text-sm text-muted-foreground mt-1">

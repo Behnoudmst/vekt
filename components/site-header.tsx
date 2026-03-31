@@ -35,7 +35,7 @@ export default async function SiteHeader({ backHref, backLabel }: Props) {
             <div className="flex size-6 items-center justify-center rounded-md bg-primary">
               <Image src="/logo.png" alt="Logo" width={24} height={24} className="shrink-0" />
             </div>
-            <span className="hidden sm:block tracking-tight">{COMPANY_NAME}</span>
+            <span className="tracking-tight">{COMPANY_NAME}</span>
           </Link>
 
           {email && (
