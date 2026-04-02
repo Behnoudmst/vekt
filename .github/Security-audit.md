@@ -109,10 +109,6 @@ Anyone with a candidate ID can access the status page and unsubscribe the candid
 
 Evidence:
 - email.ts
-- email.ts
-- email.ts
-- email.ts
-- email.ts
 - [app/status/[id]/page.tsx#L19](app/status/[id]/page.tsx#L19)
 - [app/status/[id]/page.tsx#L26](app/status/[id]/page.tsx#L26)
 - [app/status/[id]/page.tsx#L27](app/status/[id]/page.tsx#L27)
