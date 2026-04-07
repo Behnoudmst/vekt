@@ -11,9 +11,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { CheckCircle, SpinnerGap, XCircle } from "@phosphor-icons/react";
+import logger from "@/lib/logger";
+import { CheckCircleIcon, SpinnerGap, XCircle } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 
 type CandidateStatus = "APPLIED" | "ANALYZING" | "SHORTLISTED" | "ACCEPTED" | "REJECTED";
 
@@ -46,6 +48,10 @@ export default function ReviewButton({
       });
       setOpen(false);
       router.refresh();
+      toast.success(`Candidate ${decision === "ACCEPT" ? "accepted" : decision === "REJECT" ? "rejected" : "shortlisted"} successfully.`);
+    } catch(err)  {
+      logger.error({ candidateId, decision, err }, "Failed to update candidate status");
+      toast.error("Failed to update candidate status. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -99,7 +105,7 @@ export default function ReviewButton({
           )}
           {currentStatus !== "ACCEPTED" && (
             <Button onClick={() => decide("ACCEPT")}>
-              <CheckCircle data-icon="inline-start" />
+              <CheckCircleIcon data-icon="inline-start" />
               Accept
             </Button>
           )}

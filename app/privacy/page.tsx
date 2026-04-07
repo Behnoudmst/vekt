@@ -5,7 +5,7 @@ export const metadata: Metadata = {
   title: `Privacy Policy — ${COMPANY_NAME}`,
 };
 
-const PRIVACY_EMAIL = `privacy@${(COMPANY_NAME ?? "vekt").toLowerCase()}.io`;
+const PRIVACY_EMAIL = process.env.PRIVACY_CONTACT_EMAIL || "privacy@example.com";
 
 export default function PrivacyPolicyPage() {
   return (
@@ -161,7 +161,7 @@ export default function PrivacyPolicyPage() {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 All data is transmitted over TLS (HTTPS). Access to candidate data is restricted to
                 authenticated recruiters only. Resume files are stored securely on the server and
-                are not publicly accessible without a direct link.
+                are not publicly accessible without a specific direct link.
               </p>
             </div>
 

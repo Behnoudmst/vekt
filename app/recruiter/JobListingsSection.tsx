@@ -3,26 +3,27 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import {
-    Briefcase,
-    CaretLeft,
-    CaretRight,
-    MagnifyingGlass,
-    MapPin,
-    PencilSimple,
-    PlusCircle,
-    Trash,
-    X,
+  BriefcaseIcon,
+  CaretLeftIcon,
+  CaretRightIcon,
+  MagnifyingGlassIcon,
+  MapPinIcon,
+  PencilSimpleIcon,
+  PlusCircleIcon,
+  TrashIcon,
+  XIcon,
 } from "@phosphor-icons/react";
+import { } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -221,7 +222,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
             setDescription("");
           }}
         >
-          <PlusCircle data-icon="inline-start" />
+          {showForm ? <XIcon data-icon="inline-start" /> : <PlusCircleIcon data-icon="inline-start" />}
           {showForm ? "Cancel" : "Add Listing"}
         </Button>
       </div>
@@ -295,7 +296,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
       {/* Filter bar */}
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-xs w-full">
-          <MagnifyingGlass className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+          <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
           <Input
             className="pl-8 h-8 text-sm"
             placeholder="Search listings…"
@@ -329,7 +330,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
       {listings.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center gap-3 py-14 text-center">
-            <Briefcase className="size-10 text-muted-foreground" weight="thin" />
+            <BriefcaseIcon className="size-10 text-muted-foreground" weight="thin" />
             <div>
               <p className="text-sm font-semibold">{q || status !== "all" ? "No results" : "No listings yet"}</p>
               <p className="text-sm text-muted-foreground mt-1">
@@ -362,7 +363,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                             setEditError(null);
                           }}
                         >
-                          <X className="size-4" />
+                          <XIcon className="size-4" />
                         </Button>
                       </div>
                       <div className="flex flex-col gap-2">
@@ -449,7 +450,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                         </div>
                         {listing.location && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <MapPin className="size-3 shrink-0" />
+                            <MapPinIcon className="size-3 shrink-0" />
                             {listing.location}
                           </div>
                         )}
@@ -497,7 +498,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                             setEditError(null);
                           }}
                         >
-                          <PencilSimple data-icon="inline-start" />
+                          <PencilSimpleIcon data-icon="inline-start" />
                           Edit
                         </Button>
                         <Button
@@ -513,7 +514,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                           onClick={() => handleDelete(listing.id)}
                           className="text-destructive hover:text-destructive"
                         >
-                          <Trash />
+                          <TrashIcon />
                         </Button>
                       </div>
                     </div>
@@ -542,7 +543,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                 )
               }
             >
-              <CaretLeft data-icon="inline-start" />
+              <CaretLeftIcon data-icon="inline-start" />
               Previous
             </Button>
             <Button
@@ -556,7 +557,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
               }
             >
               Next
-              <CaretRight data-icon="inline-end" />
+              <CaretRightIcon data-icon="inline-end" />
             </Button>
           </div>
         </div>

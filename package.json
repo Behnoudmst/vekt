@@ -18,7 +18,8 @@
     "lint": "eslint",
     "db:migrate": "prisma migrate dev --schema=schema/schema.prisma",
     "db:seed": "tsx scripts/seed.ts",
-    "db:generate": "prisma generate --schema=schema/schema.prisma"
+    "db:generate": "prisma generate --schema=schema/schema.prisma",
+    "prepare": "husky"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
@@ -38,6 +39,7 @@
     "better-sqlite3": "^12.6.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "husky": "^9.1.7",
     "inngest": "^3.52.6",
     "lucide-react": "^0.577.0",
     "multer": "^2.1.1",

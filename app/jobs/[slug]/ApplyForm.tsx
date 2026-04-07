@@ -3,21 +3,21 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Briefcase,
-    CheckCircle,
-    MapPin,
-    SpinnerGap,
-    WarningCircle,
+  Briefcase,
+  CheckCircle,
+  MapPin,
+  SpinnerGap,
+  WarningCircle,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRef, useState } from "react";
@@ -38,6 +38,8 @@ type SubmissionState =
   | { status: "loading" }
   | { status: "success"; statusPath: string }
   | { status: "error"; message: string };
+
+const supportEmail = process.env.SUPPORT_EMAIL || "example-support@email.com"
 
 export default function ApplyForm({ job }: Props) {
   const [state, setState] = useState<SubmissionState>({ status: "idle" });
@@ -226,8 +228,8 @@ export default function ApplyForm({ job }: Props) {
                       />
                       <label htmlFor="consentTerms" className="text-xs text-muted-foreground leading-relaxed cursor-pointer">
                         I understand my data will be retained for up to 12 months and I may contact{" "}
-                        <a href="mailto:privacy@vekt.io" className="text-primary underline underline-offset-3 font-medium">
-                          privacy@vekt.io
+                        <a href={`mailto:${supportEmail}`} className="text-primary underline underline-offset-3 font-medium">
+                          {supportEmail}
                         </a>
                         {" "}to access, correct, or delete my data at any time.
                       </label>
