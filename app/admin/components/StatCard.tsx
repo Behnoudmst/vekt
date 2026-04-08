@@ -8,7 +8,7 @@ type Props = { icon: React.ReactNode; label: string; value: number };
 export default function StatCard({ icon, label, value }: Props) {
   return (
     <Card>
-      <CardContent className="p-4 flex items-center gap-3">
+      <CardContent className="p-4 flex flex-wrap items-center gap-3">
         {icon}
         <div>
           <p className="text-2xl font-bold leading-none">{value}</p>

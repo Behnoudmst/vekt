@@ -4,8 +4,8 @@ import Link from "next/link";
 export default function SiteFooter() {
   return (
     <footer className="border-t bg-card mt-auto">
-      <div className="mx-auto flex h-[5vh] max-w-5xl items-center justify-between px-6">
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+      <div className="mx-auto flex flex-wrap  h-[5vh] min-h-18 max-w-5xl items-center justify-between px-6">
+        <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <p>&copy; {new Date().getFullYear()} {COMPANY_NAME}. All rights reserved.</p>
           <span className="hidden sm:inline text-border">|</span>
           <a
