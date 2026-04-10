@@ -61,8 +61,10 @@ Use Vekt if you need:
 - **AI resume scoring** — pluggable provider: `mock` (default), OpenAI, or local Ollama
 - **Durable evaluation pipeline** — powered by [Inngest](https://inngest.com) (self-hostable); falls back to direct in-process execution when Inngest is not configured
 - **Structured failure logging** — AI provider/API failures, JSON parsing errors, and pipeline step failures are logged with candidate/step/provider context for faster debugging
+- **Screening questions** — per-job `SINGLE` (radio) and `MULTIPLE` (checkbox) questions shown to candidates as a second apply-form step; answers stored and displayed alongside AI reasoning in the recruiter dashboard
 - **Delayed status emails** — status-change emails are held for a configurable delay (default 48 h); if a recruiter overrides the decision before the delay elapses the pending email is automatically cancelled and a new one is scheduled
-- **Recruiter dashboard** — per-job applications view sorted by AI score; shortlist, accept, or reject candidates with AI reasoning
+- **Admin-editable email templates** — all candidate email subjects and HTML bodies are stored in the database and editable from the Admin Dashboard; every sent email is logged with its Resend delivery ID
+- **Recruiter dashboard** — per-job applications view sorted by AI score; shortlist, accept, or reject candidates with AI reasoning and screening-question answers
 - **Admin dashboard** — manage recruiter accounts, configure data retention and status email delay, edit email templates
 - **Automated data purge** — Inngest cron job deletes candidate records and resume files that exceed the configured retention window
 - **GDPR-compliant** — strictly necessary cookies only, configurable auto-deletion of candidate data, privacy policy included
@@ -77,7 +79,10 @@ Use Vekt if you need:
 
 ```
 Candidate submits application (name, email, PDF CV)
+  └─ Step 1: name, email, PDF resume
+  └─ Step 2 (if job has screening questions): answer SINGLE/MULTIPLE choice questions
   └─ PDF stored in private/uploads/ (UUID filename, max 5 MB)
+  └─ Answers validated (IDOR-protected: all questionId/optionId must belong to the job)
   └─ DB record created  →  status: APPLIED
 
 Inngest pipeline triggers (or direct fallback in dev)
@@ -86,9 +91,11 @@ Inngest pipeline triggers (or direct fallback in dev)
   └─ Score ≥ threshold  →  status: SHORTLISTED
      Score < threshold  →  status: REJECTED
   └─ Status email scheduled (delayed by STATUS_EMAIL_DELAY_HOURS, default 48 h)
+     Email subject/body loaded from admin-editable EmailTemplate table
 
 Recruiter reviews candidates (per-job applications page)
   └─ Accept / Reject / Shortlist  →  status updated
+  └─ Screening-question answers shown alongside AI reasoning
   └─ Pending email cancelled  →  new email scheduled for updated status
 
 Inngest cron (daily at 02:00 UTC)
@@ -293,6 +300,10 @@ Persistent volumes:
 | `GET` | `/api/admin/users` | ✅ Admin | List recruiter accounts |
 | `POST` | `/api/admin/users` | ✅ Admin | Create recruiter account |
 | `DELETE` | `/api/admin/users/[id]` | ✅ Admin | Delete recruiter account |
+| `GET` | `/api/admin/email-templates` | ✅ Admin | Fetch all email templates |
+| `PUT` | `/api/admin/email-templates/[type]` | ✅ Admin | Update an email template |
+| `GET` | `/api/job-listings/[id]/questions` | — | Fetch screening questions for a job |
+| `PUT` | `/api/job-listings/[id]/questions` | ✅ | Replace screening questions for a job |
 | `GET` | `/api/swagger` | — | OpenAPI 3.0 JSON spec |
 
 ---
