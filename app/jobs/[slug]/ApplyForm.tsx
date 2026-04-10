@@ -411,9 +411,15 @@ export default function ApplyForm({ job }: Props) {
               </Card>
             ) : (
               /* ── Step 2: Screening Questions ── */
+              (() => {
+                const allAnswered =
+                  job!.screeningQuestions.every(
+                    (q) => (answers[q.id]?.size ?? 0) > 0,
+                  );
+                return (
               <Card>
                 <CardHeader>
-                  <CardTitle>Screening Questions</CardTitle>
+                  <CardTitle>One last step</CardTitle>
                   <CardDescription>
                     Please answer the following questions for this role.
                   </CardDescription>
@@ -539,7 +545,8 @@ export default function ApplyForm({ job }: Props) {
                         disabled={
                           state.status === "loading" ||
                           !consentPrivacy ||
-                          !consentTerms
+                          !consentTerms ||
+                          !allAnswered
                         }
                       >
                         {state.status === "loading" && (
@@ -556,6 +563,8 @@ export default function ApplyForm({ job }: Props) {
                   </form>
                 </CardContent>
               </Card>
+                );
+              })()
             )}
           </div>
         </div>
