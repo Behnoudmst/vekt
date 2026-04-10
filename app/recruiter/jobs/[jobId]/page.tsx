@@ -48,6 +48,14 @@ export default async function JobApplicationsPage({
       evaluation: {
         select: { score: true, reasoning: true, pros: true, cons: true },
       },
+      answers: {
+        orderBy: { question: { order: "asc" } },
+        select: {
+          questionId: true,
+          question: { select: { text: true, type: true } },
+          option: { select: { text: true } },
+        },
+      },
     },
   });
 
@@ -95,6 +103,17 @@ export default async function JobApplicationsPage({
   function CandidateCard({ c, i }: { c: Candidate; i: number }) {
     const pros: string[] = c.evaluation?.pros ? JSON.parse(c.evaluation.pros) : [];
     const cons: string[] = c.evaluation?.cons ? JSON.parse(c.evaluation.cons) : [];
+
+    // Group answers by question (preserves order since query is ordered by question.order)
+    const answersByQuestion = c.answers.reduce<
+      Map<string, { questionText: string; options: string[] }>
+    >((map, a) => {
+      if (!map.has(a.questionId)) {
+        map.set(a.questionId, { questionText: a.question.text, options: [] });
+      }
+      map.get(a.questionId)!.options.push(a.option.text);
+      return map;
+    }, new Map());
     return (
       <Card size="sm">
         <CardContent className="flex flex-col gap-4">
@@ -179,6 +198,28 @@ export default async function JobApplicationsPage({
                   )}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* Screening answers */}
+          {answersByQuestion.size > 0 && (
+            <div className="rounded-lg border bg-muted/20 p-3 flex flex-col gap-2.5">
+              <p className="text-xs font-semibold text-muted-foreground">Screening Answers</p>
+              {Array.from(answersByQuestion.values()).map((q, idx) => (
+                <div key={idx} className="flex flex-col gap-1">
+                  <p className="text-xs text-foreground">{q.questionText}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {q.options.map((opt, oi) => (
+                      <span
+                        key={oi}
+                        className="inline-flex items-center rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                      >
+                        {opt}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

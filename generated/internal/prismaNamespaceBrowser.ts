@@ -52,6 +52,9 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   Job: 'Job',
+  ScreeningQuestion: 'ScreeningQuestion',
+  ScreeningOption: 'ScreeningOption',
+  CandidateAnswer: 'CandidateAnswer',
   JobView: 'JobView',
   Candidate: 'Candidate',
   Evaluation: 'Evaluation',
@@ -89,6 +92,37 @@ export const JobScalarFieldEnum = {
 } as const
 
 export type JobScalarFieldEnum = (typeof JobScalarFieldEnum)[keyof typeof JobScalarFieldEnum]
+
+
+export const ScreeningQuestionScalarFieldEnum = {
+  id: 'id',
+  jobId: 'jobId',
+  text: 'text',
+  type: 'type',
+  order: 'order'
+} as const
+
+export type ScreeningQuestionScalarFieldEnum = (typeof ScreeningQuestionScalarFieldEnum)[keyof typeof ScreeningQuestionScalarFieldEnum]
+
+
+export const ScreeningOptionScalarFieldEnum = {
+  id: 'id',
+  questionId: 'questionId',
+  text: 'text',
+  order: 'order'
+} as const
+
+export type ScreeningOptionScalarFieldEnum = (typeof ScreeningOptionScalarFieldEnum)[keyof typeof ScreeningOptionScalarFieldEnum]
+
+
+export const CandidateAnswerScalarFieldEnum = {
+  id: 'id',
+  candidateId: 'candidateId',
+  questionId: 'questionId',
+  optionId: 'optionId'
+} as const
+
+export type CandidateAnswerScalarFieldEnum = (typeof CandidateAnswerScalarFieldEnum)[keyof typeof CandidateAnswerScalarFieldEnum]
 
 
 export const JobViewScalarFieldEnum = {

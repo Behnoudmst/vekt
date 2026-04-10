@@ -3,25 +3,28 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import { cn } from "@/lib/utils";
 import {
-  BriefcaseIcon,
-  CaretLeftIcon,
-  CaretRightIcon,
-  MagnifyingGlassIcon,
-  MapPinIcon,
-  PencilSimpleIcon,
-  PlusCircleIcon,
-  TrashIcon,
-  XIcon,
+    BriefcaseIcon,
+    CaretLeftIcon,
+    CaretRightIcon,
+    ListBulletsIcon,
+    MagnifyingGlassIcon,
+    MapPinIcon,
+    PencilSimpleIcon,
+    PlusCircleIcon,
+    SpinnerGapIcon,
+    TrashIcon,
+    XIcon,
 } from "@phosphor-icons/react";
 import { } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
@@ -37,7 +40,13 @@ type Job = {
   threshold: number;
   isActive: boolean;
   createdAt: Date;
-  _count: { candidates: number };
+  _count: { candidates: number; screeningQuestions: number };
+};
+
+type QuestionDraft = {
+  text: string;
+  type: "SINGLE" | "MULTIPLE";
+  options: { text: string }[];
 };
 
 type Props = {
@@ -71,7 +80,130 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
   const [searchInput, setSearchInput] = useState(q);
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  const [questionsJobId, setQuestionsJobId] = useState<string | null>(null);
+  const [questionsDraft, setQuestionsDraft] = useState<QuestionDraft[]>([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
+  const [questionsSaving, setQuestionsSaving] = useState(false);
+  const [questionsError, setQuestionsError] = useState<string | null>(null);
+
   useEffect(() => () => clearTimeout(searchTimerRef.current), []);
+
+  async function openQuestionsPanel(id: string) {
+    setQuestionsJobId(id);
+    setQuestionsError(null);
+    setQuestionsLoading(true);
+    try {
+      const res = await fetch(`/api/job-listings/${id}/questions`);
+      const data = await res.json();
+      setQuestionsDraft(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (data.questions as any[]).map((q) => ({
+          text: q.text,
+          type: q.type as "SINGLE" | "MULTIPLE",
+          options: q.options.map((o: { text: string }) => ({ text: o.text })),
+        })),
+      );
+    } catch {
+      setQuestionsError("Failed to load questions.");
+    } finally {
+      setQuestionsLoading(false);
+    }
+  }
+
+  function closeQuestionsPanel() {
+    setQuestionsJobId(null);
+    setQuestionsError(null);
+  }
+
+  async function handleSaveQuestions() {
+    if (!questionsJobId) return;
+    setQuestionsError(null);
+    for (const q of questionsDraft) {
+      if (!q.text.trim()) {
+        setQuestionsError("All questions must have text.");
+        return;
+      }
+      if (q.options.length < 2) {
+        setQuestionsError("Each question must have at least 2 options.");
+        return;
+      }
+      for (const opt of q.options) {
+        if (!opt.text.trim()) {
+          setQuestionsError("All options must have text.");
+          return;
+        }
+      }
+    }
+    setQuestionsSaving(true);
+    try {
+      const res = await fetch(`/api/job-listings/${questionsJobId}/questions`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questions: questionsDraft }),
+      });
+      if (!res.ok) {
+        const json = await res.json();
+        setQuestionsError(json.error ?? "Failed to save questions.");
+        return;
+      }
+      closeQuestionsPanel();
+      startTransition(() => router.refresh());
+    } catch {
+      setQuestionsError("Network error. Please try again.");
+    } finally {
+      setQuestionsSaving(false);
+    }
+  }
+
+  function addQuestion() {
+    setQuestionsDraft((d) => [
+      ...d,
+      { text: "", type: "SINGLE", options: [{ text: "" }, { text: "" }] },
+    ]);
+  }
+
+  function removeQuestion(qi: number) {
+    setQuestionsDraft((d) => d.filter((_, i) => i !== qi));
+  }
+
+  function updateQuestion(qi: number, field: "text" | "type", value: string) {
+    setQuestionsDraft((d) =>
+      d.map((q, i) => (i === qi ? { ...q, [field]: value } : q)),
+    );
+  }
+
+  function addOption(qi: number) {
+    setQuestionsDraft((d) =>
+      d.map((q, i) =>
+        i === qi ? { ...q, options: [...q.options, { text: "" }] } : q,
+      ),
+    );
+  }
+
+  function removeOption(qi: number, oi: number) {
+    setQuestionsDraft((d) =>
+      d.map((q, i) =>
+        i === qi
+          ? { ...q, options: q.options.filter((_, j) => j !== oi) }
+          : q,
+      ),
+    );
+  }
+
+  function updateOption(qi: number, oi: number, value: string) {
+    setQuestionsDraft((d) =>
+      d.map((q, i) =>
+        i === qi
+          ? {
+              ...q,
+              options: q.options.map((o, j) =>
+                j === oi ? { text: value } : o,
+              ),
+            }
+          : q,
+      ),
+    );
+  }
 
   function buildUrl(overrides: Partial<{ q: string; status: string; page: string }>) {
     const params = new URLSearchParams();
@@ -345,6 +477,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
         <div className="flex flex-col gap-3">
           {listings.map((listing) => {
             const isEditing = editState?.id === listing.id;
+            const isQuestionsOpen = questionsJobId === listing.id;
             return (
               <Card key={listing.id} size="sm">
                 <CardContent className="flex flex-col gap-3">
@@ -435,6 +568,169 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                         </Button>
                       </div>
                     </form>
+                  ) : isQuestionsOpen ? (
+                    /* ── Questions panel ── */
+                    <div className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium">Screening Questions</p>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 w-7 p-0"
+                          onClick={closeQuestionsPanel}
+                        >
+                          <XIcon className="size-4" />
+                        </Button>
+                      </div>
+
+                      {questionsLoading ? (
+                        <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground">
+                          <SpinnerGapIcon className="size-4 animate-spin" />
+                          Loading…
+                        </div>
+                      ) : (
+                        <>
+                          {questionsDraft.length === 0 && (
+                            <p className="text-sm text-muted-foreground py-2">
+                              No questions yet. Add your first screening question below.
+                            </p>
+                          )}
+
+                          {questionsDraft.map((q, qi) => (
+                            <div
+                              key={qi}
+                              className="rounded-lg border bg-muted/30 p-4 flex flex-col gap-3"
+                            >
+                              <div className="flex items-start gap-2">
+                                <div className="flex-1 flex flex-col gap-2">
+                                  <Label className="text-xs text-muted-foreground">
+                                    Question {qi + 1}
+                                  </Label>
+                                  <Input
+                                    value={q.text}
+                                    onChange={(e) =>
+                                      updateQuestion(qi, "text", e.target.value)
+                                    }
+                                    placeholder="e.g. How many years of experience do you have?"
+                                    className="h-8 text-sm"
+                                  />
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 shrink-0 mt-5 text-muted-foreground hover:text-destructive"
+                                  onClick={() => removeQuestion(qi)}
+                                >
+                                  <TrashIcon className="size-4" />
+                                </Button>
+                              </div>
+
+                              {/* Type toggle */}
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground shrink-0">
+                                  Type:
+                                </span>
+                                <div className="flex gap-1">
+                                  {(["SINGLE", "MULTIPLE"] as const).map((t) => (
+                                    <button
+                                      key={t}
+                                      type="button"
+                                      onClick={() => updateQuestion(qi, "type", t)}
+                                      className={cn(
+                                        "px-2.5 py-1 rounded text-xs font-medium border transition-colors",
+                                        q.type === t
+                                          ? "bg-primary text-primary-foreground border-primary"
+                                          : "bg-background text-muted-foreground border-border hover:border-foreground/40",
+                                      )}
+                                    >
+                                      {t === "SINGLE" ? "Single choice" : "Multiple choice"}
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Options */}
+                              <div className="flex flex-col gap-2">
+                                <span className="text-xs text-muted-foreground">Options</span>
+                                {q.options.map((opt, oi) => (
+                                  <div key={oi} className="flex items-center gap-2">
+                                    <Input
+                                      value={opt.text}
+                                      maxLength={100}
+                                      onChange={(e) =>
+                                        updateOption(qi, oi, e.target.value)
+                                      }
+                                      placeholder={`Option ${oi + 1}`}
+                                      className="h-8 text-sm"
+                                    />
+                                    {q.options.length > 2 && (
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-destructive"
+                                        onClick={() => removeOption(qi, oi)}
+                                      >
+                                        <XIcon className="size-3.5" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                ))}
+                                {q.options.length < 10 && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="self-start h-7 text-xs px-2"
+                                    onClick={() => addOption(qi)}
+                                  >
+                                    <PlusCircleIcon data-icon="inline-start" />
+                                    Add option
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="self-start"
+                            onClick={addQuestion}
+                            disabled={questionsDraft.length >= 20}
+                          >
+                            <PlusCircleIcon data-icon="inline-start" />
+                            Add Question
+                          </Button>
+
+                          {questionsError && (
+                            <p className="text-sm text-destructive">{questionsError}</p>
+                          )}
+
+                          <div className="flex justify-end gap-2 pt-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={closeQuestionsPanel}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={handleSaveQuestions}
+                              disabled={questionsSaving}
+                            >
+                              {questionsSaving ? "Saving…" : "Save Questions"}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   ) : (
                     /* ── Read view ── */
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -465,12 +761,29 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                           </p>
                           <span className="text-xs text-muted-foreground">·</span>
                           <p className="text-xs text-muted-foreground">
-                            Threshold: <span className="font-medium text-foreground">{listing.threshold}</span>
+                            Threshold:{" "}
+                            <span className="font-medium text-foreground">
+                              {listing.threshold}
+                            </span>
                           </p>
+                          {listing._count.screeningQuestions > 0 && (
+                            <>
+                              <span className="text-xs text-muted-foreground">·</span>
+                              <p className="text-xs text-primary font-medium">
+                                {listing._count.screeningQuestions}{" "}
+                                {listing._count.screeningQuestions === 1
+                                  ? "question"
+                                  : "questions"}
+                              </p>
+                            </>
+                          )}
                           {listing.customPrompt && (
                             <>
                               <span className="text-xs text-muted-foreground">·</span>
-                              <p className="text-xs text-primary font-medium truncate max-w-50" title={listing.customPrompt}>
+                              <p
+                                className="text-xs text-primary font-medium truncate max-w-50"
+                                title={listing.customPrompt}
+                              >
                                 AI prompt set
                               </p>
                             </>
@@ -482,6 +795,14 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                           <Link href={`/recruiter/jobs/${listing.id}`}>
                             Applications
                           </Link>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openQuestionsPanel(listing.id)}
+                        >
+                          <ListBulletsIcon data-icon="inline-start" />
+                          Questions
                         </Button>
                         <Button
                           variant="outline"

@@ -12,7 +12,24 @@ export default async function JobApplyPage({
 
   const job = await prisma.job.findUnique({
     where: { slug, isActive: true },
-    select: { id: true, title: true, description: true, location: true },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      location: true,
+      screeningQuestions: {
+        orderBy: { order: "asc" },
+        select: {
+          id: true,
+          text: true,
+          type: true,
+          options: {
+            orderBy: { order: "asc" },
+            select: { id: true, text: true },
+          },
+        },
+      },
+    },
   });
 
   if (!job) {

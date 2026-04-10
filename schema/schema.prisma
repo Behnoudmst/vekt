@@ -8,20 +8,53 @@ datasource db {
 }
 
 model Job {
-  id           String      @id @default(cuid())
-  slug         String      @unique
-  title        String
-  description  String
-  location     String?
-  customPrompt String?
-  threshold    Int         @default(75)
-  isActive     Boolean     @default(true)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  candidates   Candidate[]
-  views        JobView[]
-  createdById  String?
-  createdBy    User?       @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  id                  String              @id @default(cuid())
+  slug                String              @unique
+  title               String
+  description         String
+  location            String?
+  customPrompt        String?
+  threshold           Int                 @default(75)
+  isActive            Boolean             @default(true)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  candidates          Candidate[]
+  views               JobView[]
+  screeningQuestions  ScreeningQuestion[]
+  createdById         String?
+  createdBy           User?               @relation(fields: [createdById], references: [id], onDelete: SetNull)
+}
+
+model ScreeningQuestion {
+  id      String            @id @default(cuid())
+  jobId   String
+  job     Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  text    String
+  type    QuestionType      @default(SINGLE)
+  order   Int               @default(0)
+  options ScreeningOption[]
+  answers CandidateAnswer[]
+}
+
+model ScreeningOption {
+  id         String            @id @default(cuid())
+  questionId String
+  question   ScreeningQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  order      Int               @default(0)
+  answers    CandidateAnswer[]
+}
+
+model CandidateAnswer {
+  id          String            @id @default(cuid())
+  candidateId String
+  candidate   Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  questionId  String
+  question    ScreeningQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  optionId    String
+  option      ScreeningOption   @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([candidateId, questionId, optionId])
 }
 
 model JobView {
@@ -49,6 +82,7 @@ model Candidate {
   privacyPolicyVersion String?
   emailOptOut          Boolean         @default(false)
   emailLogs            EmailLog[]
+  answers              CandidateAnswer[]
 }
 
 model Evaluation {
@@ -95,6 +129,11 @@ model EmailLog {
   sentAt      DateTime  @default(now())
   resendId    String? // Resend delivery ID for tracking
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+enum QuestionType {
+  SINGLE
+  MULTIPLE
 }
 
 enum CandidateStatus {

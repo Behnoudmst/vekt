@@ -47,6 +47,21 @@ export { Prisma }
  */
 export type Job = Prisma.JobModel
 /**
+ * Model ScreeningQuestion
+ * 
+ */
+export type ScreeningQuestion = Prisma.ScreeningQuestionModel
+/**
+ * Model ScreeningOption
+ * 
+ */
+export type ScreeningOption = Prisma.ScreeningOptionModel
+/**
+ * Model CandidateAnswer
+ * 
+ */
+export type CandidateAnswer = Prisma.CandidateAnswerModel
+/**
  * Model JobView
  * 
  */
