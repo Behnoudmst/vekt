@@ -151,7 +151,7 @@ export type EmailTemplateGroupByOutputType = {
   _max: EmailTemplateMaxAggregateOutputType | null
 }
 
-type GetEmailTemplateGroupByPayload<T extends EmailTemplateGroupByArgs> = Prisma.PrismaPromise<
+export type GetEmailTemplateGroupByPayload<T extends EmailTemplateGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<EmailTemplateGroupByOutputType, T['by']> &
       {
@@ -930,6 +930,11 @@ export type EmailTemplateFindManyArgs<ExtArgs extends runtime.Types.Extensions.I
    * Skip the first `n` EmailTemplates.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of EmailTemplates.
+   */
   distinct?: Prisma.EmailTemplateScalarFieldEnum | Prisma.EmailTemplateScalarFieldEnum[]
 }
 

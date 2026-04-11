@@ -185,7 +185,7 @@ export type ScreeningOptionGroupByOutputType = {
   _max: ScreeningOptionMaxAggregateOutputType | null
 }
 
-type GetScreeningOptionGroupByPayload<T extends ScreeningOptionGroupByArgs> = Prisma.PrismaPromise<
+export type GetScreeningOptionGroupByPayload<T extends ScreeningOptionGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<ScreeningOptionGroupByOutputType, T['by']> &
       {
@@ -1239,6 +1239,11 @@ export type ScreeningOptionFindManyArgs<ExtArgs extends runtime.Types.Extensions
    * Skip the first `n` ScreeningOptions.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of ScreeningOptions.
+   */
   distinct?: Prisma.ScreeningOptionScalarFieldEnum | Prisma.ScreeningOptionScalarFieldEnum[]
 }
 

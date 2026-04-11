@@ -213,7 +213,7 @@ export type EvaluationGroupByOutputType = {
   _max: EvaluationMaxAggregateOutputType | null
 }
 
-type GetEvaluationGroupByPayload<T extends EvaluationGroupByArgs> = Prisma.PrismaPromise<
+export type GetEvaluationGroupByPayload<T extends EvaluationGroupByArgs> = Prisma.PrismaPromise<
   Array<
     Prisma.PickEnumerable<EvaluationGroupByOutputType, T['by']> &
       {
@@ -1212,6 +1212,11 @@ export type EvaluationFindManyArgs<ExtArgs extends runtime.Types.Extensions.Inte
    * Skip the first `n` Evaluations.
    */
   skip?: number
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+   * 
+   * Filter by unique combinations of Evaluations.
+   */
   distinct?: Prisma.EvaluationScalarFieldEnum | Prisma.EvaluationScalarFieldEnum[]
 }
 
