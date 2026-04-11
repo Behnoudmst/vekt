@@ -3,22 +3,22 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
-  Briefcase,
-  CheckCircle,
-  MapPin,
-  SpinnerGap,
-  WarningCircle,
+    BriefcaseIcon,
+    CheckCircleIcon,
+    MapPinIcon,
+    SpinnerGapIcon,
+    WarningCircleIcon,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRef, useState } from "react";
@@ -209,12 +209,12 @@ export default function ApplyForm({ job }: Props) {
           {job && (
             <div>
               <div className="mb-3 flex items-center gap-2">
-                <Briefcase className="size-5 text-primary" weight="fill" />
+                <BriefcaseIcon className="size-5 text-primary" weight="fill" />
                 <h1 className="text-xl font-semibold">{job.title}</h1>
               </div>
               {job.location && (
                 <div className="mb-4 flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <MapPin className="size-3.5 shrink-0" />
+                  <MapPinIcon className="size-3.5 shrink-0" />
                   {job.location}
                 </div>
               )}
@@ -231,7 +231,7 @@ export default function ApplyForm({ job }: Props) {
               /* ── Success state ── */
               <Card>
                 <CardHeader>
-                  <CheckCircle className="size-8 text-primary" weight="fill" />
+                  <CheckCircleIcon className="size-8 text-primary" weight="fill" />
                   <CardTitle>Application Submitted!</CardTitle>
                   <CardDescription>
                     Your application is being evaluated by our AI engine.
@@ -337,7 +337,7 @@ export default function ApplyForm({ job }: Props) {
 
                     {!hasQuestions && state.status === "error" && (
                       <Alert variant="destructive">
-                        <WarningCircle />
+                        <WarningCircleIcon />
                         <AlertTitle>Submission failed</AlertTitle>
                         <AlertDescription>{state.message}</AlertDescription>
                       </Alert>
@@ -405,7 +405,7 @@ export default function ApplyForm({ job }: Props) {
                       className="w-full"
                     >
                       {state.status === "loading" && !hasQuestions && (
-                        <SpinnerGap
+                        <SpinnerGapIcon
                           data-icon="inline-start"
                           className="animate-spin"
                         />
@@ -484,7 +484,7 @@ export default function ApplyForm({ job }: Props) {
 
                     {state.status === "error" && (
                       <Alert variant="destructive">
-                        <WarningCircle />
+                        <WarningCircleIcon />
                         <AlertTitle>Submission failed</AlertTitle>
                         <AlertDescription>{state.message}</AlertDescription>
                       </Alert>
@@ -562,7 +562,7 @@ export default function ApplyForm({ job }: Props) {
                         }
                       >
                         {state.status === "loading" && (
-                          <SpinnerGap
+                          <SpinnerGapIcon
                             data-icon="inline-start"
                             className="animate-spin"
                           />

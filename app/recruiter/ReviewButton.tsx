@@ -3,16 +3,16 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import logger from "@/lib/logger";
-import { CheckCircleIcon, SpinnerGap, XCircle } from "@phosphor-icons/react";
+import { CheckCircleIcon, SpinnerGapIcon, XCircleIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -62,7 +62,7 @@ export default function ReviewButton({
       <DialogTrigger asChild>
         <Button size="sm" disabled={loading}>
           {loading ? (
-            <SpinnerGap data-icon="inline-start" className="animate-spin" />
+            <SpinnerGapIcon data-icon="inline-start" className="animate-spin" />
           ) : null}
           Review
         </Button>
@@ -91,7 +91,7 @@ export default function ReviewButton({
               onClick={() => decide("REJECT")}
               className="bg-destructive/10 text-destructive hover:bg-destructive/20"
             >
-              <XCircle data-icon="inline-start" />
+              <XCircleIcon data-icon="inline-start" />
               Reject
             </Button>
           )}

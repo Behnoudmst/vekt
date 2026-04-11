@@ -2,13 +2,13 @@
 
 import { cn } from "@/lib/utils";
 import {
-    ArrowCounterClockwise,
-    ArrowUUpLeft,
-    ListBullets,
-    ListNumbers,
-    TextB,
-    TextH,
-    TextItalic,
+    ArrowCounterClockwiseIcon,
+    ArrowUUpLeftIcon,
+    ListBulletsIcon,
+    ListNumbersIcon,
+    TextBIcon,
+    TextHIcon,
+    TextItalicIcon,
 } from "@phosphor-icons/react";
 import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor } from "@tiptap/react";
@@ -83,14 +83,14 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
           onClick={() => editor.chain().focus().toggleBold().run()}
           active={editor.isActive("bold")}
         >
-          <TextB className="size-4" />
+          <TextBIcon className="size-4" />
         </ToolbarButton>
         <ToolbarButton
           title="Italic"
           onClick={() => editor.chain().focus().toggleItalic().run()}
           active={editor.isActive("italic")}
         >
-          <TextItalic className="size-4" />
+          <TextItalicIcon className="size-4" />
         </ToolbarButton>
 
         <div className="mx-1 h-4 w-px bg-border" />
@@ -100,21 +100,21 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           active={editor.isActive("heading", { level: 3 })}
         >
-          <TextH className="size-4" />
+          <TextHIcon className="size-4" />
         </ToolbarButton>
         <ToolbarButton
           title="Bullet list"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           active={editor.isActive("bulletList")}
         >
-          <ListBullets className="size-4" />
+          <ListBulletsIcon className="size-4" />
         </ToolbarButton>
         <ToolbarButton
           title="Numbered list"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           active={editor.isActive("orderedList")}
         >
-          <ListNumbers className="size-4" />
+          <ListNumbersIcon className="size-4" />
         </ToolbarButton>
 
         <div className="mx-1 h-4 w-px bg-border" />
@@ -124,14 +124,14 @@ export function RichTextEditor({ value, onChange, placeholder, className }: Prop
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
         >
-          <ArrowUUpLeft className="size-4" />
+          <ArrowUUpLeftIcon className="size-4" />
         </ToolbarButton>
         <ToolbarButton
           title="Redo"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
         >
-          <ArrowCounterClockwise className="size-4" />
+          <ArrowCounterClockwiseIcon className="size-4" />
         </ToolbarButton>
       </div>
 
