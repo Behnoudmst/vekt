@@ -22,6 +22,15 @@ export const jobSchema = z.object({
   threshold: z.number().int().min(0).max(100).optional(),
 });
 
+export const candidateAnswersSchema = z
+  .array(
+    z.object({
+      questionId: z.string().cuid(),
+      optionIds: z.array(z.string().cuid()).min(1).max(10),
+    }),
+  )
+  .max(20);
+
 export type CandidateApplicationInput = z.infer<typeof candidateApplicationSchema>;
 export type ReviewDecisionInput = z.infer<typeof reviewDecisionSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

@@ -9,6 +9,14 @@
 * 🟢 You can import this file directly.
 */
 
+export const QuestionType = {
+  SINGLE: 'SINGLE',
+  MULTIPLE: 'MULTIPLE'
+} as const
+
+export type QuestionType = (typeof QuestionType)[keyof typeof QuestionType]
+
+
 export const CandidateStatus = {
   APPLIED: 'APPLIED',
   ANALYZING: 'ANALYZING',

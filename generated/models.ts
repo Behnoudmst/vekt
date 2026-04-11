@@ -9,6 +9,9 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/Job'
+export type * from './models/ScreeningQuestion'
+export type * from './models/ScreeningOption'
+export type * from './models/CandidateAnswer'
 export type * from './models/JobView'
 export type * from './models/Candidate'
 export type * from './models/Evaluation'

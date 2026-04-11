@@ -56,7 +56,7 @@ export default async function RecruiterPage({
         threshold: true,
         isActive: true,
         createdAt: true,
-        _count: { select: { candidates: true } },
+        _count: { select: { candidates: true, screeningQuestions: true } },
       },
     }),
     prisma.job.count({ where: listingWhere }),
