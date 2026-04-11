@@ -2,24 +2,26 @@
 # Includes build tools required by the native better-sqlite3 module.
 FROM node:22-alpine AS deps
 RUN apk add --no-cache libc6-compat python3 make g++
+RUN corepack enable && corepack prepare pnpm@10.18.1 --activate
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm install --prefer-offline --no-audit --no-fund
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile --prefer-offline
 
 # ─── Stage 1b: Prune to production dependencies only (for runner) ────────────
 FROM deps AS deps-prod
-RUN npm prune --omit=dev
+RUN pnpm prune --prod
 
 # ─── Stage 2: Build ───────────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
+RUN corepack enable && corepack prepare pnpm@10.18.1 --activate
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 # Prisma 7 resolves DATABASE_URL at generate time — a placeholder is enough
 ENV DATABASE_URL="file:/tmp/build-placeholder.db"
-RUN npx prisma generate --schema=schema/schema.prisma \
- && npm run build
+RUN pnpm prisma generate --schema=schema/schema.prisma \
+ && pnpm run build
 
 # ─── Stage 3: Production runner ───────────────────────────────────────────────
 FROM node:22-alpine AS runner

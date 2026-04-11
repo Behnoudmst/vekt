@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vekt — AI-Powered Recruitment Platform</title>
+  <meta name="description" content="Open source, self-hosted recruitment platform that automates candidate screening using AI. Full data ownership, no SaaS lock-in." />
+  <meta property="og:title" content="Vekt — AI-Powered Recruitment Platform" />
+  <meta property="og:description" content="Open source, self-hosted recruitment platform powered by AI." />
+  <meta property="og:image" content="../public/logo.png" />
+  <link rel="icon" href="./logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg-card: #f9f9f9;
+      --bg-card-hover: #f4f4f4;
+      --border: rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.14);
+      --text: #111111;
+      --text-muted: #666666;
+      --text-dim: #999999;
+      --accent: #111111;
+      --accent-dim: rgba(0,0,0,0.05);
+      --accent-dim2: rgba(0,0,0,0.03);
+      --radius: 10px;
+      --radius-lg: 16px;
+      --font: 'Inter', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', 'Fira Code', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 56px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .nav-brand img {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+    }
+    .nav-brand-name {
+      font-size: 0.925rem;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.01em;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-link:hover { color: var(--text); background: var(--accent-dim); }
+    .nav-link-primary {
+      color: var(--bg);
+      background: var(--accent);
+      padding: 6px 14px;
+      border-radius: var(--radius);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .nav-link-primary:hover { opacity: 0.85; }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 140px 2rem 100px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,0,0,0.03) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+      letter-spacing: 0.02em;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: #4ade80;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+      color: var(--text);
+      max-width: 680px;
+      margin: 0 auto 1.25rem;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--text-muted);
+    }
+    .hero-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto 2.25rem;
+      line-height: 1.7;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s, background 0.15s, border-color 0.15s;
+      cursor: pointer;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+    .btn-primary { background: var(--accent); color: var(--bg); }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+    .btn-outline:hover { background: var(--accent-dim); border-color: var(--border-strong); }
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.25rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+    .hero-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+    .hero-meta-item svg { opacity: 0.5; }
+
+    /* ── SCREENSHOT ── */
+    .screenshot-section {
+      padding: 0 2rem 80px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .screenshot-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .screenshot-grid .screenshot-main {
+      grid-column: 1 / -1;
+    }
+    .screenshot-frame {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+    .screenshot-frame img {
+      display: block;
+      width: 100%;
+      height: auto;
+      opacity: 0.9;
+    }
+    .screenshot-label {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      padding: 80px 2rem;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+    .section-desc {
+      font-size: 0.925rem;
+      color: var(--text-muted);
+      max-width: 540px;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+    }
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── FEATURE GRID ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      padding: 1.75rem;
+      transition: background 0.15s;
+    }
+    .feature-card:hover { background: var(--bg-card-hover); }
+    .feature-icon {
+      width: 34px; height: 34px;
+      display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+    .feature-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+    .feature-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── PIPELINE ── */
+    .pipeline {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .pipeline-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+      position: relative;
+    }
+    .pipeline-step:last-child { border-bottom: none; }
+    .pipeline-step:hover { background: var(--bg-card-hover); }
+    .pipeline-num {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      border: 1px solid var(--border-strong);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      font-family: var(--mono);
+      margin-top: 1px;
+    }
+    .pipeline-body {}
+    .pipeline-step-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+    .pipeline-step-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .pipeline-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 0.5rem;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 0.68rem;
+      font-family: var(--mono);
+      color: var(--text-dim);
+    }
+
+    /* ── ROLES ── */
+    .roles-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .role-card {
+      padding: 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--bg-card);
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .role-card:hover { border-color: var(--border-strong); background: var(--bg-card-hover); }
+    .role-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      font-weight: 500;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+    }
+    .role-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .role-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+    .role-items {
+      margin-top: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .role-item {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .role-item::before {
+      content: '';
+      width: 4px; height: 4px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── TECH STACK ── */
+    .stack-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      font-size: 0.82rem;
+    }
+    .stack-table tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .stack-table tr:last-child { border-bottom: none; }
+    .stack-table tr:hover { background: var(--bg-card-hover); }
+    .stack-table td {
+      padding: 0.8rem 1.25rem;
+      color: var(--text-muted);
+    }
+    .stack-table td:first-child {
+      color: var(--text-dim);
+      font-size: 0.72rem;
+      font-weight: 500;
+      width: 160px;
+      letter-spacing: 0.02em;
+    }
+    .stack-table td:last-child {
+      color: var(--text);
+      font-weight: 500;
+    }
+    .stack-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 7px;
+      border: 1px solid var(--border-strong);
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      margin-left: 6px;
+    }
+
+    /* ── QUICK START ── */
+    .code-block {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .code-header-title {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+    .code-dots { display: flex; gap: 5px; }
+    .code-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--border-strong);
+    }
+    pre {
+      padding: 1.25rem 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      line-height: 1.75;
+      color: var(--text-muted);
+      overflow-x: auto;
+    }
+    pre .comment { color: var(--text-dim); }
+    pre .cmd { color: var(--text); }
+    pre .env { color: #4f46e5; }
+
+    /* ── CTA ── */
+    .cta-section {
+      margin: 0 2rem 80px;
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 60px 2rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      background: var(--bg-card);
+      text-align: center;
+    }
+    .cta-section h2 {
+      font-size: clamp(1.4rem, 3vw, 1.9rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+    .cta-section p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 1.75rem;
+    }
+    .cta-actions {
+      display: flex;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    .footer-brand img {
+      width: 22px; height: 22px;
+      border-radius: 5px;
+    }
+    .footer-brand-name {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .footer-meta {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+    }
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .footer-link {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-link:hover { color: var(--text-muted); }
+
+    /* ── SVG ICONS ── */
+    .icon { display: inline-block; vertical-align: middle; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 700px) {
+      nav { padding: 0 1rem; }
+      .nav-link:not(.nav-link-primary) { display: none; }
+      .hero { padding: 120px 1.25rem 60px; }
+      section { padding: 60px 1.25rem; }
+      .roles-grid { grid-template-columns: 1fr; }
+      .screenshot-grid { grid-template-columns: 1fr; }
+      .screenshot-grid .screenshot-main { grid-column: 1; }
+      .cta-section { margin: 0 1.25rem 60px; padding: 40px 1.25rem; }
+      footer { padding: 1.5rem 1.25rem; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-brand">
+      <img src="../public/logo.png" alt="Vekt logo" />
+      <span class="nav-brand-name">Vekt</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how-it-works" class="nav-link">How it works</a>
+      <a href="https://vekt-demo.behnoud.net" target="_blank" rel="noopener" class="nav-link">Live demo</a>
+      <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="nav-link-primary">
+        <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        GitHub
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Open source · MIT License · Self-hosted
+    </div>
+    <h1>AI-powered recruiting,<br /><em>fully on your own terms</em></h1>
+    <p class="hero-desc">
+      Vekt automates candidate screening with AI while keeping you in control of your data and infrastructure. No SaaS lock-in, no black box.
+    </p>
+    <div class="hero-actions">
+      <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        View on GitHub
+      </a>
+      <a href="https://vekt-demo.behnoud.net" target="_blank" rel="noopener" class="btn btn-outline">
+        Live demo
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M7 17L17 7M17 7H7M17 7v10"/>
+        </svg>
+      </a>
+    </div>
+    <div class="hero-meta">
+      <span class="hero-meta-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        TypeScript
+      </span>
+      <span class="hero-meta-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Next.js 15
+      </span>
+      <span class="hero-meta-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+        Docker-ready
+      </span>
+      <span class="hero-meta-item">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        GDPR-compliant
+      </span>
+    </div>
+  </div>
+
+  <!-- SCREENSHOTS -->
+  <div class="screenshot-section">
+    <div class="screenshot-grid">
+      <div class="screenshot-frame screenshot-main">
+        <img src="../public/screenShots/recruiter-dashboard.png" alt="Recruiter dashboard" loading="lazy" />
+        <div class="screenshot-label">Recruiter dashboard — candidates sorted by AI score</div>
+      </div>
+      <div class="screenshot-frame">
+        <img src="../public/screenShots/public-home-page.png" alt="Public job listings" loading="lazy" />
+        <div class="screenshot-label">Public job listings</div>
+      </div>
+      <div class="screenshot-frame">
+        <img src="../public/screenShots/recruiter-applications-page.png" alt="Applications view" loading="lazy" />
+        <div class="screenshot-label">Applications with AI reasoning</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="section-label">Capabilities</div>
+    <h2 class="section-title">Everything you need to screen at scale</h2>
+    <p class="section-desc">Built for teams that want the power of AI-assisted recruiting without handing data to a third party.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">AI resume scoring</div>
+        <div class="feature-desc">Pluggable AI providers — mock (offline), OpenAI GPT-4o, or a local Ollama model. Switch with a single env variable.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Durable evaluation pipeline</div>
+        <div class="feature-desc">Powered by Inngest — each evaluation step is durable, retryable, and observable. Falls back to in-process execution in dev.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📋</div>
+        <div class="feature-title">Per-job screening questions</div>
+        <div class="feature-desc">Add single-choice or multi-select questions to any job. Answers appear alongside AI reasoning in the recruiter view.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✉️</div>
+        <div class="feature-title">Delayed, cancellable emails</div>
+        <div class="feature-desc">Status emails are held for a configurable delay (default 48 h). If a recruiter changes the decision, the queued email is automatically cancelled.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎨</div>
+        <div class="feature-title">Admin-editable email templates</div>
+        <div class="feature-desc">All candidate emails are stored in the database and editable from the admin dashboard. Every sent email is logged with its delivery ID.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🗑️</div>
+        <div class="feature-title">Automated data purge</div>
+        <div class="feature-desc">Inngest cron job automatically purges candidate records and resume files past the configurable retention window. GDPR-ready out of the box.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-title">Secure file serving</div>
+        <div class="feature-desc">Resume PDFs are stored outside the web root and served exclusively through an auth-gated API route. No accidental public exposure.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <div class="feature-title">Full Swagger API docs</div>
+        <div class="feature-desc">Interactive OpenAPI 3.0 documentation at <code>/api-docs</code> — build integrations or automate job posting without digging into source code.</div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🐳</div>
+        <div class="feature-title">One-command Docker deploy</div>
+        <div class="feature-desc">A single <code>docker-compose up</code> starts the Next.js app and a self-hosted Inngest server together. No external accounts required.</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" style="max-width:1000px; margin:0 auto;" />
+
+  <!-- HOW IT WORKS -->
+  <section id="how-it-works">
+    <div class="section-label">Pipeline</div>
+    <h2 class="section-title">From submit to decision in minutes</h2>
+    <p class="section-desc">Every application moves through a consistent, auditable pipeline with human override at every step.</p>
+    <div class="pipeline">
+      <div class="pipeline-step">
+        <div class="pipeline-num">1</div>
+        <div class="pipeline-body">
+          <div class="pipeline-step-title">Candidate submits application</div>
+          <div class="pipeline-step-desc">Name, email, and PDF resume (max 5 MB). Optional per-job screening questions appear as a second step. All answers are IDOR-validated server-side.</div>
+          <span class="pipeline-tag">POST /api/candidates</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-num">2</div>
+        <div class="pipeline-body">
+          <div class="pipeline-step-title">PDF text extracted &amp; AI scoring runs</div>
+          <div class="pipeline-step-desc">unpdf extracts CV text. The AI provider scores it against the job description using a weighted formula: relevance × 0.4 + experience × 0.6.</div>
+          <span class="pipeline-tag">Inngest · analyze-candidate</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-num">3</div>
+        <div class="pipeline-body">
+          <div class="pipeline-step-title">Automatic status assignment</div>
+          <div class="pipeline-step-desc">Score ≥ threshold (default 75) → <strong>SHORTLISTED</strong>. Below threshold → <strong>REJECTED</strong>. Recruiters can always override.</div>
+          <span class="pipeline-tag">APPLIED → ANALYZING → SHORTLISTED / REJECTED</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-num">4</div>
+        <div class="pipeline-body">
+          <div class="pipeline-step-title">Delayed status email queued</div>
+          <div class="pipeline-step-desc">A status-change email is scheduled after the configured delay (default 48 h). If the recruiter updates the decision before it sends, the email is cancelled and a new one is queued.</div>
+          <span class="pipeline-tag">Inngest · send-delayed-status-email</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-num">5</div>
+        <div class="pipeline-body">
+          <div class="pipeline-step-title">Recruiter reviews &amp; decides</div>
+          <div class="pipeline-step-desc">The recruiter dashboard shows every applicant sorted by AI score with full reasoning and screening-question answers. Accept, reject, or shortlist with one click.</div>
+          <span class="pipeline-tag">/recruiter/jobs/[jobId]</span>
+        </div>
+      </div>
+      <div class="pipeline-step">
+        <div class="pipeline-num">6</div>
+        <div class="pipeline-body">
+          <div class="pipeline-step-title">Automated data retention</div>
+          <div class="pipeline-step-desc">A daily Inngest cron deletes candidate records and resume files older than the admin-configured retention window. Warning emails are sent 7 days in advance.</div>
+          <span class="pipeline-tag">Inngest · purge-expired-candidates · daily 02:00 UTC</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" style="max-width:1000px; margin:0 auto;" />
+
+  <!-- ROLES -->
+  <section>
+    <div class="section-label">User roles</div>
+    <h2 class="section-title">Three distinct surfaces</h2>
+    <p class="section-desc">Each role has a dedicated, purpose-built UX — no cluttered all-in-one interface.</p>
+    <div class="roles-grid">
+      <div class="role-card">
+        <div class="role-tag">public</div>
+        <div class="role-title">Candidate</div>
+        <div class="role-desc">Browses job listings and applies with a resumé. Tracks application status via a private link.</div>
+        <div class="role-items">
+          <div class="role-item">Job listings &amp; search</div>
+          <div class="role-item">Multi-step apply form</div>
+          <div class="role-item">Screening questions</div>
+          <div class="role-item">Status tracker page</div>
+          <div class="role-item">Email notifications</div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-tag">recruiter</div>
+        <div class="role-title">Recruiter</div>
+        <div class="role-desc">Manages job listings and reviews candidates sorted by AI score — no context-switching required.</div>
+        <div class="role-items">
+          <div class="role-item">Job listing management</div>
+          <div class="role-item">Screening question builder</div>
+          <div class="role-item">Applications sorted by score</div>
+          <div class="role-item">AI reasoning &amp; answers</div>
+          <div class="role-item">Accept / reject / shortlist</div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-tag">admin</div>
+        <div class="role-title">Admin</div>
+        <div class="role-desc">Controls the platform — accounts, email templates, retention settings, and system configuration.</div>
+        <div class="role-items">
+          <div class="role-item">Recruiter account management</div>
+          <div class="role-item">Email template editor</div>
+          <div class="role-item">Data retention settings</div>
+          <div class="role-item">Email delay configuration</div>
+          <div class="role-item">Sent email audit log</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" style="max-width:1000px; margin:0 auto;" />
+
+  <!-- TECH STACK -->
+  <section>
+    <div class="section-label">Tech stack</div>
+    <h2 class="section-title">Built on proven open source primitives</h2>
+    <p class="section-desc">No proprietary runtimes or vendor-specific infrastructure required.</p>
+    <table class="stack-table">
+      <tbody>
+        <tr><td>Framework</td><td>Next.js 15 <span class="stack-badge">App Router</span></td></tr>
+        <tr><td>Database</td><td>SQLite via Prisma 7 + better-sqlite3</td></tr>
+        <tr><td>Auth</td><td>NextAuth v5 <span class="stack-badge">credentials</span></td></tr>
+        <tr><td>AI pipeline</td><td>Inngest <span class="stack-badge">durable functions</span> <span class="stack-badge">cron</span></td></tr>
+        <tr><td>AI providers</td><td>Mock · OpenAI GPT-4o · Ollama (local)</td></tr>
+        <tr><td>PDF extraction</td><td>unpdf</td></tr>
+        <tr><td>Validation</td><td>Zod</td></tr>
+        <tr><td>Logging</td><td>Pino <span class="stack-badge">structured JSON</span></td></tr>
+        <tr><td>UI</td><td>shadcn/ui + Tailwind CSS v4 + Phosphor Icons</td></tr>
+        <tr><td>Rich text</td><td>Tiptap</td></tr>
+        <tr><td>Email</td><td>Resend</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider" style="max-width:1000px; margin:0 auto;" />
+
+  <!-- QUICK START -->
+  <section>
+    <div class="section-label">Quick start</div>
+    <h2 class="section-title">Up and running in minutes</h2>
+    <p class="section-desc">Docker is the recommended path — one command starts everything including a self-hosted Inngest server.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
+        <span class="code-header-title">docker-compose.yml + .env</span>
+      </div>
+      <pre><span class="comment"># 1. Clone the repo</span>
+<span class="cmd">git clone https://github.com/Behnoudmst/vekt.git && cd vekt</span>
+
+<span class="comment"># 2. Set required secrets in .env</span>
+<span class="env">AUTH_SECRET</span>=<span class="cmd">$(openssl rand -base64 32)</span>
+<span class="env">INNGEST_EVENT_KEY</span>=<span class="cmd">$(openssl rand -hex 16)</span>
+<span class="env">INNGEST_SIGNING_KEY</span>=<span class="cmd">$(openssl rand -hex 32)</span>
+<span class="env">SEED_ON_START</span>=true
+<span class="env">SEED_ADMIN_EMAIL</span>=admin@example.com
+<span class="env">SEED_ADMIN_PASSWORD</span>=your-secure-password
+
+<span class="comment"># 3. Start everything</span>
+<span class="cmd">docker compose up --build</span>
+
+<span class="comment"># App →  http://localhost:3000</span>
+<span class="comment"># Inngest → http://localhost:8288</span></pre>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <h2>Ready to take back control of your hiring?</h2>
+    <p>Vekt is free, open source, and runs entirely on your own infrastructure.</p>
+    <div class="cta-actions">
+      <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="btn btn-primary">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+        </svg>
+        Star on GitHub
+      </a>
+      <a href="https://vekt-demo.behnoud.net" target="_blank" rel="noopener" class="btn btn-outline">Try live demo →</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <a href="#" class="footer-brand">
+      <img src="./logo.png" alt="Vekt logo" />
+      <span class="footer-brand-name">Vekt</span>
+    </a>
+    <span class="footer-meta">MIT License · Open Source</span>
+    <div class="footer-links">
+      <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="footer-link">GitHub</a>
+      <a href="https://vekt-demo.behnoud.net" target="_blank" rel="noopener" class="footer-link">Live demo</a>
+      <a href="https://vekt-demo.behnoud.net/api-docs" target="_blank" rel="noopener" class="footer-link">API docs</a>
+      <a href="https://vekt-demo.behnoud.net/privacy" target="_blank" rel="noopener" class="footer-link">Privacy</a>
+    </div>
+  </footer>
+
+</body>
+</html>

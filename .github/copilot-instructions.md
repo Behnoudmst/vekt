@@ -70,12 +70,12 @@ Set `AI_PROVIDER` in env:
 ## Build & Dev Commands
 
 ```bash
-npm run dev          # Start Next.js dev server (http://localhost:3000)
-npm run build        # Production build
-npm run lint         # ESLint
-npm run db:migrate   # Run Prisma migrations (creates/updates DB)
-npm run db:seed      # Seed admin account + sample job + email templates
-npm run db:generate  # Regenerate Prisma client after schema changes
+pnpm run dev          # Start Next.js dev server (http://localhost:3000)
+pnpm run build        # Production build
+pnpm run lint         # ESLint
+pnpm run db:migrate   # Run Prisma migrations (creates/updates DB)
+pnpm run db:seed      # Seed admin account + sample job + email templates
+pnpm run db:generate  # Regenerate Prisma client after schema changes
 ```
 
 After changing `schema.prisma`, always run `db:migrate` then `db:generate`.

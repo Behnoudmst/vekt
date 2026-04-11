@@ -134,14 +134,14 @@ Candidates with $Score_{total} \ge threshold$ (default 75) are marked **Shortlis
 ### Prerequisites
 
 - Node.js 20+
-- npm 10+
+- pnpm 10+
 
 ### 1. Clone & install
 
 ```bash
 git clone https://github.com/Behnoudmst/vekta.git
 cd vekta
-npm install
+pnpm install
 ```
 
 ### 2. Configure environment
@@ -165,7 +165,7 @@ See [`.env.example`](.env.example) for all options including AI provider and Inn
 ### 3. Run database migrations
 
 ```bash
-npm run db:migrate
+pnpm run db:migrate
 ```
 
 ### 4. Seed the database
@@ -173,13 +173,13 @@ npm run db:migrate
 Creates the initial **Admin** account, sample job listing, and email templates using the credentials from `.env`.
 
 ```bash
-npm run db:seed
+pnpm run db:seed
 ```
 
 ### 5. Start the dev server
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
@@ -332,11 +332,11 @@ Status-change emails (`SHORTLISTED`, `REJECTED`, `ACCEPTED`) are queued and deli
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Start dev server with hot reload |
-| `npm run build` | Production build |
-| `npm run db:migrate` | Run Prisma migrations |
-| `npm run db:seed` | Seed admin + recruiter accounts |
-| `npm run db:generate` | Regenerate Prisma client after schema changes |
+| `pnpm run dev` | Start dev server with hot reload |
+| `pnpm run build` | Production build |
+| `pnpm run db:migrate` | Run Prisma migrations |
+| `pnpm run db:seed` | Seed admin + recruiter accounts |
+| `pnpm run db:generate` | Regenerate Prisma client after schema changes |
 
 ---
 

@@ -3,10 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { prisma } from "@/lib/prisma";
 import { verifyStatusToken } from "@/lib/public-tokens";
 import {
-    CheckCircle,
-    Clock,
-    HourglassMedium,
-    Sparkle,
+    CheckCircleIcon,
+    ClockIcon,
+    HourglassMediumIcon,
+    SparkleIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { notFound } from "next/navigation";
 
@@ -38,31 +38,31 @@ export default async function StatusPage({
     APPLIED: {
       label: "Application Received",
       description: "Your application has been received and is in the queue for review.",
-      icon: <Clock className="size-8 text-muted-foreground" weight="fill" />,
+      icon: <ClockIcon className="size-8 text-muted-foreground" weight="fill" />,
       variant: "secondary" as const,
     },
     ANALYZING: {
       label: "Under Review",
       description: "Our AI engine is analysing your application. This usually takes under a minute.",
-      icon: <HourglassMedium className="size-8 text-blue-500" weight="fill" />,
+      icon: <HourglassMediumIcon className="size-8 text-blue-500" weight="fill" />,
       variant: "outline" as const,
     },
     SHORTLISTED: {
       label: "Shortlisted!",
       description: "Great news — your application has been shortlisted and a recruiter will be in touch soon.",
-      icon: <Sparkle className="size-8 text-primary" weight="fill" />,
+      icon: <SparkleIcon className="size-8 text-primary" weight="fill" />,
       variant: "default" as const,
     },
     ACCEPTED: {
       label: "Accepted!",
       description: "Congratulations! A recruiter has accepted your application and will be in contact with you shortly.",
-      icon: <CheckCircle className="size-8 text-green-500" weight="fill" />,
+      icon: <CheckCircleIcon className="size-8 text-green-500" weight="fill" />,
       variant: "default" as const,
     },
     REJECTED: {
       label: "Under Consideration",
       description: "Thank you for your application. We're keeping your profile on file for future opportunities.",
-      icon: <CheckCircle className="size-8 text-muted-foreground" weight="fill" />,
+      icon: <CheckCircleIcon className="size-8 text-muted-foreground" weight="fill" />,
       variant: "secondary" as const,
     },
   } as const;
@@ -70,7 +70,7 @@ export default async function StatusPage({
   const config = statusConfig[candidate.status as keyof typeof statusConfig] ?? {
     label: "In Progress",
     description: "Your application is being processed.",
-    icon: <Clock className="size-8 text-muted-foreground" />,
+    icon: <ClockIcon className="size-8 text-muted-foreground" />,
     variant: "secondary" as const,
   };
 

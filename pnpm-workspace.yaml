@@ -1,0 +1,9 @@
+onlyBuiltDependencies:
+  - '@prisma/engines'
+  - '@tree-sitter-grammars/tree-sitter-yaml'
+  - better-sqlite3
+  - esbuild
+  - prisma
+  - sharp
+  - tree-sitter
+  - tree-sitter-json

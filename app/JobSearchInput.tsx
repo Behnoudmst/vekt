@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
@@ -24,7 +24,7 @@ export default function JobSearchInput({ defaultValue }: { defaultValue: string 
 
   return (
     <div className="relative w-full max-w-sm">
-      <MagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+      <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
       <Input
         className="pl-9"
         placeholder="Search positions…"

@@ -3,9 +3,9 @@ import { COMPANY_NAME } from "@/lib/brand";
 import { prisma } from "@/lib/prisma";
 import { sanitizeRichText } from "@/lib/sanitize-html";
 import {
-    ArrowRight,
-    Briefcase,
-    MapPin
+    ArrowRightIcon,
+    BriefcaseIcon,
+    MapPinIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import JobSearchInput from "./JobSearchInput";
@@ -64,7 +64,7 @@ export default async function Home({
 
         <div className="relative mx-auto max-w-5xl px-6 py-16 sm:py-20 flex flex-col items-center text-center gap-5">
           <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-medium text-primary">
-            <Briefcase className="size-3.5" weight="fill" />
+            <BriefcaseIcon className="size-3.5" weight="fill" />
             We&apos;re hiring
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground">
@@ -84,7 +84,7 @@ export default async function Home({
           {/* Section header */}
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Briefcase className="size-5 text-primary" weight="fill" />
+              <BriefcaseIcon className="size-5 text-primary" weight="fill" />
               <h2 className="text-lg font-semibold">Open Positions</h2>
               <Badge variant="secondary">
                 {listings.length} {listings.length === 1 ? "role" : "roles"}
@@ -101,7 +101,7 @@ export default async function Home({
           {listings.length === 0 ? (
             <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-dashed border-border bg-muted/30 px-6 py-14 text-center">
               <div className="flex size-14 items-center justify-center rounded-full bg-muted">
-                <Briefcase className="size-7 text-muted-foreground" weight="duotone" />
+                <BriefcaseIcon className="size-7 text-muted-foreground" weight="duotone" />
               </div>
               <div className="flex flex-col gap-1">
                 <p className="text-sm font-medium text-foreground">
@@ -129,7 +129,7 @@ export default async function Home({
                       </p>
                       {listing.location && (
                         <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                          <MapPin className="size-3 shrink-0" />
+                          <MapPinIcon className="size-3 shrink-0" />
                           <span>{listing.location}</span>
                         </div>
                       )}
@@ -142,7 +142,7 @@ export default async function Home({
                       <span className="hidden text-xs font-medium text-primary opacity-0 transition-opacity duration-150 group-hover:opacity-100 sm:block">
                         Apply
                       </span>
-                      <ArrowRight
+                      <ArrowRightIcon
                         className="size-4 text-muted-foreground transition-all duration-150 group-hover:translate-x-0.5 group-hover:text-primary"
                       />
                     </div>

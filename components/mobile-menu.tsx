@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { List, X } from "@phosphor-icons/react";
+import { ListIcon, XIcon } from "@phosphor-icons/react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -47,7 +47,7 @@ export default function MobileMenu({ email, role }: Props) {
         onClick={() => setOpen((prev) => !prev)}
         className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
       >
-        {open ? <X className="size-5" /> : <List className="size-5" />}
+        {open ? <XIcon className="size-5" /> : <ListIcon className="size-5" />}
       </Button>
 
       {open && (

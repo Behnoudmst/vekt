@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { SpinnerGap, WarningCircle } from "@phosphor-icons/react";
+import { SpinnerGapIcon, WarningCircleIcon } from "@phosphor-icons/react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -94,7 +94,7 @@ export default function LoginPage() {
 
                 {state.status === "error" && (
                   <Alert variant="destructive">
-                    <WarningCircle />
+                    <WarningCircleIcon />
                     <AlertTitle>Login failed</AlertTitle>
                     <AlertDescription>{state.message}</AlertDescription>
                   </Alert>
@@ -106,7 +106,7 @@ export default function LoginPage() {
                   className="w-full"
                 >
                   {state.status === "loading" && (
-                    <SpinnerGap
+                    <SpinnerGapIcon
                       data-icon="inline-start"
                       className="animate-spin"
                     />

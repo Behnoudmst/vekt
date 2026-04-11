@@ -10,8 +10,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
-    FilePdf,
-    Tray,
+    FilePdfIcon,
+    TrayIcon,
 } from "@phosphor-icons/react/dist/ssr";
 import { notFound, redirect } from "next/navigation";
 import ReviewButton from "../../ReviewButton";
@@ -227,7 +227,7 @@ export default async function JobApplicationsPage({
           <div className="flex items-center gap-2">
             <Button asChild variant="outline" size="sm">
               <a href={c.resumePath} target="_blank" rel="noopener noreferrer">
-                <FilePdf data-icon="inline-start" />
+                <FilePdfIcon data-icon="inline-start" />
                 Resume
               </a>
             </Button>
@@ -277,7 +277,7 @@ export default async function JobApplicationsPage({
         {candidates.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center gap-3 py-14 text-center">
-              <Tray className="size-10 text-muted-foreground" weight="thin" />
+              <TrayIcon className="size-10 text-muted-foreground" weight="thin" />
               <div>
                 <p className="text-sm font-semibold">No applications yet</p>
                 <p className="text-sm text-muted-foreground mt-1">
