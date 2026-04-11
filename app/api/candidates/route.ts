@@ -165,23 +165,39 @@ export async function POST(req: NextRequest) {
               where: { jobId, id: { in: submittedQuestionIds } },
               select: {
                 id: true,
+                type: true,
                 options: { select: { id: true } },
               },
             });
 
-            // Build a lookup: questionId → Set<validOptionId>
-            const validOptionsByQuestion = new Map(
-              validQuestions.map((q) => [q.id, new Set(q.options.map((o) => o.id))]),
+            // Build a lookup: questionId → { type, validOptionIds }
+            const validQuestionsById = new Map(
+              validQuestions.map((q) => [
+                q.id,
+                {
+                  type: q.type,
+                  validOptionIds: new Set(q.options.map((o) => o.id)),
+                },
+              ]),
             );
 
             const rows: { candidateId: string; questionId: string; optionId: string }[] = [];
 
             for (const { questionId, optionIds } of parsed.data) {
-              const validOptions = validOptionsByQuestion.get(questionId);
-              if (!validOptions) continue; // question not in this job — discard
+              const validQuestion = validQuestionsById.get(questionId);
+              if (!validQuestion) continue; // question not in this job — discard
 
-              for (const optionId of optionIds) {
-                if (!validOptions.has(optionId)) continue; // option not in this question — discard
+              const validOptionIds = [...new Set(optionIds)].filter((optionId) =>
+                validQuestion.validOptionIds.has(optionId),
+              );
+
+              if (validQuestion.type === "SINGLE") {
+                if (validOptionIds.length !== 1) continue; // SINGLE requires exactly one valid option
+              } else if (validQuestion.type === "MULTIPLE") {
+                if (validOptionIds.length < 1) continue; // MULTIPLE requires at least one valid option
+              }
+
+              for (const optionId of validOptionIds) {
                 rows.push({ candidateId: candidate.id, questionId, optionId });
               }
             }

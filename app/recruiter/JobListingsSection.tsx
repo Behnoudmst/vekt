@@ -26,7 +26,6 @@ import {
     TrashIcon,
     XIcon,
 } from "@phosphor-icons/react";
-import { } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -91,9 +90,14 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
   async function openQuestionsPanel(id: string) {
     setQuestionsJobId(id);
     setQuestionsError(null);
+    setQuestionsDraft([]);
     setQuestionsLoading(true);
     try {
       const res = await fetch(`/api/job-listings/${id}/questions`);
+      if (!res.ok) {
+        setQuestionsError("Failed to load questions.");
+        return;
+      }
       const data = await res.json();
       setQuestionsDraft(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -105,6 +109,7 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
       );
     } catch {
       setQuestionsError("Failed to load questions.");
+      setQuestionsDraft([]);
     } finally {
       setQuestionsLoading(false);
     }
@@ -634,19 +639,22 @@ export default function JobListingsSection({ listings, total, page, totalPages, 
                                 </span>
                                 <div className="flex gap-1">
                                   {(["SINGLE", "MULTIPLE"] as const).map((t) => (
-                                    <button
+                                    <Button
                                       key={t}
                                       type="button"
+                                      variant="outline"
+                                      size="sm"
+                                      aria-pressed={q.type === t}
                                       onClick={() => updateQuestion(qi, "type", t)}
                                       className={cn(
-                                        "px-2.5 py-1 rounded text-xs font-medium border transition-colors",
+                                        "h-auto px-2.5 py-1 text-xs font-medium transition-colors",
                                         q.type === t
-                                          ? "bg-primary text-primary-foreground border-primary"
+                                          ? "bg-primary text-primary-foreground border-primary hover:bg-primary/90 hover:text-primary-foreground"
                                           : "bg-background text-muted-foreground border-border hover:border-foreground/40",
                                       )}
                                     >
                                       {t === "SINGLE" ? "Single choice" : "Multiple choice"}
-                                    </button>
+                                    </Button>
                                   ))}
                                 </div>
                               </div>

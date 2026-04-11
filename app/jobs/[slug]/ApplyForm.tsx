@@ -50,7 +50,7 @@ type SubmissionState =
   | { status: "success"; statusPath: string }
   | { status: "error"; message: string };
 
-const supportEmail = process.env.SUPPORT_EMAIL || "example-support@email.com";
+const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "example-support@email.com";
 
 function StepDot({ active, done }: { active?: boolean; done?: boolean }) {
   return (
@@ -108,7 +108,9 @@ export default function ApplyForm({ job }: Props) {
     const data = new FormData(e.currentTarget);
     const name = data.get("name") as string;
     const email = data.get("email") as string;
-    const resumeFile = fileInputRef.current?.files?.[0] ?? null;
+    // If the user navigated back, the file input may be empty — fall back to
+    // the previously captured snapshot so they don't have to re-upload.
+    const resumeFile = fileInputRef.current?.files?.[0] ?? detailsSnapshot.resume;
 
     if (!resumeFile || resumeFile.type !== "application/pdf") {
       toast.error("Please upload a PDF resume.");
@@ -320,9 +322,17 @@ export default function ApplyForm({ job }: Props) {
                         name="resume"
                         type="file"
                         accept="application/pdf"
-                        required
+                        required={!detailsSnapshot.resume}
                       />
-                      <p className="text-xs text-muted-foreground">PDF only</p>
+                      {detailsSnapshot.resume ? (
+                        <p className="text-xs text-muted-foreground">
+                          Previously uploaded:{" "}
+                          <span className="font-medium">{detailsSnapshot.resume.name}</span>
+                          . Select a new file to replace it.
+                        </p>
+                      ) : (
+                        <p className="text-xs text-muted-foreground">PDF only</p>
+                      )}
                     </div>
 
                     {!hasQuestions && state.status === "error" && (
@@ -451,19 +461,21 @@ export default function ApplyForm({ job }: Props) {
                           {q.options.map((opt) => {
                             const selected = answers[q.id]?.has(opt.id) ?? false;
                             return (
-                              <button
+                              <Button
                                 key={opt.id}
                                 type="button"
+                                variant="outline"
+                                aria-pressed={selected}
                                 onClick={() => toggleOption(q, opt.id)}
                                 className={cn(
-                                  "rounded-lg border px-3.5 py-2 text-sm font-medium transition-all text-left",
+                                  "h-auto whitespace-normal rounded-lg px-3.5 py-2 text-left text-sm font-medium transition-all",
                                   selected
-                                    ? "border-primary bg-primary text-primary-foreground"
-                                    : "border-border bg-background text-foreground hover:border-foreground/40",
+                                    ? "border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground"
+                                    : "border-border bg-background text-foreground hover:border-foreground/40 hover:bg-background",
                                 )}
                               >
                                 {opt.text}
-                              </button>
+                              </Button>
                             );
                           })}
                         </div>

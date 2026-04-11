@@ -205,13 +205,13 @@ export default async function JobApplicationsPage({
           {answersByQuestion.size > 0 && (
             <div className="rounded-lg border bg-muted/20 p-3 flex flex-col gap-2.5">
               <p className="text-xs font-semibold text-muted-foreground">Screening Answers</p>
-              {Array.from(answersByQuestion.values()).map((q, idx) => (
-                <div key={idx} className="flex flex-col gap-1">
+              {Array.from(answersByQuestion.entries()).map(([questionId, q]) => (
+                <div key={questionId} className="flex flex-col gap-1">
                   <p className="text-xs text-foreground">{q.questionText}</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {q.options.map((opt, oi) => (
+                    {q.options.map((opt) => (
                       <span
-                        key={oi}
+                        key={`${questionId}-${opt}`}
                         className="inline-flex items-center rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
                       >
                         {opt}

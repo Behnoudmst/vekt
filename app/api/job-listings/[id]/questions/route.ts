@@ -91,6 +91,22 @@ export async function PUT(
     );
   }
 
+  // Prevent destructive re-creation if candidates have already submitted answers:
+  // deleting ScreeningQuestion rows cascades to CandidateAnswer rows, which
+  // would destroy historical candidate response data.
+  const existingAnswerCount = await prisma.candidateAnswer.count({
+    where: { question: { jobId: id } },
+  });
+  if (existingAnswerCount > 0) {
+    return NextResponse.json(
+      {
+        error:
+          "Questions cannot be edited after candidates have submitted answers. Editing would permanently delete their responses.",
+      },
+      { status: 409 },
+    );
+  }
+
   // Replace all questions atomically
   await prisma.$transaction(async (tx) => {
     await tx.screeningQuestion.deleteMany({ where: { jobId: id } });
