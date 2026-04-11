@@ -60,12 +60,23 @@
 
 * **Magic Links:** The status page link (`/status/{candidateId}`) is delivered via transactional email at each stage transition — candidates never need to know or copy their ID manually.
 
-### 4.4 Dashboards
+### 4.4 Screening Questions
 
-* **Recruiter Dashboard:** A "Priority Queue" showing high-scoring candidates first. Includes an "Override" button to manually move candidates.
+Recruiters can attach per-job screening questions to further qualify candidates before AI evaluation.
+
+* **Question types:** `SINGLE` (radio — one answer) or `MULTIPLE` (checkbox — one or more answers).
+* **Apply form:** when a job has questions, the application form gains a second step. Step 1 collects name, email, and PDF; step 2 presents the questions. State is preserved between steps.
+* **IDOR protection:** on submission, all `questionId` and `optionId` values are validated against the target job; foreign IDs are rejected.
+* **Recruiter view:** candidates' answers are displayed alongside AI reasoning on the per-job applications page.
+* **Management API:** `PUT /api/job-listings/[id]/questions` replaces all questions for a job (auth-gated; admin can update any job).
+* **Limits:** max 20 questions per job, max 10 options per question, max 10 selected options per answer.
+
+### 4.5 Dashboards
+
+* **Recruiter Dashboard:** A "Priority Queue" showing high-scoring candidates first. Includes an "Override" button to manually move candidates. Screening-question answers are shown alongside AI reasoning.
 * **Admin Dashboard:** Manage recruiter accounts, set global `RETENTION_DAYS` for data scrubbing, configure the status email delay (`STATUS_EMAIL_DELAY_HOURS`), monitor API token usage, and edit candidate email templates.
 
-### 4.5 Email Notifications
+### 4.6 Email Notifications
 
 Vekt sends automated transactional emails to candidates at each major lifecycle stage via **Resend**. Templates are stored in the database and editable by admins through the Admin Dashboard.
 
@@ -116,28 +127,64 @@ Vekt sends automated transactional emails to candidates at each major lifecycle 
 
 ```prisma
 model Job {
-  id               String      @id @default(cuid())
-  title            String
-  customPrompt     String?     // The "Weighting" logic
-  threshold        Int         @default(75)
-  candidates       Candidate[]
+  id                  String              @id @default(cuid())
+  title               String
+  customPrompt        String?             // The "Weighting" logic
+  threshold           Int                 @default(75)
+  candidates          Candidate[]
+  screeningQuestions  ScreeningQuestion[]
 }
 
 model Candidate {
-  id               String      @id @default(cuid())
+  id               String            @id @default(cuid())
   email            String
-  resumeText       String      // Extracted PDF text
-  status           Status      @default(APPLIED)
+  resumeText       String            // Extracted PDF text
+  status           Status            @default(APPLIED)
   evaluation       Evaluation?
-  emailOptOut      Boolean     @default(false)
+  emailOptOut      Boolean           @default(false)
   emailLogs        EmailLog[]
+  answers          CandidateAnswer[]
 }
 
 model Evaluation {
   score            Int
   reasoning        String
-  promptSnapshot   String      // The prompt used at time of scoring
-  candidateId      String      @unique
+  promptSnapshot   String            // The prompt used at time of scoring
+  candidateId      String            @unique
+}
+
+/// Per-job screening question
+model ScreeningQuestion {
+  id          String            @id @default(cuid())
+  jobId       String
+  text        String            // 1-500 chars
+  type        QuestionType      // SINGLE | MULTIPLE
+  order       Int
+  job         Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  options     ScreeningOption[]
+  answers     CandidateAnswer[]
+}
+
+/// Option within a screening question
+model ScreeningOption {
+  id          String            @id @default(cuid())
+  questionId  String
+  text        String            // 1-100 chars
+  order       Int
+  question    ScreeningQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answers     CandidateAnswer[]
+}
+
+/// Candidate's selected option for a question
+model CandidateAnswer {
+  id          String            @id @default(cuid())
+  candidateId String
+  questionId  String
+  optionId    String
+  candidate   Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  question    ScreeningQuestion @relation(fields: [questionId], references: [id])
+  option      ScreeningOption   @relation(fields: [optionId], references: [id])
+  @@unique([candidateId, questionId, optionId])
 }
 
 /// Admin-editable email template; one row per EmailType
@@ -156,6 +203,11 @@ model EmailLog {
   sentAt      DateTime  @default(now())
   resendId    String?   // Resend delivery ID
   candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+}
+
+enum QuestionType {
+  SINGLE
+  MULTIPLE
 }
 
 enum EmailType {

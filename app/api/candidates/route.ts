@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { createStatusToken } from "@/lib/public-tokens";
 import { runEvaluationPipelineDirect } from "@/lib/queue";
 import { consumeRateLimit, getRequestIp } from "@/lib/rate-limit";
-import { candidateApplicationSchema } from "@/lib/schemas";
+import { candidateAnswersSchema, candidateApplicationSchema } from "@/lib/schemas";
 import { randomUUID } from "crypto";
 import { mkdir, writeFile } from "fs/promises";
 import { NextRequest, NextResponse } from "next/server";
@@ -50,6 +50,20 @@ export async function POST(req: NextRequest) {
         { error: "Validation failed", details: validation.error.flatten() },
         { status: 400 },
       );
+    }
+
+    // Verify jobId refers to an existing, active job before any further processing
+    if (jobId) {
+      const job = await prisma.job.findUnique({
+        where: { id: jobId, isActive: true },
+        select: { id: true },
+      });
+      if (!job) {
+        return NextResponse.json(
+          { error: "This job listing is no longer accepting applications." },
+          { status: 400 },
+        );
+      }
     }
 
     const requestIp = getRequestIp(req.headers);
@@ -129,6 +143,74 @@ export async function POST(req: NextRequest) {
         ...(jobId ? { jobId } : {}),
       },
     });
+
+    // Persist screening question answers — all IDs are validated against the DB
+    // to prevent IDOR: a candidate submitting questionId/optionId values from a
+    // different job is silently rejected.
+    const answersRaw = formData.get("answers") as string | null;
+    if (answersRaw && jobId) {
+      if (answersRaw.length > 8_192) {
+        logger.warn({ candidateId: candidate.id }, "API: answers payload too large, skipping");
+      } else {
+        try {
+          const rawParsed = JSON.parse(answersRaw);
+          const parsed = candidateAnswersSchema.safeParse(rawParsed);
+          if (!parsed.success) {
+            logger.warn({ candidateId: candidate.id }, "API: invalid answers payload shape, skipping");
+          } else {
+            const submittedQuestionIds = parsed.data.map((a) => a.questionId);
+
+            // Load only questions belonging to THIS job that match submitted IDs
+            const validQuestions = await prisma.screeningQuestion.findMany({
+              where: { jobId, id: { in: submittedQuestionIds } },
+              select: {
+                id: true,
+                type: true,
+                options: { select: { id: true } },
+              },
+            });
+
+            // Build a lookup: questionId → { type, validOptionIds }
+            const validQuestionsById = new Map(
+              validQuestions.map((q) => [
+                q.id,
+                {
+                  type: q.type,
+                  validOptionIds: new Set(q.options.map((o) => o.id)),
+                },
+              ]),
+            );
+
+            const rows: { candidateId: string; questionId: string; optionId: string }[] = [];
+
+            for (const { questionId, optionIds } of parsed.data) {
+              const validQuestion = validQuestionsById.get(questionId);
+              if (!validQuestion) continue; // question not in this job — discard
+
+              const validOptionIds = [...new Set(optionIds)].filter((optionId) =>
+                validQuestion.validOptionIds.has(optionId),
+              );
+
+              if (validQuestion.type === "SINGLE") {
+                if (validOptionIds.length !== 1) continue; // SINGLE requires exactly one valid option
+              } else if (validQuestion.type === "MULTIPLE") {
+                if (validOptionIds.length < 1) continue; // MULTIPLE requires at least one valid option
+              }
+
+              for (const optionId of validOptionIds) {
+                rows.push({ candidateId: candidate.id, questionId, optionId });
+              }
+            }
+
+            if (rows.length > 0) {
+              await prisma.candidateAnswer.createMany({ data: rows });
+            }
+          }
+        } catch {
+          logger.warn({ candidateId: candidate.id }, "API: failed to process screening answers");
+        }
+      }
+    }
 
     logger.info({ candidateId: candidate.id }, "API: candidate created");
 
