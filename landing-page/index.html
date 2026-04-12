@@ -871,26 +871,14 @@
   <!-- QUICK START -->
   <section>
     <div class="section-label">Quick start</div>
-    <h2 class="section-title">Up and running in minutes</h2>
-    <p class="section-desc">Docker is the recommended path — one command starts everything including a self-hosted Inngest server.</p>
+    <h2 class="section-title">Up and running in one command</h2>
+    <p class="section-desc">The setup script downloads all files, generates secrets, prompts for your admin credentials, and starts everything automatically.</p>
     <div class="code-block">
       <div class="code-header">
         <div class="code-dots"><div class="code-dot"></div><div class="code-dot"></div><div class="code-dot"></div></div>
-        <span class="code-header-title">docker-compose.yml + .env</span>
+        <span class="code-header-title">terminal</span>
       </div>
-      <pre><span class="comment"># 1. Clone the repo</span>
-<span class="cmd">git clone https://github.com/Behnoudmst/vekt.git && cd vekt</span>
-
-<span class="comment"># 2. Set required secrets in .env</span>
-<span class="env">AUTH_SECRET</span>=<span class="cmd">$(openssl rand -base64 32)</span>
-<span class="env">INNGEST_EVENT_KEY</span>=<span class="cmd">$(openssl rand -hex 16)</span>
-<span class="env">INNGEST_SIGNING_KEY</span>=<span class="cmd">$(openssl rand -hex 32)</span>
-<span class="env">SEED_ON_START</span>=true
-<span class="env">SEED_ADMIN_EMAIL</span>=admin@example.com
-<span class="env">SEED_ADMIN_PASSWORD</span>=your-secure-password
-
-<span class="comment"># 3. Start everything</span>
-<span class="cmd">docker compose up --build</span>
+      <pre><span class="cmd">curl -fsSL https://raw.githubusercontent.com/Behnoudmst/vekt/main/setup.sh | bash</span>
 
 <span class="comment"># App →  http://localhost:3000</span>
 <span class="comment"># Inngest → http://localhost:8288</span></pre>

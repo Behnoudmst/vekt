@@ -131,60 +131,56 @@ Candidates with $Score_{total} \ge threshold$ (default 75) are marked **Shortlis
 
 ## Getting Started
 
-### Prerequisites
+### Deploy with Docker (recommended)
+
+Run the setup script — it downloads all files, generates secrets, prompts for your admin credentials, and starts everything:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Behnoudmst/vekt/main/setup.sh | bash
+```
+
+Requires: `docker` (with Compose v2) and `openssl`.
+
+Once complete, open [http://localhost:3000](http://localhost:3000).
+
+#### Manual setup (optional)
+
+If you prefer not to pipe to bash:
+
+```bash
+curl -O https://raw.githubusercontent.com/Behnoudmst/vekt/main/docker-compose.yml
+curl -O https://raw.githubusercontent.com/Behnoudmst/vekt/main/.env.example
+mv .env.example .env
+# Edit .env — set AUTH_SECRET, INNGEST_EVENT_KEY, INNGEST_SIGNING_KEY, SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD
+docker compose up -d
+```
+
+### Local development
+
+#### Prerequisites
 
 - Node.js 20+
 - pnpm 10+
 
-### 1. Clone & install
-
 ```bash
-git clone https://github.com/Behnoudmst/vekta.git
-cd vekta
+git clone https://github.com/Behnoudmst/vekt.git
+cd vekt
 pnpm install
-```
-
-### 2. Configure environment
-
-```bash
 cp .env.example .env
-```
-
-Minimum required variables:
-
-```env
-DATABASE_URL="file:/absolute/path/to/dev.db"
-AUTH_SECRET="your-secret-min-32-chars"
-
-SEED_ADMIN_EMAIL="admin@example.com"
-SEED_ADMIN_PASSWORD="change-me-to-a-long-random-password"
-```
-
-See [`.env.example`](.env.example) for all options including AI provider and Inngest configuration.
-
-### 3. Run database migrations
-
-```bash
 pnpm run db:migrate
-```
-
-### 4. Seed the database
-
-Creates the initial **Admin** account, sample job listing, and email templates using the credentials from `.env`.
-
-```bash
 pnpm run db:seed
-```
-
-### 5. Start the dev server
-
-```bash
 pnpm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+See [`.env.example`](.env.example) for all available options.
 
 > Inngest is **not required** in development. When `INNGEST_EVENT_KEY` is blank the evaluation pipeline runs directly in-process. Note: the data-retention cron only runs when Inngest is active.
+
+#### Build from source with Docker
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
 
 ---
 
@@ -250,8 +246,10 @@ The dev server auto-discovers the handler at `http://localhost:3000/api/inngest`
 
 ## Docker
 
+The pre-built image (`ghcr.io/behnoudmst/vekt:latest`) is published automatically on each GitHub release. To start:
+
 ```bash
-docker-compose up --build
+docker compose up -d
 ```
 
 The compose file starts two services:
@@ -262,6 +260,12 @@ The compose file starts two services:
 Persistent volumes:
 - `db-data` → SQLite database
 - `uploads` → Candidate resume PDFs (`private/uploads/`)
+
+To build from source instead of pulling the published image:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
 
 ---
 

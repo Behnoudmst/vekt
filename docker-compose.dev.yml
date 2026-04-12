@@ -1,0 +1,7 @@
+# Overrides the published image with a local build.
+# Use during development:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+services:
+  app:
+    image: vekt-dev
+    build: .
