@@ -11,7 +11,7 @@ services:
     restart: unless-stopped
 
   app:
-    build: .
+    image: ghcr.io/behnoudmst/vekt:latest
     ports:
       - "3000:3000"
     depends_on:
