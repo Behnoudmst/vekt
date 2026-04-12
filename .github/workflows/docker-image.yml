@@ -10,18 +10,8 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  # ── 0. Compute lowercase image name ──────────────────────────────────────
-  setup:
-    runs-on: ubuntu-latest
-    outputs:
-      image: ${{ steps.image.outputs.name }}
-    steps:
-      - id: image
-        run: echo "name=$(echo '${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
-
   # ── 1. Type-check + lint ──────────────────────────────────────────────────
   test:
     runs-on: ubuntu-latest
@@ -42,7 +32,7 @@ jobs:
 
   # ── 2. Build each platform natively (parallel) ────────────────────────────
   build:
-    needs: [setup, test]
+    needs: test
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -55,6 +45,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set image name to lower-case
+        id: image_name
+        run: echo "value=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
 
       - name: Slugify platform name
         id: platform
@@ -74,7 +68,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ needs.setup.outputs.image }}
+          images: ${{ env.REGISTRY }}/${{ steps.image_name.outputs.value }}
 
       - name: Build and push by digest
         id: build
@@ -83,7 +77,7 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           labels: ${{ steps.meta.outputs.labels }}
-          outputs: type=image,name=${{ needs.setup.outputs.image }},push-by-digest=true,name-canonical=true,push=true
+          outputs: type=image,name=${{ env.REGISTRY }}/${{ steps.image_name.outputs.value }},push-by-digest=true,name-canonical=true,push=true
           cache-from: type=gha,scope=${{ steps.platform.outputs.name }}
           cache-to: type=gha,mode=max,scope=${{ steps.platform.outputs.name }}
 
@@ -103,9 +97,13 @@ jobs:
 
   # ── 3. Merge digests into a single multi-arch manifest ───────────────────
   merge:
-    needs: [setup, build]
+    needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Set image name to lower-case
+        id: image_name
+        run: echo "value=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
+
       - name: Download digests
         uses: actions/download-artifact@v4
         with:
@@ -127,7 +125,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ needs.setup.outputs.image }}
+          images: ${{ env.REGISTRY }}/${{ steps.image_name.outputs.value }}
           tags: |
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
@@ -140,9 +138,10 @@ jobs:
         run: |
           docker buildx imagetools create \
             $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ needs.setup.outputs.image }}@sha256:%s ' *)
+            $(printf '${{ env.REGISTRY }}/${{ steps.image_name.outputs.value }}@sha256:%s ' *)
 
       - name: Inspect final image
         run: |
-          docker buildx imagetools inspect ${{ needs.setup.outputs.image }}:${{ steps.meta.outputs.version }}
+          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ steps.image_name.outputs.value }}:${{ steps.meta.outputs.version }}
+
 
