@@ -1,0 +1,63 @@
+---
+project_name: Vekt
+project_type: AI-powered recruitment platform
+license: MIT
+open_source: true
+repository: https://github.com/Behnoudmst/vekt
+website: https://vekt-demo.behnoud.net
+description: >
+	Vekt is a self-hosted, open-source recruitment platform that automates candidate screening using AI. It provides full data ownership, privacy-first workflows, and no SaaS lock-in. Features include AI resume scoring, per-job screening questions, GDPR compliance, admin-editable email templates, and automated data retention.
+features:
+	- AI resume screening and scoring
+	- Durable, observable evaluation pipeline (Inngest)
+	- Per-job screening questions (single/multi-select)
+	- Secure, privacy-first data handling (GDPR-ready)
+	- Admin-editable email templates
+	- Automated data retention and purge
+	- Full Swagger/OpenAPI documentation
+	- One-command Docker deployment
+	- shadcn/ui + Tailwind CSS v4 UI
+	- Next.js 15 App Router
+	- Prisma 7 (SQLite)
+	- NextAuth v5 authentication
+	- Resend email integration
+	- Tiptap rich text editor
+	- Pino structured logging
+	- Zod validation
+	- Mock/OpenAI/Ollama AI providers
+seo_keywords:
+	- AI recruiting
+	- open source ATS
+	- self-hosted recruitment
+	- GDPR compliant hiring
+	- AI resume screening
+	- candidate evaluation automation
+	- Next.js recruitment platform
+	- Inngest workflow
+	- shadcn UI
+	- Docker deployable ATS
+structured_data:
+	applicationCategory: BusinessApplication
+	operatingSystem: Linux, macOS, Windows, Docker
+	programmingLanguage: TypeScript, JavaScript
+	offers: Free, Open Source
+	audience: Recruiters, HR teams, Developers, Startups
+	url: https://vekt.website
+	sameAs:
+		- https://github.com/Behnoudmst/vekt
+
+---
+
+Vekt is an AI-powered, open-source recruitment platform designed for maximum discoverability and relevance in generative search and AI-driven content engines. Key features include:
+
+- AI resume screening and scoring
+- Durable, observable evaluation pipeline
+- Per-job screening questions
+- Secure, privacy-first data handling (GDPR-ready)
+- Admin-editable email templates
+- Automated data retention and purge
+- Full Swagger/OpenAPI documentation
+- One-command Docker deployment
+
+
+Vekt ensures your hiring process is visible, indexable, and actionable by generative engines and AI agents.
