@@ -62,11 +62,11 @@ set_env "INNGEST_SIGNING_KEY" "$(openssl rand -hex 32)"
 
 # ── Admin credentials ──────────────────────────────────────────────────────────
 echo -e "\n${BOLD}Admin account${RESET}"
-read -rp "  Email    [admin@example.com]: " admin_email
+read -rp "  Email    [admin@example.com]: " admin_email < /dev/tty
 admin_email="${admin_email:-admin@example.com}"
 
 while true; do
-  read -rsp "  Password (min 8 chars): " admin_password
+  read -rsp "  Password (min 8 chars): " admin_password < /dev/tty
   echo ""
   if [ "${#admin_password}" -ge 8 ]; then
     break
@@ -80,9 +80,9 @@ sed -i.bak "s|^SEED_ON_START=.*|SEED_ON_START=true|" .env && rm -f .env.bak
 
 # ── Branding ───────────────────────────────────────────────────────────────────
 echo -e "\n${BOLD}Branding${RESET}"
-read -rp "  Company name [Vekt]: " company_name
+read -rp "  Company name [Vekt]: " company_name < /dev/tty
 company_name="${company_name:-Vekt}"
-read -rp "  Public URL   [http://localhost:3000]: " app_url
+read -rp "  Public URL   [http://localhost:3000]: " app_url < /dev/tty
 app_url="${app_url:-http://localhost:3000}"
 
 sed -i.bak "s|^COMPANY_NAME=.*|COMPANY_NAME=${company_name}|" .env && rm -f .env.bak
@@ -93,20 +93,20 @@ echo -e "\n${BOLD}AI provider${RESET}"
 echo "  1) mock   — offline, no API key needed (default)"
 echo "  2) openai — GPT-4o via OpenAI API"
 echo "  3) ollama — local model via Ollama"
-read -rp "  Choose [1]: " ai_choice
+read -rp "  Choose [1]: " ai_choice < /dev/tty
 ai_choice="${ai_choice:-1}"
 
 case "$ai_choice" in
   2)
-    read -rp "  OpenAI API key: " openai_key
+    read -rp "  OpenAI API key: " openai_key < /dev/tty
     sed -i.bak "s|^AI_PROVIDER=.*|AI_PROVIDER=openai|" .env && rm -f .env.bak
     sed -i.bak "s|^OPENAI_API_KEY=.*|OPENAI_API_KEY=${openai_key}|" .env && rm -f .env.bak
     echo "  ✓ AI_PROVIDER=openai"
     ;;
   3)
-    read -rp "  Ollama base URL [http://localhost:11434]: " ollama_url
+    read -rp "  Ollama base URL [http://localhost:11434]: " ollama_url < /dev/tty
     ollama_url="${ollama_url:-http://localhost:11434}"
-    read -rp "  Ollama model    [llama3.2]: " ollama_model
+    read -rp "  Ollama model    [llama3.2]: " ollama_model < /dev/tty
     ollama_model="${ollama_model:-llama3.2}"
     sed -i.bak "s|^AI_PROVIDER=.*|AI_PROVIDER=ollama|" .env && rm -f .env.bak
     sed -i.bak "s|^OLLAMA_BASE_URL=.*|OLLAMA_BASE_URL=${ollama_url}|" .env && rm -f .env.bak
@@ -119,16 +119,39 @@ case "$ai_choice" in
     ;;
 esac
 
+# ── Email (SMTP) ───────────────────────────────────────────────────────────────
+echo -e "\n${BOLD}Email — SMTP — optional${RESET}"
+read -rp "  SMTP host [leave blank to skip]: " smtp_host < /dev/tty
+
+if [ -n "$smtp_host" ]; then
+  read -rp "  SMTP port        [587]: " smtp_port < /dev/tty
+  smtp_port="${smtp_port:-587}"
+  read -rp "  SMTP username    [leave blank if not required]: " smtp_user < /dev/tty
+  read -rsp "  SMTP password    [leave blank if not required]: " smtp_pass < /dev/tty
+  echo ""
+  read -rp "  SMTP from email  [noreply@example.com]: " smtp_from < /dev/tty
+  smtp_from="${smtp_from:-noreply@example.com}"
+  
+  sed -i.bak "s|^SMTP_HOST=.*|SMTP_HOST=${smtp_host}|" .env && rm -f .env.bak
+  sed -i.bak "s|^SMTP_PORT=.*|SMTP_PORT=${smtp_port}|" .env && rm -f .env.bak
+  [ -n "$smtp_user" ] && sed -i.bak "s|^SMTP_USER=.*|SMTP_USER=${smtp_user}|" .env && rm -f .env.bak
+  [ -n "$smtp_pass" ] && sed -i.bak "s|^SMTP_PASS=.*|SMTP_PASS=${smtp_pass}|" .env && rm -f .env.bak
+  sed -i.bak "s|^SMTP_FROM=.*|SMTP_FROM=${smtp_from}|" .env && rm -f .env.bak
+  echo "  ✓ SMTP configured"
+else
+  echo -e "  ${YELLOW}─ Skipped — SMTP emails will not be sent${RESET}"
+fi
+
 # ── Email (Resend) ─────────────────────────────────────────────────────────────
-echo -e "\n${BOLD}Email — optional (https://resend.com)${RESET}"
+echo -e "\n${BOLD}Email — Resend — optional (https://resend.com)${RESET}"
 echo "  Used for application confirmation, status updates, and data retention warnings."
-read -rp "  Resend API key [leave blank to skip]: " resend_key
+read -rp "  Resend API key [leave blank to skip]: " resend_key < /dev/tty
 
 if [ -n "$resend_key" ]; then
-  read -rp "  From address      [noreply@vekt.io]: " email_from
+  read -rp "  From address      [noreply@vekt.io]: " email_from < /dev/tty
   email_from="${email_from:-noreply@vekt.io}"
-  read -rp "  Support email     [leave blank to skip]: " support_email
-  read -rp "  Privacy contact   [leave blank to skip]: " privacy_email
+  read -rp "  Support email     [leave blank to skip]: " support_email < /dev/tty
+  read -rp "  Privacy contact   [leave blank to skip]: " privacy_email < /dev/tty
   sed -i.bak "s|^RESEND_API_KEY=.*|RESEND_API_KEY=${resend_key}|" .env && rm -f .env.bak
   sed -i.bak "s|^EMAIL_FROM=.*|EMAIL_FROM=${email_from}|" .env && rm -f .env.bak
   [ -n "$support_email" ] && sed -i.bak "s|^SUPPORT_EMAIL=.*|SUPPORT_EMAIL=${support_email}|" .env && rm -f .env.bak
@@ -141,7 +164,7 @@ fi
 # ── Start ──────────────────────────────────────────────────────────────────────
 echo -e "\n${BOLD}Starting Vekt...${RESET}"
 docker compose pull
-docker compose up -d
+docker compose -p vekt up -d
 
 echo ""
 echo -e "${GREEN}${BOLD}Done!${RESET}"
