@@ -1,3 +1,5 @@
+name: vekt
+
 services:
   inngest:
     image: inngest/inngest:latest
@@ -11,6 +13,7 @@ services:
     restart: unless-stopped
 
   app:
+    container_name: vekt-app
     image: ghcr.io/behnoudmst/vekt:latest
     ports:
       - "3000:3000"
