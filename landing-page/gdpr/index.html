@@ -20,7 +20,14 @@
       <img src="../logo.png" alt="Vekt logo" />
       <span class="nav-brand-name">Vekt</span>
     </a>
-    <div class="nav-links">
+    <button class="hamburger-btn" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+    </button>
+    <div class="nav-links" id="nav-menu">
       <a href="../" class="nav-link">Home</a>
       <a href="../vs-ats/" class="nav-link">ATS vs orchestration</a>
       <a href="../architecture/" class="nav-link">Architecture</a>
@@ -127,5 +134,23 @@
       <a href="../vetting/" class="footer-link">Structured candidate vetting</a>
     </div>
   </footer>
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('nav-menu');
+
+    if (hamburger && navMenu) {
+      hamburger.addEventListener('click', () => {
+        navMenu.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', navMenu.classList.contains('open') ? 'true' : 'false');
+      });
+
+      navMenu.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          navMenu.classList.remove('open');
+          hamburger.setAttribute('aria-expanded', 'false');
+        });
+      });
+    }
+  </script>
 </body>
 </html>
