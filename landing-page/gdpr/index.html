@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GDPR-Compliant Recruiting Workflows | Vekt</title>
+  <meta name="description" content="GDPR-compliant recruiting with candidate data deletion, retention controls, auditability, and self-hosted workflow ownership." />
+  <meta property="og:title" content="GDPR-Compliant Recruiting Workflows | Vekt" />
+  <meta property="og:description" content="How recruitment orchestration supports GDPR-compliant recruiting." />
+  <meta property="og:image" content="../logo.png" />
+  <link rel="icon" href="../logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../pages.css" />
+</head>
+<body>
+  <nav>
+    <a href="../" class="nav-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="nav-brand-name">Vekt</span>
+    </a>
+    <div class="nav-links">
+      <a href="../" class="nav-link">Home</a>
+      <a href="../vs-ats/" class="nav-link">ATS vs orchestration</a>
+      <a href="../architecture/" class="nav-link">Architecture</a>
+      <a href="../opensource/" class="nav-link">Open source</a>
+      <a href="../vetting/" class="nav-link">Vetting</a>
+      <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="nav-link-primary">GitHub</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="badge"><span class="badge-dot"></span>Privacy and compliance</div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>GDPR-compliant recruiting</h1>
+          <p>GDPR-compliant recruiting requires more than a privacy statement. The system has to capture lawful basis, enforce retention windows, delete candidate data on schedule, and preserve logs that explain how an applicant moved through the hiring workflow.</p>
+          <p>Many hiring products treat compliance as a documentation layer around a general-purpose database. That leaves operational gaps when a profile must be retained for a limited period, removed from storage, or reviewed under a subject access or deletion request.</p>
+          <p>Recruitment orchestration handles those requirements more directly because workflows can encode when data is created, when it is evaluated, and when it must be removed. Vekt uses that model to connect hiring actions with enforceable privacy behavior.</p>
+        </div>
+        <aside class="hero-panel">
+          <h2>Privacy controls</h2>
+          <ul class="text-list">
+            <li>Candidate records can be retained for a configurable period and deleted automatically.</li>
+            <li>Resume files are stored outside the public web root and served through controlled routes.</li>
+            <li>Compliance is easier to audit when the hiring flow is modeled as <a class="inline-link" href="../architecture/">observable events and logs</a>.</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-label">Problem</div>
+      <h2 class="section-title">Why privacy breaks in conventional hiring tools</h2>
+      <p class="section-desc">If an organization cannot inspect where applicant documents live, which email events were sent, or when a retention deadline expires, privacy compliance depends on manual workarounds.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Data accumulates by default</h2>
+          <p>Many systems retain profiles indefinitely because deletion is operationally inconvenient. That creates unnecessary risk when the lawful basis for storing candidate data is time-limited.</p>
+        </article>
+        <article class="card">
+          <h2>Policy drifts away from implementation</h2>
+          <p>Privacy controls are only reliable when retention, access, and deletion are implemented in the same system that evaluates the candidate.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Mechanism</div>
+      <h2 class="section-title">How data retention is enforced</h2>
+      <p class="section-desc">A workflow can apply retention logic as a scheduled operation rather than as an administrative reminder.</p>
+      <div class="mechanism">
+        <h2>Retention and deletion as workflow stages</h2>
+        <p>After an individual applies, the system stores the candidate record and resume file with a retention horizon. Status updates, warning emails, and purge tasks run against that same record. When the retention period expires, the workflow deletes the database entry and the associated file.</p>
+        <p>This is where <a class="inline-link" href="../vs-ats/">recruitment orchestration differs from ATS software</a>. The privacy rule is part of system execution, not a separate compliance checklist.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Implications</div>
+      <h2 class="section-title">Privacy and GDPR implications</h2>
+      <p class="section-desc">The practical questions are concrete: what is stored, why it is stored, who can access it, and when it is deleted.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Lawful basis and data minimization</h2>
+          <p>Structured workflows make it easier to justify each field and each document collected from the applicant. They also reduce the incentive to retain unused profile data.</p>
+        </article>
+        <article class="card">
+          <h2>Access control and auditability</h2>
+          <p>When resume access and status changes are mediated by authenticated routes and logs, teams can inspect how personal data was used and by whom.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="page-links">
+        <a class="page-link-card card" href="../architecture/">
+          <div class="card-title">Auditable hiring architecture</div>
+          <p>See how logs, scoring, and workflow transitions support decision traceability.</p>
+        </a>
+        <a class="page-link-card card" href="../opensource/">
+          <div class="card-title">Self-hosting and data ownership</div>
+          <p>Understand why source visibility and infrastructure control matter for candidate data deletion.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="closing-box">
+        <p>Vekt approaches GDPR-compliant recruiting as a systems problem. Privacy depends on how workflows retain, audit, and delete candidate data, not only on what policy documents promise.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../" class="footer-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="footer-brand-name">Vekt</span>
+    </a>
+    <span class="footer-meta">Privacy-first hiring</span>
+    <div class="footer-links">
+      <a href="../vs-ats/" class="footer-link">ATS vs recruitment orchestration</a>
+      <a href="../architecture/" class="footer-link">Auditability and decision traceability</a>
+      <a href="../opensource/" class="footer-link">Self-hosting and data ownership</a>
+      <a href="../vetting/" class="footer-link">Structured candidate vetting</a>
+    </div>
+  </footer>
+</body>
+</html>

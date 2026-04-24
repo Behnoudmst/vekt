@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Structured Candidate Vetting Workflow | Vekt</title>
+  <meta name="description" content="Structured candidate vetting with job-specific questions, explainable scoring, privacy-first workflows, and auditable hiring decisions." />
+  <meta property="og:title" content="Structured Candidate Vetting Workflow | Vekt" />
+  <meta property="og:description" content="How structured candidate vetting works inside Vekt recruitment orchestration." />
+  <meta property="og:image" content="../logo.png" />
+  <link rel="icon" href="../logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../pages.css" />
+</head>
+<body>
+  <nav>
+    <a href="../" class="nav-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="nav-brand-name">Vekt</span>
+    </a>
+    <div class="nav-links">
+      <a href="../" class="nav-link">Home</a>
+      <a href="../vs-ats/" class="nav-link">ATS vs orchestration</a>
+      <a href="../gdpr/" class="nav-link">GDPR</a>
+      <a href="../architecture/" class="nav-link">Architecture</a>
+      <a href="../opensource/" class="nav-link">Open source</a>
+      <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="nav-link-primary">GitHub</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="badge"><span class="badge-dot"></span>Evaluation mechanics</div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>Structured candidate vetting</h1>
+          <p>Structured candidate vetting means every applicant is evaluated through a defined set of job-relevant inputs rather than through informal resume scanning. The system should validate question answers, calculate scores consistently, and preserve the reasoning behind each outcome.</p>
+          <p>Unstructured screening creates uneven decisions because recruiters rely on different heuristics and vendor tools often collapse multiple steps into one ranking. That makes it harder to compare profiles fairly and harder to audit how a shortlist was formed.</p>
+          <p>Recruitment orchestration supports better structure because the hiring workflow can require explicit inputs at each stage. Vekt uses screening questions, resume extraction, weighted scoring, and recruiter review as connected parts of the same evaluation process.</p>
+        </div>
+        <aside class="hero-panel">
+          <h2>Vetting components</h2>
+          <ul class="text-list">
+            <li>Job-specific questions create explicit evaluation criteria.</li>
+            <li>Weighted scoring keeps review rules visible and repeatable.</li>
+            <li>Explainability improves when vetting outputs feed into <a class="inline-link" href="../architecture/">auditable hiring decisions</a>.</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-label">Process</div>
+      <h2 class="section-title">How structured vetting works</h2>
+      <p class="section-desc">The goal is not to remove judgment. The goal is to make candidate evaluation more explicit, consistent, and reviewable.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Questions tied to the target job</h2>
+          <p>Each role can define screening questions that belong to that specific job. The system validates submitted answers so a profile cannot attach answers from a different job context.</p>
+        </article>
+        <article class="card">
+          <h2>Scoring tied to visible criteria</h2>
+          <p>Resume content is evaluated against the job description using a weighted formula. That score becomes one traceable input in the decision flow rather than an unexplained rank.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="mechanism">
+        <h2>How candidate scoring is structured</h2>
+        <p>After an individual applies, the resume text is extracted and compared with the role definition. The system evaluates relevance and experience, computes a weighted score, and records the output alongside the candidate's answers and workflow state.</p>
+        <p>This mechanism matters because it turns evaluation into a reproducible process. It also supports <a class="inline-link" href="../gdpr/">privacy-aware retention</a> by keeping scoring, status changes, and later deletion rules attached to the same profile lifecycle.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Trade-offs</div>
+      <h2 class="section-title">Why structured vetting is preferable to resume filtering</h2>
+      <p class="section-desc">Resume filtering can be fast, but it usually hides the basis for evaluation. Structured vetting is slower to define initially and stronger to govern over time.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>More setup, more clarity</h2>
+          <p>Teams must define job-specific criteria and maintain question sets, but they gain clearer evaluation logic and more stable review standards.</p>
+        </article>
+        <article class="card">
+          <h2>Better fit for compliance-sensitive teams</h2>
+          <p>Explicit workflows align with <a class="inline-link" href="../vs-ats/">recruitment orchestration</a> because each decision stage can be audited instead of inferred after the fact.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="page-links">
+        <a class="page-link-card card" href="../architecture/">
+          <div class="card-title">Auditable hiring decisions</div>
+          <p>See how the vetting pipeline remains visible through logs, scores, and workflow states.</p>
+        </a>
+        <a class="page-link-card card" href="../opensource/">
+          <div class="card-title">Open-source recruiting platform</div>
+          <p>See why teams may want direct control over the infrastructure that scores and stores applicants.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="closing-box">
+        <p>Vekt treats vetting as a structured workflow, not as hidden resume filtering. That is the operational basis for explainable scoring, repeatable review, and auditable hiring infrastructure.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../" class="footer-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="footer-brand-name">Vekt</span>
+    </a>
+    <span class="footer-meta">Structured candidate evaluation</span>
+    <div class="footer-links">
+      <a href="../vs-ats/" class="footer-link">ATS vs recruitment orchestration</a>
+      <a href="../gdpr/" class="footer-link">Privacy and GDPR implications</a>
+      <a href="../architecture/" class="footer-link">Auditability and decision traceability</a>
+      <a href="../opensource/" class="footer-link">Self-hosting and data ownership</a>
+    </div>
+  </footer>
+</body>
+</html>

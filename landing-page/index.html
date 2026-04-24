@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vekt — AI-Powered Recruitment Platform</title>
-  <meta name="description" content="Open source, self-hosted recruitment platform that automates candidate screening using AI. Full data ownership, no SaaS lock-in." />
-  <meta property="og:title" content="Vekt — AI-Powered Recruitment Platform" />
-  <meta property="og:description" content="Open source, self-hosted recruitment platform powered by AI." />
+  <title>Recruitment Orchestration Engine for Hiring | Vekt</title>
+  <meta name="description" content="Recruitment orchestration engine for privacy-first hiring with structured vetting, GDPR-compliant recruiting, auditable decisions, and self-hosted data ownership." />
+  <meta property="og:title" content="Recruitment Orchestration Engine for Hiring | Vekt" />
+  <meta property="og:description" content="Open-source recruitment orchestration engine for privacy-first, GDPR-compliant, auditable hiring." />
   <meta property="og:image" content="./logo.png" />
   <link rel="icon" href="./logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -585,10 +585,54 @@
     /* ── SVG ICONS ── */
     .icon { display: inline-block; vertical-align: middle; }
 
-    /* ── RESPONSIVE ── */
+    /* ── HAMBURGER MENU ── */
+    .hamburger-btn {
+      display: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      color: var(--text);
+      font-size: 1.25rem;
+      z-index: 101;
+    }
+    .hamburger-btn:focus { outline: none; }
+    
     @media (max-width: 700px) {
+      .hamburger-btn { display: flex; align-items: center; justify-content: center; }
       nav { padding: 0 1rem; }
-      .nav-link:not(.nav-link-primary) { display: none; }
+      .nav-links {
+        position: absolute;
+        top: 56px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        gap: 0;
+        background: rgba(255,255,255,0.88);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .nav-links.open {
+        max-height: 500px;
+      }
+      .nav-link {
+        padding: 12px 1rem;
+        border-radius: 0;
+        font-size: 0.85rem;
+        width: 100%;
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-link:hover { background: var(--accent-dim); }
+      .nav-link-primary {
+        width: 100%;
+        border-radius: 0;
+        padding: 12px 1rem;
+        border: none;
+      }
       .hero { padding: 120px 1.25rem 60px; }
       section { padding: 60px 1.25rem; }
       .roles-grid { grid-template-columns: 1fr; }
@@ -607,9 +651,21 @@
       <img src="./logo.png" alt="Vekt logo" />
       <span class="nav-brand-name">Vekt</span>
     </a>
-    <div class="nav-links">
+    <button class="hamburger-btn" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
+    <div class="nav-links" id="nav-menu">
       <a href="#features" class="nav-link">Features</a>
       <a href="#how-it-works" class="nav-link">How it works</a>
+      <a href="./vs-ats/" class="nav-link">ATS vs orchestration</a>
+      <a href="./gdpr/" class="nav-link">GDPR</a>
+      <a href="./architecture/" class="nav-link">Architecture</a>
+      <a href="./opensource/" class="nav-link">Open source</a>
+      <a href="./vetting/" class="nav-link">Vetting</a>
       <a href="https://demo.vekt.website" target="_blank" rel="noopener" class="nav-link">Live demo</a>
       <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="nav-link-primary">
         <svg class="icon" width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
@@ -624,11 +680,11 @@
   <div class="hero">
     <div class="badge">
       <span class="badge-dot"></span>
-      Open source · MIT License · Self-hosted
+      Open source · Auditable · Self-hosted
     </div>
-    <h1>AI-powered recruiting,<br /><em>fully on your own terms</em></h1>
+    <h1>Recruitment orchestration,<br /><em>fully on your own terms</em></h1>
     <p class="hero-desc">
-      Vekt automates candidate screening with AI while keeping you in control of your data and infrastructure. No SaaS lock-in, no black box.
+      Vekt is a recruitment orchestration engine for privacy-first hiring. It structures candidate evaluation, audit logs, and data retention around explicit workflows instead of treating hiring as a resume inbox.
     </p>
     <div class="hero-actions">
       <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="btn btn-primary">
@@ -685,8 +741,8 @@
   <!-- FEATURES -->
   <section id="features">
     <div class="section-label">Capabilities</div>
-    <h2 class="section-title">Everything you need to screen at scale</h2>
-    <p class="section-desc">Built for teams that want the power of AI-assisted recruiting without handing data to a third party.</p>
+    <h2 class="section-title">Everything you need to orchestrate candidate evaluation</h2>
+    <p class="section-desc">Built for teams that need structured vetting, explainable automation, and privacy controls without handing candidate data to a third party.</p>
     <div class="features-grid">
       <div class="feature-card">
         <div class="feature-icon">🤖</div>
@@ -908,6 +964,11 @@
     </a>
     <span class="footer-meta">MIT License · Open Source</span>
     <div class="footer-links">
+      <a href="./vs-ats/" class="footer-link">ATS vs orchestration</a>
+      <a href="./gdpr/" class="footer-link">GDPR</a>
+      <a href="./architecture/" class="footer-link">Architecture</a>
+      <a href="./opensource/" class="footer-link">Open source</a>
+      <a href="./vetting/" class="footer-link">Vetting</a>
       <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="footer-link">GitHub</a>
       <a href="https://demo.vekt.website" target="_blank" rel="noopener" class="footer-link">Live demo</a>
       <a href="https://demo.vekt.website/api-docs" target="_blank" rel="noopener" class="footer-link">API docs</a>
@@ -915,5 +976,24 @@
     </div>
   </footer>
 
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('nav-menu');
+    
+    if (hamburger) {
+      hamburger.addEventListener('click', () => {
+        navMenu.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', navMenu.classList.contains('open'));
+      });
+      
+      // Close menu when a link is clicked
+      navMenu.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          navMenu.classList.remove('open');
+          hamburger.setAttribute('aria-expanded', 'false');
+        });
+      });
+    }
+  </script>
 </body>
 </html>

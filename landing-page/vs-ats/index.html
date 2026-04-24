@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ATS vs Recruitment Orchestration Engine | Vekt</title>
+  <meta name="description" content="ATS vs recruitment orchestration explained for privacy-first hiring, structured vetting, auditable decisions, and self-hosted workflow control." />
+  <meta property="og:title" content="ATS vs Recruitment Orchestration Engine | Vekt" />
+  <meta property="og:description" content="A technical comparison between ATS software and recruitment orchestration." />
+  <meta property="og:image" content="../logo.png" />
+  <link rel="icon" href="../logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../pages.css" />
+</head>
+<body>
+  <nav>
+    <a href="../" class="nav-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="nav-brand-name">Vekt</span>
+    </a>
+    <div class="nav-links">
+      <a href="../" class="nav-link">Home</a>
+      <a href="../gdpr/" class="nav-link">GDPR</a>
+      <a href="../architecture/" class="nav-link">Architecture</a>
+      <a href="../opensource/" class="nav-link">Open source</a>
+      <a href="../vetting/" class="nav-link">Vetting</a>
+      <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="nav-link-primary">GitHub</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="badge"><span class="badge-dot"></span>Comparative framing</div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>ATS vs recruitment orchestration</h1>
+          <p>ATS vs recruitment orchestration is not a branding distinction. It is a system design distinction. An ATS is optimized to track applicant records, while recruitment orchestration is optimized to execute, evaluate, and audit hiring workflows.</p>
+          <p>That difference matters when teams need more than a database of candidates. Privacy-aware organizations need to understand how an individual was scored, which workflow produced a rejection or shortlist, and when profile data will be retained or deleted.</p>
+          <p>Recruitment orchestration is the correct abstraction when the hiring process includes structured vetting, explainable AI, recruiter overrides, and compliance-sensitive data handling. Vekt is built around those explicit steps rather than around passive record storage.</p>
+        </div>
+        <aside class="hero-panel">
+          <h2>What changes</h2>
+          <ul class="text-list">
+            <li>Records become workflows with events, logs, and state transitions.</li>
+            <li>Resume filtering becomes <a class="inline-link" href="../vetting/">structured candidate vetting</a>.</li>
+            <li>Vendor-managed opacity is replaced with <a class="inline-link" href="../architecture/">auditable hiring decisions</a>.</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-label">Breakdown</div>
+      <h2 class="section-title">Why ATS software breaks down</h2>
+      <p class="section-desc">ATS products are useful when the primary requirement is to collect resumes and assign a status. They break down when engineering, security, and legal teams need to inspect the mechanics of evaluation and retention.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Tracking does not explain decisions</h2>
+          <p>A candidate profile may show a rejection status, but it often does not expose the scoring inputs, workflow events, or logic that produced the result. That is a problem for teams that must audit automated decisions.</p>
+        </article>
+        <article class="card">
+          <h2>Compliance cannot stay outside the system</h2>
+          <p>When retention and deletion live in policy documents rather than in code, data handling depends on manual discipline. <a class="inline-link" href="../gdpr/">GDPR-compliant recruiting</a> requires tighter operational boundaries.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Definition</div>
+      <h2 class="section-title">What recruitment orchestration means</h2>
+      <p class="section-desc">Recruitment orchestration means the hiring process is modeled as explicit workflow stages. Each stage can evaluate, score, notify, retain, delete, or escalate a candidate record using observable rules.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Workflows instead of static records</h2>
+          <p>Submission, resume extraction, question validation, scoring, recruiter review, and delayed email delivery are separate events with visible transitions.</p>
+        </article>
+        <article class="card">
+          <h2>Operational control instead of hidden features</h2>
+          <p>The organization owns the workflow logic, its data, and its logs. That fits a <a class="inline-link" href="../opensource/">self-hosted open-source recruiting platform</a> better than a closed vendor stack.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="mechanism">
+        <h2>How the architectural difference appears in practice</h2>
+        <p>In Vekt, an applicant submission triggers a workflow. Resume text is extracted, answers are validated against the target job, an evaluation score is computed, the reasoning is recorded, and a status change schedules further actions. That chain is inspectable end to end.</p>
+        <p>In a typical ATS model, the same process is compressed into vendor features that expose less of the underlying decision path. Recruitment orchestration keeps the mechanism visible, which is essential for traceability and change control.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="comparison">
+        <h2>Recruitment orchestration vs ATS</h2>
+        <p>The comparison below focuses on architecture rather than feature checklists.</p>
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Concern</th>
+              <th scope="col">ATS</th>
+              <th scope="col">Recruitment orchestration</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Primary model</td>
+              <td>Track candidate records</td>
+              <td>Execute and audit hiring workflows</td>
+            </tr>
+            <tr>
+              <td>Automation visibility</td>
+              <td>Often abstracted behind product features</td>
+              <td>Scores, states, and events remain explicit</td>
+            </tr>
+            <tr>
+              <td>Privacy operations</td>
+              <td>Policy-led and sometimes manual</td>
+              <td>Retention and deletion built into system behavior</td>
+            </tr>
+            <tr>
+              <td>Infrastructure control</td>
+              <td>Vendor-dependent</td>
+              <td>Supports self-hosting and direct ownership</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="closing-box">
+        <p>Vekt is not an ATS alternative dressed up with new language. It defines a different category: recruitment orchestration for teams that need structured vetting, explainable workflows, and direct control over candidate data.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../" class="footer-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="footer-brand-name">Vekt</span>
+    </a>
+    <span class="footer-meta">Recruitment orchestration engine</span>
+    <div class="footer-links">
+      <a href="../gdpr/" class="footer-link">Privacy and GDPR implications</a>
+      <a href="../architecture/" class="footer-link">Auditability and decision traceability</a>
+      <a href="../opensource/" class="footer-link">Self-hosting and data ownership</a>
+      <a href="../vetting/" class="footer-link">Structured candidate vetting</a>
+    </div>
+  </footer>
+</body>
+</html>

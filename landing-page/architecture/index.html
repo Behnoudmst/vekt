@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Auditable Hiring Decisions Architecture | Vekt</title>
+  <meta name="description" content="Auditable hiring decisions with explainable AI, workflow logs, structured scoring, and privacy-first recruitment orchestration." />
+  <meta property="og:title" content="Auditable Hiring Decisions Architecture | Vekt" />
+  <meta property="og:description" content="How Vekt structures explainable and auditable hiring workflows." />
+  <meta property="og:image" content="../logo.png" />
+  <link rel="icon" href="../logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../pages.css" />
+</head>
+<body>
+  <nav>
+    <a href="../" class="nav-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="nav-brand-name">Vekt</span>
+    </a>
+    <div class="nav-links">
+      <a href="../" class="nav-link">Home</a>
+      <a href="../vs-ats/" class="nav-link">ATS vs orchestration</a>
+      <a href="../gdpr/" class="nav-link">GDPR</a>
+      <a href="../opensource/" class="nav-link">Open source</a>
+      <a href="../vetting/" class="nav-link">Vetting</a>
+      <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="nav-link-primary">GitHub</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="badge"><span class="badge-dot"></span>Architecture and traceability</div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>Auditable hiring decisions</h1>
+          <p>Auditable hiring decisions require more than a score on a dashboard. The system needs to preserve the events, inputs, state changes, and reviewer actions that explain how a candidate moved from application to outcome.</p>
+          <p>Black-box evaluation creates risk for technical and compliance-aware teams because it is difficult to inspect what was evaluated, which workflow executed, and whether the result can be explained to an internal reviewer or an affected applicant.</p>
+          <p>Recruitment orchestration makes auditing possible by preserving each workflow step as an observable operation. Vekt uses that model so AI scoring and human review remain visible within the same decision path.</p>
+        </div>
+        <aside class="hero-panel">
+          <h2>Traceability principles</h2>
+          <ul class="text-list">
+            <li>Decision states follow explicit transitions rather than hidden status jumps.</li>
+            <li>Scoring logic is paired with reasoning and recruiter overrides.</li>
+            <li>Auditability becomes more reliable when the system is <a class="inline-link" href="../opensource/">self-hosted and observable</a>.</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-label">Why it matters</div>
+      <h2 class="section-title">Auditability and decision traceability</h2>
+      <p class="section-desc">A decision is only auditable if a reviewer can reconstruct the mechanism behind it. That includes workflow events, score computation, reviewer actions, and retention context.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Opaque ranking is hard to govern</h2>
+          <p>If the system only exposes a final rank, teams cannot inspect whether the applicant was evaluated against the intended job criteria or whether a manual override changed the outcome.</p>
+        </article>
+        <article class="card">
+          <h2>Logs make operational review possible</h2>
+          <p>Structured logs and status history let teams audit when the candidate was scored, which workflow ran, and how later actions such as emails or deletion were scheduled.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="mechanism">
+        <h2>How candidate scoring is structured</h2>
+        <p>An application enters the workflow with a resume file and job context. Resume text is extracted, evaluation inputs are assembled, and a weighted score is calculated from relevance and experience. The system records the resulting score and associated reasoning alongside the candidate record.</p>
+        <p>Because the scoring stage is explicit, it can be inspected, overridden, or re-run within the same orchestration model. That is the architectural basis for explainable AI hiring rather than an appeal to AI as an authority.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Related concerns</div>
+      <h2 class="section-title">AI usage with explainability guarantees</h2>
+      <p class="section-desc">Explainability does not mean certainty. It means the system can show the basis of the evaluation and how it affected the eventual candidate status.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Human review remains part of the loop</h2>
+          <p>Recruiters review applicants sorted by score with the underlying reasoning visible. That keeps automated evaluation subordinate to a reviewable hiring process.</p>
+        </article>
+        <article class="card">
+          <h2>Privacy remains linked to traceability</h2>
+          <p>Auditing is stronger when teams can connect scoring events with <a class="inline-link" href="../gdpr/">retention and deletion controls</a> applied to the same profile.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="page-links">
+        <a class="page-link-card card" href="../vs-ats/">
+          <div class="card-title">ATS vs recruitment orchestration</div>
+          <p>See why workflow visibility is the main architectural difference.</p>
+        </a>
+        <a class="page-link-card card" href="../vetting/">
+          <div class="card-title">Structured candidate vetting</div>
+          <p>Follow how screening questions and scoring interact in the evaluation pipeline.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="closing-box">
+        <p>Vekt treats auditable hiring decisions as a property of system design. If a workflow cannot be inspected, scored, traced, and reviewed, it is not a robust foundation for compliance-sensitive hiring.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../" class="footer-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="footer-brand-name">Vekt</span>
+    </a>
+    <span class="footer-meta">Auditable workflows</span>
+    <div class="footer-links">
+      <a href="../gdpr/" class="footer-link">Privacy and GDPR implications</a>
+      <a href="../vs-ats/" class="footer-link">ATS vs recruitment orchestration</a>
+      <a href="../opensource/" class="footer-link">Self-hosting and data ownership</a>
+      <a href="../vetting/" class="footer-link">Structured candidate vetting</a>
+    </div>
+  </footer>
+</body>
+</html>

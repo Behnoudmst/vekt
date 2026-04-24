@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open-Source Recruiting Platform Control | Vekt</title>
+  <meta name="description" content="Open-source recruiting platform with self-hosted hiring workflows, candidate data ownership, auditability, and GDPR-compliant retention." />
+  <meta property="og:title" content="Open-Source Recruiting Platform Control | Vekt" />
+  <meta property="og:description" content="Why self-hosting matters for recruitment orchestration and data ownership." />
+  <meta property="og:image" content="../logo.png" />
+  <link rel="icon" href="../logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../pages.css" />
+</head>
+<body>
+  <nav>
+    <a href="../" class="nav-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="nav-brand-name">Vekt</span>
+    </a>
+    <div class="nav-links">
+      <a href="../" class="nav-link">Home</a>
+      <a href="../vs-ats/" class="nav-link">ATS vs orchestration</a>
+      <a href="../gdpr/" class="nav-link">GDPR</a>
+      <a href="../architecture/" class="nav-link">Architecture</a>
+      <a href="../vetting/" class="nav-link">Vetting</a>
+      <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="nav-link-primary">GitHub</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="badge"><span class="badge-dot"></span>Source visibility and ownership</div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>Open-source recruiting platform</h1>
+          <p>An open-source recruiting platform matters when hiring workflows cannot be outsourced to a closed vendor stack. Teams with privacy, security, or legal obligations need to inspect how candidate data is processed and where workflow decisions are made.</p>
+          <p>Self-hosting changes the operational model. The organization owns the application, the workflow execution, the logs, and the underlying data store. That reduces vendor lock-in and makes it easier to align hiring infrastructure with internal standards.</p>
+          <p>Vekt uses recruitment orchestration to turn those ownership requirements into a practical system. Structured vetting, status updates, audit logs, and retention jobs remain visible in code and in deployment.</p>
+        </div>
+        <aside class="hero-panel">
+          <h2>Why ownership matters</h2>
+          <ul class="text-list">
+            <li>Candidate documents and profile data remain under direct administrative control.</li>
+            <li>Teams can inspect the workflow that evaluates, audits, retains, and deletes applicant data.</li>
+            <li>Self-hosting works best when the system already models privacy through <a class="inline-link" href="../gdpr/">explicit retention behavior</a>.</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-label">Infrastructure</div>
+      <h2 class="section-title">Self-hosting and data ownership</h2>
+      <p class="section-desc">Ownership is not only about where the server runs. It is about who can inspect, change, and audit the workflow that handles candidate records.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Control over storage and access</h2>
+          <p>Resume files stored outside the public web root, authenticated file serving, and local infrastructure control reduce the distance between policy and implementation.</p>
+        </article>
+        <article class="card">
+          <h2>Control over workflow changes</h2>
+          <p>Source visibility makes it possible to inspect how screening, notification, and deletion jobs operate without depending on undocumented vendor behavior.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="mechanism">
+        <h2>How workflows stay under direct control</h2>
+        <p>The hiring flow is defined by application code and infrastructure the organization can run itself. Candidate submissions trigger workflow functions, status changes schedule emails, and purge operations remove expired data according to retention settings.</p>
+        <p>Because those mechanisms are part of the deployable system, teams can audit them, modify them, and align them with internal review requirements. That is a stronger posture than relying on a vendor-managed interpretation of process rules.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Category framing</div>
+      <h2 class="section-title">Open source supports recruitment orchestration</h2>
+      <p class="section-desc">Recruitment orchestration emphasizes explicit workflows. Open source complements that by exposing the implementation surface that controls those workflows.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Auditability improves with source visibility</h2>
+          <p>When teams can inspect the code path behind a candidate decision, they can review assumptions, validate changes, and connect workflow outputs with operational logs.</p>
+        </article>
+        <article class="card">
+          <h2>Vendor lock-in becomes a design choice</h2>
+          <p>Choosing a <a class="inline-link" href="../vs-ats/">workflow-oriented alternative to ATS software</a> is more effective when infrastructure and execution remain portable.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="page-links">
+        <a class="page-link-card card" href="../architecture/">
+          <div class="card-title">Auditability and decision traceability</div>
+          <p>See how logs and scoring records support operational review.</p>
+        </a>
+        <a class="page-link-card card" href="../gdpr/">
+          <div class="card-title">GDPR-compliant recruiting</div>
+          <p>See how ownership supports retention and candidate data deletion controls.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="closing-box">
+        <p>Vekt is open-source recruitment infrastructure, not a closed hiring appliance. Self-hosting and data ownership matter because hiring workflows carry legal, operational, and architectural consequences.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../" class="footer-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="footer-brand-name">Vekt</span>
+    </a>
+    <span class="footer-meta">Self-hosted hiring platform</span>
+    <div class="footer-links">
+      <a href="../vs-ats/" class="footer-link">ATS vs recruitment orchestration</a>
+      <a href="../gdpr/" class="footer-link">Privacy and GDPR implications</a>
+      <a href="../architecture/" class="footer-link">Auditability and decision traceability</a>
+      <a href="../vetting/" class="footer-link">Structured candidate vetting</a>
+    </div>
+  </footer>
+</body>
+</html>
