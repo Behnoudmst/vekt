@@ -90,9 +90,10 @@ sed -i.bak "s|^APP_URL=.*|APP_URL=${app_url}|" .env && rm -f .env.bak
 
 # ── AI provider ────────────────────────────────────────────────────────────────
 echo -e "\n${BOLD}AI provider${RESET}"
-echo "  1) mock   — offline, no API key needed (default)"
-echo "  2) openai — GPT-4o via OpenAI API"
-echo "  3) ollama — local model via Ollama"
+echo "  1) mock       — offline, no API key needed (default)"
+echo "  2) openai     — GPT-4o via OpenAI API"
+echo "  3) openrouter — models via OpenRouter API"
+echo "  4) ollama     — local model via Ollama"
 read -rp "  Choose [1]: " ai_choice < /dev/tty
 ai_choice="${ai_choice:-1}"
 
@@ -104,6 +105,15 @@ case "$ai_choice" in
     echo "  ✓ AI_PROVIDER=openai"
     ;;
   3)
+    read -rp "  OpenRouter API key: " openrouter_key < /dev/tty
+    read -rp "  OpenRouter model [openai/gpt-4o-mini]: " openrouter_model < /dev/tty
+    openrouter_model="${openrouter_model:-openai/gpt-4o-mini}"
+    sed -i.bak "s|^AI_PROVIDER=.*|AI_PROVIDER=openrouter|" .env && rm -f .env.bak
+    sed -i.bak "s|^OPENROUTER_API_KEY=.*|OPENROUTER_API_KEY=${openrouter_key}|" .env && rm -f .env.bak
+    sed -i.bak "s|^OPENROUTER_MODEL=.*|OPENROUTER_MODEL=${openrouter_model}|" .env && rm -f .env.bak
+    echo "  ✓ AI_PROVIDER=openrouter (${openrouter_model})"
+    ;;
+  4)
     read -rp "  Ollama base URL [http://localhost:11434]: " ollama_url < /dev/tty
     ollama_url="${ollama_url:-http://localhost:11434}"
     read -rp "  Ollama model    [llama3.2]: " ollama_model < /dev/tty

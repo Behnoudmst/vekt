@@ -1,4 +1,5 @@
 allowBuilds:
+  '@parcel/watcher': set this to true or false
   '@prisma/engines': true
   '@scarf/scarf': true
   '@tree-sitter-grammars/tree-sitter-yaml': true
