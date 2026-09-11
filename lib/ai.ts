@@ -97,6 +97,65 @@ async function evaluateWithOpenAI(
   }
 }
 
+async function evaluateWithOpenRouter(
+  prompt: string,
+  model = process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini",
+): Promise<EvaluationResult> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+      "HTTP-Referer": process.env.APP_URL ?? "http://localhost:3000",
+      "X-Title": "Vekt",
+    },
+    body: JSON.stringify({
+      model,
+      response_format: { type: "json_object" },
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: prompt },
+      ],
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    logger.error(
+      {
+        provider: "openrouter",
+        model,
+        status: res.status,
+        body: truncateForLog(body),
+      },
+      "AI: OpenRouter request failed",
+    );
+    throw new Error(`OpenRouter API error ${res.status}: ${body}`);
+  }
+
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error("Empty response from OpenRouter");
+
+  try {
+    return JSON.parse(content) as EvaluationResult;
+  } catch (error) {
+    logger.error(
+      {
+        provider: "openrouter",
+        model,
+        content: truncateForLog(String(content)),
+        error,
+      },
+      "AI: failed to parse OpenRouter JSON response",
+    );
+    throw error;
+  }
+}
+
 async function evaluateWithOllama(
   prompt: string,
   model?: string,
@@ -171,6 +230,8 @@ export async function evaluateCandidate(params: {
   try {
     if (provider === "openai") {
       result = await evaluateWithOpenAI(prompt);
+    } else if (provider === "openrouter") {
+      result = await evaluateWithOpenRouter(prompt);
     } else if (provider === "ollama") {
       result = await evaluateWithOllama(prompt);
     } else {

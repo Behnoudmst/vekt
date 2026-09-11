@@ -58,7 +58,7 @@ Use Vekt if you need:
 
 ## Features
 
-- **AI resume scoring** — pluggable provider: `mock` (default), OpenAI, or local Ollama
+- **AI resume scoring** — pluggable provider: `mock` (default), OpenAI, OpenRouter, or local Ollama
 - **Durable evaluation pipeline** — powered by [Inngest](https://inngest.com) (self-hostable); falls back to direct in-process execution when Inngest is not configured
 - **Structured failure logging** — AI provider/API failures, JSON parsing errors, and pipeline step failures are logged with candidate/step/provider context for faster debugging
 - **Screening questions** — per-job `SINGLE` (radio) and `MULTIPLE` (checkbox) questions shown to candidates as a second apply-form step; answers stored and displayed alongside AI reasoning in the recruiter dashboard
@@ -119,7 +119,7 @@ Candidates with $Score_{total} \ge threshold$ (default 75) are marked **Shortlis
 | Database | SQLite via **Prisma 7** + `better-sqlite3` |
 | Auth | **NextAuth v5** — credentials (email + bcrypt password) |
 | AI Pipeline | **Inngest** (durable functions + cron) |
-| AI Providers | Mock · OpenAI · Ollama |
+| AI Providers | Mock · OpenAI · OpenRouter · Ollama |
 | PDF Extraction | **unpdf** |
 | Validation | **Zod** |
 | Logging | **Pino** (structured JSON; pretty-printed in dev) + step-level AI/pipeline error context |
@@ -192,6 +192,7 @@ Set `AI_PROVIDER` in `.env`:
 |---|---|---|
 | `mock` (default) | Random deterministic scores — no external calls | — |
 | `openai` | GPT-4o via OpenAI API | `OPENAI_API_KEY` |
+| `openrouter` | Models via OpenRouter API | `OPENROUTER_API_KEY`, `OPENROUTER_MODEL` |
 | `ollama` | Local model via Ollama | `OLLAMA_BASE_URL`, `OLLAMA_MODEL` |
 
 ---

@@ -22,6 +22,7 @@ const securityHeaders = [
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+  { key: "allowedDevOrigins", value: "http://localhost:3000" },
 ];
 
 const nextConfig: NextConfig = {
