@@ -47,6 +47,11 @@ async function evaluateWithOpenAI(
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
 
+  logger.info(
+    { provider: "openai", model, endpoint: "https://api.openai.com/v1/chat/completions" },
+    "AI: sending evaluation request",
+  );
+
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -103,6 +108,11 @@ async function evaluateWithOpenRouter(
 ): Promise<EvaluationResult> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
+
+  logger.info(
+    { provider: "openrouter", model, endpoint: "https://openrouter.ai/api/v1/chat/completions" },
+    "AI: sending evaluation request",
+  );
 
   const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
@@ -163,6 +173,11 @@ async function evaluateWithOllama(
   const baseUrl = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
   const ollamaModel = model ?? process.env.OLLAMA_MODEL ?? "llama3.2";
 
+  logger.info(
+    { provider: "ollama", model: ollamaModel, endpoint: `${baseUrl}/api/chat` },
+    "AI: sending evaluation request",
+  );
+
   const res = await fetch(`${baseUrl}/api/chat`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -218,6 +233,7 @@ export async function evaluateCandidate(params: {
   resumeText: string;
 }): Promise<{ result: EvaluationResult; promptSnapshot: string }> {
   const provider = (process.env.AI_PROVIDER ?? "mock").toLowerCase();
+  logger.info({ provider }, "AI: selected evaluation provider");
   const prompt = buildPrompt(
     params.jobTitle,
     params.jobDescription,
@@ -236,6 +252,7 @@ export async function evaluateCandidate(params: {
       result = await evaluateWithOllama(prompt);
     } else {
       // Mock provider — returns a deterministic-ish score for development
+      logger.info({ provider: "mock" }, "AI: using mock evaluation provider");
       await new Promise((r) => setTimeout(r, 600));
       const score = Math.round(40 + Math.random() * 60);
       result = {
