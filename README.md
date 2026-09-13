@@ -67,6 +67,9 @@ Use Vekt if you need:
 - **Recruiter dashboard** — per-job applications view sorted by AI score; shortlist, accept, or reject candidates with AI reasoning and screening-question answers
 - **Admin dashboard** — manage recruiter accounts, configure data retention and status email delay, edit email templates
 - **Automated data purge** — Inngest cron job deletes candidate records and resume files that exceed the configured retention window
+- **Human review before rejection** — below-threshold candidates are marked `NEEDS_REVIEW` and no rejection email is sent until a recruiter decides. Fully automated rejection is an explicit admin opt-in (`AUTO_REJECT_BELOW_THRESHOLD`)
+- **Identity redaction** — name, email, phone, URLs, date of birth and declared personal attributes are stripped from CV text before it reaches any AI provider
+- **Traceable decisions** — every evaluation records the provider, exact model, prompt hash and evaluator version, so a score can still be explained after the model behind it is retired
 - **GDPR-compliant** — strictly necessary cookies only, configurable auto-deletion of candidate data, privacy policy included
 - **Secure file handling** — resume PDFs stored outside the web root (`private/uploads/`), served only to authenticated users via a protected API route
 - **Job slugs** — human-readable URLs for every job listing (e.g. `/jobs/ux-ui-designer`)
@@ -87,10 +90,14 @@ Candidate submits application (name, email, PDF CV)
 
 Inngest pipeline triggers (or direct fallback in dev)
   └─ PDF text extracted (unpdf)
-  └─ AI scores the CV against the job description
+  └─ Direct identifiers redacted from the CV text (lib/redact.ts)
+  └─ AI scores the redacted CV against the job description
   └─ Score ≥ threshold  →  status: SHORTLISTED
-     Score < threshold  →  status: REJECTED
-  └─ Status email scheduled (delayed by STATUS_EMAIL_DELAY_HOURS, default 48 h)
+     Score < threshold  →  status: NEEDS_REVIEW   (default — waits for a human)
+                       →  status: REJECTED       (only if AUTO_REJECT_BELOW_THRESHOLD=true)
+  └─ Provenance saved: provider, model, promptHash, evaluatorVersion
+  └─ Status email scheduled ONLY for SHORTLISTED, or for REJECTED when
+     auto-reject is enabled (delayed by STATUS_EMAIL_DELAY_HOURS, default 48 h)
      Email subject/body loaded from admin-editable EmailTemplate table
 
 Recruiter reviews candidates (per-job applications page)
@@ -107,7 +114,9 @@ Inngest cron (daily at 02:00 UTC)
 
 $$Score_{total} = (Score_{relevance} \times 0.4) + (Score_{experience} \times 0.6)$$
 
-Candidates with $Score_{total} \ge threshold$ (default 75) are marked **Shortlisted**.
+Candidates with $Score_{total} \ge threshold$ (default 75) are marked **Shortlisted**. Those below are marked **Needs review** and wait for a recruiter — see [Compliance](#compliance).
+
+> The score is a reading-order suggestion, not a measurement. It is uncalibrated and not comparable across models or prompt versions. See [`docs/compliance/accuracy-and-limitations.md`](docs/compliance/accuracy-and-limitations.md).
 
 ---
 
@@ -316,8 +325,9 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 ## Candidate Status Flow
 
 ```
-APPLIED → ANALYZING → SHORTLISTED → ACCEPTED
-                    ↘ REJECTED
+APPLIED → ANALYZING → SHORTLISTED  → ACCEPTED
+                    ↘ NEEDS_REVIEW → ACCEPTED / SHORTLISTED / REJECTED
+                    ↘ REJECTED       (only when auto-reject is enabled)
 ```
 
 Status-change emails (`SHORTLISTED`, `REJECTED`, `ACCEPTED`) are queued and delivered after a configurable delay (default **48 hours**). If a recruiter changes the status before the delay elapses, the pending email is cancelled and a new delayed email is scheduled for the updated status. Set `STATUS_EMAIL_DELAY_HOURS` to `0` in the Admin Dashboard to send immediately.
@@ -342,6 +352,34 @@ Status-change emails (`SHORTLISTED`, `REJECTED`, `ACCEPTED`) are queued and deli
 | `pnpm run db:migrate` | Run Prisma migrations |
 | `pnpm run db:seed` | Seed admin + recruiter accounts |
 | `pnpm run db:generate` | Regenerate Prisma client after schema changes |
+
+---
+
+## Compliance
+
+Screening CVs for employment is an **Annex III high-risk use** under the EU AI
+Act. The MIT licence does not exempt it: the Art. 2(12) free and open-source
+exemption does not apply to systems put into service as high-risk, or to systems
+under Art. 5 or Art. 50.
+
+High-risk obligations were deferred to **2 December 2027** by Regulation (EU)
+2026/1744 (the Digital Omnibus on AI, in force 27 July 2026). Article 50
+transparency duties were **not** deferred and have applied since 2 August 2026 —
+which is why the candidate-facing AI disclosure is not optional.
+
+What the code does about it:
+
+| Requirement | Implementation |
+| --- | --- |
+| Human oversight (Art. 14, GDPR Art. 22) | `NEEDS_REVIEW` status; no automated rejection unless a deployer opts in |
+| Record-keeping (Art. 12) | provider, model, `promptHash`, `evaluatorVersion` on every `Evaluation` |
+| Data governance (Art. 10) | direct identifiers stripped before scoring (`lib/redact.ts`) |
+| Transparency (Art. 50) | `components/ai-disclosure.tsx` on the apply form and status page |
+| Accuracy (Art. 15) | **no accuracy figure is claimed** — see the limitations doc |
+
+Full documentation, including what is still missing, is in
+[`docs/compliance/`](docs/compliance/). None of it is legal advice, and no
+software makes an organisation compliant.
 
 ---
 
