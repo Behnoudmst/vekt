@@ -21,6 +21,7 @@ import {
     WarningCircleIcon,
 } from "@phosphor-icons/react";
 import Link from "next/link";
+import { AiDisclosure } from "@/components/ai-disclosure";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -343,6 +344,9 @@ export default function ApplyForm({ job }: Props) {
                       </Alert>
                     )}
 
+                    {/* EU AI Act Art. 50 disclosure — must be visible before submitting */}
+                    {!hasQuestions && <AiDisclosure />}
+
                     {/* GDPR consent (single-step only) */}
                     {!hasQuestions && (
                       <div className="flex flex-col gap-3 rounded-lg border bg-muted/40 p-4">
@@ -489,6 +493,9 @@ export default function ApplyForm({ job }: Props) {
                         <AlertDescription>{state.message}</AlertDescription>
                       </Alert>
                     )}
+
+                    {/* EU AI Act Art. 50 disclosure — must be visible before submitting */}
+                    <AiDisclosure />
 
                     {/* GDPR consent */}
                     <div className="flex flex-col gap-3 rounded-lg border bg-muted/40 p-4">

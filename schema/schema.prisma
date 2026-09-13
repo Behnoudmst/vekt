@@ -85,16 +85,33 @@ model Candidate {
   answers              CandidateAnswer[]
 }
 
+/// Record of a single AI evaluation.
+/// Provenance fields (provider/model/promptHash/evaluatorVersion) exist so a
+/// decision can be traced after the fact, as required for high-risk systems by
+/// EU AI Act Art. 12. Do not drop them: models get deprecated and prompts get
+/// edited, and without these a stored score cannot be explained or reproduced.
 model Evaluation {
-  id             String    @id @default(cuid())
-  score          Int
-  reasoning      String
-  pros           String    // JSON array stored as string
-  cons           String    // JSON array stored as string
-  promptSnapshot String
-  createdAt      DateTime  @default(now())
-  candidateId    String    @unique
-  candidate      Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  id               String   @id @default(cuid())
+  score            Int
+  reasoning        String
+  pros             String   // JSON array stored as string
+  cons             String   // JSON array stored as string
+  promptSnapshot   String
+  /// AI_PROVIDER in effect when this evaluation ran (mock/openai/openrouter/ollama)
+  provider         String   @default("unknown")
+  /// Exact model identifier returned by the provider adapter
+  model            String   @default("unknown")
+  /// SHA-256 of the full system + user prompt
+  promptHash       String   @default("")
+  /// EVALUATOR_VERSION from lib/ai.ts at evaluation time
+  evaluatorVersion String   @default("")
+  /// JSON object of identifier redaction counts, e.g. {"email":1,"name":3}
+  redactions       String   @default("{}")
+  /// True if the deployer had AUTO_REJECT_BELOW_THRESHOLD enabled at the time
+  autoDecision     Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  candidateId      String    @unique
+  candidate        Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -140,6 +157,8 @@ enum CandidateStatus {
   APPLIED
   ANALYZING
   SHORTLISTED
+  /// Scored below threshold but NOT auto-rejected — awaiting a human decision.
+  NEEDS_REVIEW
   ACCEPTED
   REJECTED
 }

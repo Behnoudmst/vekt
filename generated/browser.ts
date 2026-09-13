@@ -49,7 +49,11 @@ export type JobView = Prisma.JobViewModel
 export type Candidate = Prisma.CandidateModel
 /**
  * Model Evaluation
- * 
+ * Record of a single AI evaluation.
+ * Provenance fields (provider/model/promptHash/evaluatorVersion) exist so a
+ * decision can be traced after the fact, as required for high-risk systems by
+ * EU AI Act Art. 12. Do not drop them: models get deprecated and prompts get
+ * edited, and without these a stored score cannot be explained or reproduced.
  */
 export type Evaluation = Prisma.EvaluationModel
 /**

@@ -17,12 +17,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-type CandidateStatus = "APPLIED" | "ANALYZING" | "SHORTLISTED" | "ACCEPTED" | "REJECTED";
+type CandidateStatus = "APPLIED" | "ANALYZING" | "SHORTLISTED" | "NEEDS_REVIEW" | "ACCEPTED" | "REJECTED";
 
 const STATUS_META: Record<CandidateStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   APPLIED: { label: "Applied", variant: "outline" },
   ANALYZING: { label: "Analyzing", variant: "secondary" },
   SHORTLISTED: { label: "Shortlisted", variant: "default" },
+  NEEDS_REVIEW: { label: "Needs review", variant: "secondary" },
   ACCEPTED: { label: "Accepted", variant: "default" },
   REJECTED: { label: "Rejected", variant: "destructive" },
 };

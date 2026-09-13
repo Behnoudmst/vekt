@@ -85,6 +85,13 @@ export default async function JobApplicationsPage({
       filter: (c) => c.status === "SHORTLISTED",
     },
     {
+      key: "needs_review",
+      label: "Needs review",
+      variant: "secondary",
+      defaultOpen: true,
+      filter: (c) => c.status === "NEEDS_REVIEW",
+    },
+    {
       key: "applied",
       label: "Applied",
       variant: "secondary",
