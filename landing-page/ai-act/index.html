@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EU AI Act and AI CV Screening | Vekt</title>
+  <meta name="description" content="How the EU AI Act applies to AI CV screening: Annex III high-risk classification, provider and deployer roles, human oversight, and record-keeping in a self-hosted hiring system." />
+  <meta property="og:title" content="EU AI Act and AI CV Screening | Vekt" />
+  <meta property="og:description" content="Annex III high-risk hiring, human oversight, and decision records in open-source recruitment software." />
+  <meta property="og:image" content="../logo.png" />
+  <link rel="icon" href="../logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../pages.css" />
+</head>
+<body>
+  <nav>
+    <a href="../" class="nav-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="nav-brand-name">Vekt</span>
+    </a>
+    <button class="hamburger-btn" id="hamburger" aria-label="Toggle menu" aria-expanded="false">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+    </button>
+    <div class="nav-links" id="nav-menu">
+      <a href="../" class="nav-link">Home</a>
+      <a href="../vs-ats/" class="nav-link">ATS vs orchestration</a>
+      <a href="../gdpr/" class="nav-link">GDPR</a>
+      <a href="../architecture/" class="nav-link">Architecture</a>
+      <a href="../opensource/" class="nav-link">Open source</a>
+      <a href="../vetting/" class="nav-link">Vetting</a>
+      <a href="https://github.com/Behnoudmst/vekt" target="_blank" rel="noopener" class="nav-link-primary">GitHub</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="badge"><span class="badge-dot"></span>EU AI Act</div>
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <h1>AI CV screening is a high-risk use</h1>
+          <p>Under the EU AI Act, using AI to screen job applications is an Annex III high-risk use, alongside evaluating exams and assessing loan applications. That classification does not depend on how capable the model is or how the vendor describes the product. It depends on what the system decides about people.</p>
+          <p>An MIT licence does not change this. The free and open-source exemption in Article 2(12) does not apply to systems placed on the market or put into service as high-risk systems, or to systems falling under Article 5 or Article 50.</p>
+          <p>Vekt is built on the assumption that this applies to it. The engineering consequences — human review before rejection, identity redaction before scoring, and a decision record that names the model — are in the codebase, not in a policy page.</p>
+        </div>
+        <aside class="hero-panel">
+          <h2>What this means in practice</h2>
+          <ul class="text-list">
+            <li>No candidate is rejected without a person deciding, unless the deployer explicitly turns that off.</li>
+            <li>Every evaluation records the provider, model, prompt hash and evaluator version behind the score.</li>
+            <li>Candidates are told an AI system is involved, before they apply and on the status page.</li>
+            <li>Full detail lives in <a class="inline-link" href="https://github.com/Behnoudmst/vekt/tree/main/docs/compliance">docs/compliance</a> in the repository.</li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+
+    <section>
+      <div class="section-label">Timeline</div>
+      <h2 class="section-title">The high-risk deadline moved. Transparency did not.</h2>
+      <p class="section-desc">Regulation (EU) 2026/1744, the Digital Omnibus on AI, entered into force on 27 July 2026 and deferred Annex III high-risk obligations from 2 August 2026 to 2 December 2027. Annex I embedded systems move to 2 August 2028.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Already in force</h2>
+          <p>Article 50 transparency duties applied from 2 August 2026 and were not deferred. They apply based on what a system does rather than its risk tier, so disclosure to candidates is a present obligation, not a future one.</p>
+        </article>
+        <article class="card">
+          <h2>Deferred, not repealed</h2>
+          <p>The high-risk requirements — risk management, data governance, record-keeping, human oversight, accuracy — still arrive. Sixteen extra months is time to build them in, not a reason to postpone the design decisions they force.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Roles</div>
+      <h2 class="section-title">Provider or deployer</h2>
+      <p class="section-desc">Which obligations land on you depends on what you do with the software, not on who wrote it.</p>
+      <div class="mechanism">
+        <h2>Running Vekt for your own hiring makes you the deployer</h2>
+        <p>Deployers use the system according to its instructions, assign competent human oversight, inform candidates, and retain logs. Whoever places a hiring system on the market under their own name is the provider, and carries the heavier obligations in Articles 9 to 15 along with conformity assessment and registration.</p>
+        <p>Using an open-weights model does not reduce this. The provider of the overall system documents and tests the whole system including the model component, even where the model's publisher never did — which can make an open model harder to comply with than a commercial one, not easier.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-label">Implementation</div>
+      <h2 class="section-title">What the code actually does</h2>
+      <p class="section-desc">Three design decisions follow directly from the obligations.</p>
+      <div class="cards">
+        <article class="card">
+          <h2>Human review before rejection</h2>
+          <p>Candidates scoring below the threshold are marked Needs review and no rejection email is sent until a recruiter decides. Automatic rejection is a deliberate opt-in, recorded per evaluation, because a decision made solely by automated processing that rejects an applicant is what Article 14 and GDPR Article 22 are about.</p>
+        </article>
+        <article class="card">
+          <h2>Identity removed before scoring</h2>
+          <p>Name, email, phone, URLs, date of birth and stated nationality or marital status are stripped from the CV text before it reaches any model. This is a mitigation, not a guarantee: free text still carries proxies for origin, age and gender.</p>
+        </article>
+        <article class="card">
+          <h2>Decisions that can be traced</h2>
+          <p>A stored score is not a record. Each evaluation keeps the provider, the exact model identifier, a hash of the prompt, and the evaluator version, so a decision can still be explained after the model behind it has been retired.</p>
+        </article>
+        <article class="card">
+          <h2>No accuracy claim</h2>
+          <p>Vekt has not been measured against labelled hiring outcomes, so it declares no accuracy figure. The limitations are written down rather than left implied — including that scores are uncalibrated and not comparable across models or prompt versions.</p>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <div class="page-links">
+        <a class="page-link-card card" href="../gdpr/">
+          <div class="card-title">GDPR and candidate data</div>
+          <p>Retention windows, deletion on schedule, and where they collide with record-keeping.</p>
+        </a>
+        <a class="page-link-card card" href="../architecture/">
+          <div class="card-title">Auditable hiring architecture</div>
+          <p>How logs, scoring and workflow transitions support decision traceability.</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="closing">
+      <div class="closing-box">
+        <p>None of this is legal advice, and no software makes an organisation compliant. What software can do is make the compliant path the default one, and record enough that the decisions it influenced can still be explained a year later.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <a href="../" class="footer-brand">
+      <img src="../logo.png" alt="Vekt logo" />
+      <span class="footer-brand-name">Vekt</span>
+    </a>
+    <span class="footer-meta">Privacy-first hiring</span>
+    <div class="footer-links">
+      <a href="../vs-ats/" class="footer-link">ATS vs recruitment orchestration</a>
+      <a href="../gdpr/" class="footer-link">GDPR-compliant recruiting</a>
+      <a href="../architecture/" class="footer-link">Auditability and decision traceability</a>
+      <a href="../opensource/" class="footer-link">Self-hosting and data ownership</a>
+    </div>
+  </footer>
+  <script>
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('nav-menu');
+
+    if (hamburger && navMenu) {
+      hamburger.addEventListener('click', () => {
+        navMenu.classList.toggle('open');
+        hamburger.setAttribute('aria-expanded', navMenu.classList.contains('open') ? 'true' : 'false');
+      });
+
+      navMenu.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => {
+          navMenu.classList.remove('open');
+          hamburger.setAttribute('aria-expanded', 'false');
+        });
+      });
+    }
+  </script>
+</body>
+</html>

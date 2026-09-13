@@ -1,4 +1,6 @@
+import { createHash } from "crypto";
 import logger from "@/lib/logger";
+import { redactIdentity } from "@/lib/redact";
 
 export interface EvaluationResult {
   score: number;
@@ -6,6 +8,33 @@ export interface EvaluationResult {
   pros: string[];
   cons: string[];
 }
+
+/**
+ * Provenance recorded alongside every evaluation.
+ *
+ * EU AI Act Article 12 requires high-risk systems to keep records that allow a
+ * decision to be traced after the fact. Models are deprecated and prompts are
+ * edited, so "the AI scored this CV 62" is not an auditable record unless you
+ * also know which model, which prompt and which version of this code produced
+ * it. Keep this whenever you change the pipeline.
+ */
+export interface EvaluationProvenance {
+  provider: string;
+  model: string;
+  /** SHA-256 of the exact system prompt + user prompt sent to the provider. */
+  promptHash: string;
+  /** Bumped by hand whenever SYSTEM_PROMPT or buildPrompt changes. */
+  evaluatorVersion: string;
+  /** Redaction counts by category, e.g. { email: 1, phone: 1, name: 3 }. */
+  redactions: Record<string, number>;
+}
+
+/**
+ * Bump this whenever the prompt, the scoring instructions or the redaction
+ * behaviour changes. Evaluations produced by different versions are not
+ * comparable and must not be ranked against each other.
+ */
+export const EVALUATOR_VERSION = "2026.09.1";
 
 const SYSTEM_PROMPT = `You are an expert recruitment screening AI called Vekt. 
 Your job is to evaluate a candidate's resume against a specific job description and custom weighting criteria.
@@ -42,8 +71,8 @@ function buildPrompt(
 
 async function evaluateWithOpenAI(
   prompt: string,
-  model = "gpt-4o",
-): Promise<EvaluationResult> {
+  model = process.env.OPENAI_MODEL ?? "gpt-4o",
+): Promise<{ result: EvaluationResult; model: string }> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
 
@@ -87,7 +116,7 @@ async function evaluateWithOpenAI(
   if (!content) throw new Error("Empty response from OpenAI");
 
   try {
-    return JSON.parse(content) as EvaluationResult;
+    return { result: JSON.parse(content) as EvaluationResult, model };
   } catch (error) {
     logger.error(
       {
@@ -105,7 +134,7 @@ async function evaluateWithOpenAI(
 async function evaluateWithOpenRouter(
   prompt: string,
   model = process.env.OPENROUTER_MODEL ?? "openai/gpt-4o-mini",
-): Promise<EvaluationResult> {
+): Promise<{ result: EvaluationResult; model: string }> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error("OPENROUTER_API_KEY is not set");
 
@@ -151,7 +180,7 @@ async function evaluateWithOpenRouter(
   if (!content) throw new Error("Empty response from OpenRouter");
 
   try {
-    return JSON.parse(content) as EvaluationResult;
+    return { result: JSON.parse(content) as EvaluationResult, model };
   } catch (error) {
     logger.error(
       {
@@ -169,7 +198,7 @@ async function evaluateWithOpenRouter(
 async function evaluateWithOllama(
   prompt: string,
   model?: string,
-): Promise<EvaluationResult> {
+): Promise<{ result: EvaluationResult; model: string }> {
   const baseUrl = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434";
   const ollamaModel = model ?? process.env.OLLAMA_MODEL ?? "llama3.2";
 
@@ -211,7 +240,7 @@ async function evaluateWithOllama(
   if (!content) throw new Error("Empty response from Ollama");
 
   try {
-    return JSON.parse(content) as EvaluationResult;
+    return { result: JSON.parse(content) as EvaluationResult, model: ollamaModel };
   } catch (error) {
     logger.error(
       {
@@ -231,35 +260,51 @@ export async function evaluateCandidate(params: {
   jobDescription: string;
   customPrompt: string | null;
   resumeText: string;
-}): Promise<{ result: EvaluationResult; promptSnapshot: string }> {
+  /** Used to redact the candidate's own name from the text sent to the model. */
+  candidateName?: string;
+}): Promise<{
+  result: EvaluationResult;
+  promptSnapshot: string;
+  provenance: EvaluationProvenance;
+}> {
   const provider = (process.env.AI_PROVIDER ?? "mock").toLowerCase();
   logger.info({ provider }, "AI: selected evaluation provider");
+
+  // Strip direct identifiers before anything reaches the provider.
+  const redacted = redactIdentity(params.resumeText, params.candidateName);
+
   const prompt = buildPrompt(
     params.jobTitle,
     params.jobDescription,
     params.customPrompt,
-    params.resumeText,
+    redacted.text,
   );
+  const promptSnapshot = `${SYSTEM_PROMPT}\n\n---\n\n${prompt}`;
+  const promptHash = createHash("sha256").update(promptSnapshot).digest("hex");
 
   let result: EvaluationResult;
+  let model: string;
 
   try {
     if (provider === "openai") {
-      result = await evaluateWithOpenAI(prompt);
+      ({ result, model } = await evaluateWithOpenAI(prompt));
     } else if (provider === "openrouter") {
-      result = await evaluateWithOpenRouter(prompt);
+      ({ result, model } = await evaluateWithOpenRouter(prompt));
     } else if (provider === "ollama") {
-      result = await evaluateWithOllama(prompt);
+      ({ result, model } = await evaluateWithOllama(prompt));
     } else {
-      // Mock provider — returns a deterministic-ish score for development
+      // Mock provider — deterministic for a given prompt so that development
+      // and tests are reproducible. Never use this to make real decisions.
       logger.info({ provider: "mock" }, "AI: using mock evaluation provider");
       await new Promise((r) => setTimeout(r, 600));
-      const score = Math.round(40 + Math.random() * 60);
+      model = "mock";
+      const seed = parseInt(promptHash.slice(0, 8), 16);
+      const score = 40 + (seed % 61);
       result = {
         score,
-        reasoning: `The candidate demonstrates relevant experience for the ${params.jobTitle} role. The resume shows a mix of matching skills and areas for growth.`,
-        pros: ["Relevant domain experience", "Clear communication in resume"],
-        cons: ["Some required skills not explicitly mentioned", "Limited evidence of testing knowledge"],
+        reasoning: `Mock evaluation for the ${params.jobTitle} role. This score is generated deterministically from the prompt and carries no assessment of the candidate.`,
+        pros: ["Mock provider — no assessment performed"],
+        cons: ["Mock provider — no assessment performed"],
       };
     }
   } catch (error) {
@@ -293,5 +338,18 @@ export async function evaluateCandidate(params: {
   // Clamp score
   result.score = Math.max(0, Math.min(100, Math.round(result.score)));
 
-  return { result, promptSnapshot: `${SYSTEM_PROMPT}\n\n---\n\n${prompt}` };
+  const provenance: EvaluationProvenance = {
+    provider,
+    model,
+    promptHash,
+    evaluatorVersion: EVALUATOR_VERSION,
+    redactions: redacted.counts,
+  };
+
+  logger.info(
+    { provider, model, promptHash, evaluatorVersion: EVALUATOR_VERSION, score: result.score },
+    "AI: evaluation completed",
+  );
+
+  return { result, promptSnapshot, provenance };
 }

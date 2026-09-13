@@ -1,3 +1,4 @@
+import { AiDisclosure } from "@/components/ai-disclosure";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { prisma } from "@/lib/prisma";
@@ -59,6 +60,13 @@ export default async function StatusPage({
       icon: <CheckCircleIcon className="size-8 text-green-500" weight="fill" />,
       variant: "default" as const,
     },
+    NEEDS_REVIEW: {
+      label: "Awaiting Recruiter Review",
+      description:
+        "Your application has been assessed and is now with a recruiter for a human decision. No decision has been made automatically.",
+      icon: <ClockIcon className="size-8 text-muted-foreground" weight="fill" />,
+      variant: "secondary" as const,
+    },
     REJECTED: {
       label: "Under Consideration",
       description: "Thank you for your application. We're keeping your profile on file for future opportunities.",
@@ -112,6 +120,10 @@ export default async function StatusPage({
                 </Badge>
               </div>
             </div>
+
+            {/* EU AI Act Art. 50 — the candidate must be able to see that an AI
+                system is involved, and how to reach a human, at any point. */}
+            <AiDisclosure compact />
           </CardContent>
         </Card>
       </div>

@@ -4,7 +4,7 @@ import { sendCandidateEmail } from "@/lib/email";
 import { inngest } from "@/lib/inngest";
 import logger from "@/lib/logger";
 import { prisma } from "@/lib/prisma";
-import { meetsThreshold } from "@/lib/scoring";
+import { decideStatus, meetsThreshold } from "@/lib/scoring";
 import fs from "fs/promises";
 import path from "path";
 
@@ -62,27 +62,43 @@ export const analyzeCandidate = inngest.createFunction(
     const evaluated = await step.run("ai-evaluate", async () => {
       try {
         const job = candidate.job;
-        const { result, promptSnapshot } = await evaluateCandidate({
+        const { result, promptSnapshot, provenance } = await evaluateCandidate({
           jobTitle: job?.title ?? "General Position",
           jobDescription: job?.description ?? "",
           customPrompt: job?.customPrompt ?? null,
           resumeText: candidate.resumeText,
+          candidateName: candidate.name,
         });
-        return { result, promptSnapshot };
+        return { result, promptSnapshot, provenance };
       } catch (error) {
         logger.error({ candidateId, step: "ai-evaluate", error }, "Pipeline: step failed");
         throw error;
       }
     });
 
+    // Does this deployer allow rejections with no human in the loop?
+    // Default is false — see lib/scoring.ts and docs/compliance/human-oversight.md.
+    const autoRejectEnabled = await step.run("read-auto-reject-setting", async () => {
+      try {
+        const setting = await prisma.setting.findUnique({
+          where: { key: "AUTO_REJECT_BELOW_THRESHOLD" },
+        });
+        return setting?.value === "true";
+      } catch (error) {
+        logger.warn(
+          { candidateId, step: "read-auto-reject-setting", error },
+          "Pipeline: could not read auto-reject setting, defaulting to human review",
+        );
+        return false;
+      }
+    });
+
     // Save evaluation & update status
     await step.run("save-evaluation", async () => {
       try {
-        const { result, promptSnapshot } = evaluated;
+        const { result, promptSnapshot, provenance } = evaluated;
         const threshold = candidate.job?.threshold ?? 75;
-        const status = meetsThreshold(result.score, threshold)
-          ? CandidateStatus.SHORTLISTED
-          : CandidateStatus.REJECTED;
+        const status = decideStatus(result.score, threshold, autoRejectEnabled);
 
         await prisma.$transaction([
           prisma.evaluation.create({
@@ -93,6 +109,12 @@ export const analyzeCandidate = inngest.createFunction(
               pros: JSON.stringify(result.pros),
               cons: JSON.stringify(result.cons),
               promptSnapshot,
+              provider: provenance.provider,
+              model: provenance.model,
+              promptHash: provenance.promptHash,
+              evaluatorVersion: provenance.evaluatorVersion,
+              redactions: JSON.stringify(provenance.redactions),
+              autoDecision: autoRejectEnabled,
             },
           }),
           prisma.candidate.update({
@@ -119,21 +141,47 @@ export const analyzeCandidate = inngest.createFunction(
     });
     const delayHours = delaySetting ? parseInt(delaySetting.value, 10) : 48;
 
-    const evaluationEmailType = meetsThreshold(evaluated.result.score, candidate.job?.threshold ?? 75)
+    const shortlisted = meetsThreshold(
+      evaluated.result.score,
+      candidate.job?.threshold ?? 75,
+    );
+
+    // A rejection email is only ever scheduled automatically when the deployer
+    // has explicitly enabled AUTO_REJECT_BELOW_THRESHOLD. Otherwise the
+    // candidate sits in NEEDS_REVIEW and the recruiter's decision sends the
+    // email — a human is always in the loop before anyone is told "no".
+    const evaluationEmailType = shortlisted
       ? EmailType.SHORTLISTED
-      : EmailType.REJECTED;
-    try {
-      await step.sendEvent("schedule-evaluation-email", {
-        name: "vekt/candidate.status.email.scheduled",
-        data: { candidateId, emailType: evaluationEmailType, delayHours },
-      });
-    } catch (error) {
-      logger.error({ candidateId, step: "schedule-evaluation-email", error }, "Pipeline: step failed");
-      throw error;
+      : autoRejectEnabled
+        ? EmailType.REJECTED
+        : null;
+
+    if (evaluationEmailType) {
+      try {
+        await step.sendEvent("schedule-evaluation-email", {
+          name: "vekt/candidate.status.email.scheduled",
+          data: { candidateId, emailType: evaluationEmailType, delayHours },
+        });
+      } catch (error) {
+        logger.error({ candidateId, step: "schedule-evaluation-email", error }, "Pipeline: step failed");
+        throw error;
+      }
     }
 
     await step.run("log-pipeline-complete", async () => {
-      logger.info({ candidateId, score: evaluated.result.score, status: evaluationEmailType }, "Pipeline: analyzeCandidate completed");
+      logger.info(
+        {
+          candidateId,
+          score: evaluated.result.score,
+          provider: evaluated.provenance.provider,
+          model: evaluated.provenance.model,
+          promptHash: evaluated.provenance.promptHash,
+          evaluatorVersion: evaluated.provenance.evaluatorVersion,
+          autoDecision: autoRejectEnabled,
+          awaitingHumanReview: !shortlisted && !autoRejectEnabled,
+        },
+        "Pipeline: analyzeCandidate completed",
+      );
     });
   },
 );

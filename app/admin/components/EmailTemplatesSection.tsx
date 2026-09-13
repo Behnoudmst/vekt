@@ -22,7 +22,7 @@ type Props = {
 const EMAIL_TYPES = [
   { key: "APPLIED", label: "Application Received", description: "Sent immediately when a candidate submits their application." },
   { key: "SHORTLISTED", label: "Application Shortlisted", description: "Sent when the AI scores a candidate above the job threshold." },
-  { key: "REJECTED", label: "Application Rejected", description: "Sent when the AI scores a candidate below the job threshold, or a recruiter rejects manually." },
+  { key: "REJECTED", label: "Application Rejected", description: "Sent when a recruiter rejects a candidate — or automatically on a below-threshold score, if AUTO_REJECT_BELOW_THRESHOLD is enabled." },
   { key: "ACCEPTED", label: "Application Accepted", description: "Sent when a recruiter manually accepts a candidate." },
   { key: "DATA_RETENTION_WARNING", label: "Data Retention Warning", description: "Sent 7 days before a candidate's data is deleted (GDPR). Always sent regardless of opt-out." },
 ] as const;

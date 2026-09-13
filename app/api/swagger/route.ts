@@ -109,6 +109,7 @@ export function GET() {
                             "PENDING_Q2",
                             "SCORED",
                             "PRIORITY_QUEUE",
+                            "NEEDS_REVIEW",
                             "REJECTED",
                             "HUMAN_REVIEWED",
                           ],

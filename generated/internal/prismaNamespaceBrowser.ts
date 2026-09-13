@@ -161,6 +161,12 @@ export const EvaluationScalarFieldEnum = {
   pros: 'pros',
   cons: 'cons',
   promptSnapshot: 'promptSnapshot',
+  provider: 'provider',
+  model: 'model',
+  promptHash: 'promptHash',
+  evaluatorVersion: 'evaluatorVersion',
+  redactions: 'redactions',
+  autoDecision: 'autoDecision',
   createdAt: 'createdAt',
   candidateId: 'candidateId'
 } as const

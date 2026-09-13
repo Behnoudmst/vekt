@@ -61,6 +61,7 @@ const STATUS_VARIANT: Record<string, StatusVariant> = {
   APPLIED: "outline",
   ANALYZING: "secondary",
   SHORTLISTED: "default",
+  NEEDS_REVIEW: "secondary",
   ACCEPTED: "outline", // overridden with green classNames below
   REJECTED: "destructive",
 };
