@@ -310,6 +310,29 @@ section {
   max-width: 68ch;
 }
 
+.footer-disclaimer {
+  width: 100%;
+  order: 10;
+  margin: 0;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.7rem;
+  line-height: 1.7;
+  color: var(--text-dim);
+  max-width: 90ch;
+}
+
+.footer-disclaimer a {
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-disclaimer strong {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
 footer {
   border-top: 1px solid var(--border);
   padding: 2rem;
