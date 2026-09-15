@@ -4,9 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Recruitment Orchestration Engine for Hiring | Vekt</title>
-  <meta name="description" content="Recruitment orchestration engine for privacy-first hiring with structured vetting, GDPR-compliant recruiting, auditable decisions, and self-hosted data ownership." />
+  <meta name="description" content="Self-hosted recruitment orchestration engine for privacy-first hiring: structured vetting, auditable AI decisions, and configurable retention. Provides controls for GDPR-compliant recruiting; makes no compliance claim." />
   <meta property="og:title" content="Recruitment Orchestration Engine for Hiring | Vekt" />
-  <meta property="og:description" content="Open-source recruitment orchestration engine for privacy-first, GDPR-compliant, auditable hiring." />
+  <meta property="og:description" content="Open-source recruitment orchestration engine for privacy-first, auditable hiring. AI CV screening is a high-risk use under the EU AI Act; Vekt claims no compliance." />
   <meta property="og:image" content="./logo.png" />
   <link rel="icon" href="./logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -510,6 +510,33 @@
     pre .env { color: #4f46e5; }
 
     /* ── CTA ── */
+    .ai-notice {
+      margin: 0 auto 80px;
+      max-width: 1000px;
+      padding: 1.75rem;
+      border: 1px solid var(--border-strong);
+      border-radius: var(--radius-lg);
+      background: var(--accent-dim2);
+    }
+    .ai-notice h2 {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 0.6rem;
+    }
+    .ai-notice p {
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--text-muted);
+      max-width: 82ch;
+    }
+    .ai-notice p + p { margin-top: 0.7rem; }
+    .ai-notice a {
+      color: var(--text);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
     .cta-section {
       margin: 0 2rem 80px;
       max-width: 1000px;
@@ -541,6 +568,28 @@
     }
 
     /* ── FOOTER ── */
+    .footer-disclaimer {
+      width: 100%;
+      order: 10;
+      margin: 0;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.7rem;
+      line-height: 1.7;
+      color: var(--text-dim);
+      max-width: 90ch;
+    }
+
+    .footer-disclaimer a {
+      color: var(--text-muted);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .footer-disclaimer strong {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
     footer {
       border-top: 1px solid var(--border);
       padding: 2rem;
@@ -639,6 +688,7 @@
       .screenshot-grid { grid-template-columns: 1fr; }
       .screenshot-grid .screenshot-main { grid-column: 1; }
       .cta-section { margin: 0 1.25rem 60px; padding: 40px 1.25rem; }
+      .ai-notice { margin: 0 1.25rem 60px; padding: 1.25rem; }
       footer { padding: 1.5rem 1.25rem; flex-direction: column; align-items: flex-start; }
     }
   </style>
@@ -716,7 +766,7 @@
       </span>
       <span class="hero-meta-item">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        GDPR-compliant
+        Retention controls
       </span>
     </div>
   </div>
@@ -773,7 +823,7 @@
       <div class="feature-card">
         <div class="feature-icon">🗑️</div>
         <div class="feature-title">Automated data purge</div>
-        <div class="feature-desc">Inngest cron job automatically purges candidate records and resume files past the configurable retention window. GDPR-ready out of the box.</div>
+        <div class="feature-desc">Inngest cron job automatically purges candidate records and resume files past the configurable retention window. You set the window; the purge runs on its own.</div>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🔒</div>
@@ -942,6 +992,14 @@
     </div>
   </section>
 
+  <!-- AI ACT NOTICE -->
+  <section class="ai-notice">
+    <h2>Before you screen real applicants with this</h2>
+    <p>Using AI to screen job applications is an <a href="./ai-act/">Annex III high-risk use under the EU AI Act</a>. That classification follows from what the system decides about people, not from how it is licensed or described. Whoever deploys Vekt to screen candidates carries those obligations &mdash; the project does not carry them for you.</p>
+    <p><strong>Vekt makes no claim of compliance with the AI Act or the GDPR.</strong> It has not been audited, certified or conformity-assessed, and it declares no accuracy figure: its scores have never been measured against labelled hiring outcomes, so treat them as an unvalidated ranking heuristic and never as a decision. Human review before rejection is the default for exactly this reason.</p>
+    <p>The software is provided as is, without warranty. Nothing on this site is legal advice. The public demo runs on seeded data and is not intended for real applications. What the system does, and the gaps it still has, are written down in <a href="https://github.com/Behnoudmst/vekt/tree/main/docs/compliance" target="_blank" rel="noopener">docs/compliance</a>.</p>
+  </section>
+
   <!-- CTA -->
   <div class="cta-section">
     <h2>Ready to take back control of your hiring?</h2>
@@ -976,6 +1034,16 @@
       <a href="https://demo.vekt.website/api-docs" target="_blank" rel="noopener" class="footer-link">API docs</a>
       <a href="https://demo.vekt.website/privacy" target="_blank" rel="noopener" class="footer-link">Privacy</a>
     </div>
+    <p class="footer-disclaimer">
+      <strong>No compliance claim.</strong> Vekt is software, not a compliance
+      service, and is provided as is, without warranty of any kind. Nothing on
+      this site is legal advice. Using AI to screen job applications is an Annex
+      III high-risk use under the EU AI Act; the organisation that deploys Vekt
+      carries the resulting obligations, not this project. Vekt has not been
+      audited, certified or conformity-assessed, and declares no accuracy figure.
+      What it does and does not do is documented in
+      <a href="https://github.com/Behnoudmst/vekt/tree/main/docs/compliance" target="_blank" rel="noopener">docs/compliance</a>.
+    </p>
   </footer>
 
   <script>

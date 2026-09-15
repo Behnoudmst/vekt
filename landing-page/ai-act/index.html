@@ -6,7 +6,7 @@
   <title>EU AI Act and AI CV Screening | Vekt</title>
   <meta name="description" content="How the EU AI Act applies to AI CV screening: Annex III high-risk classification, provider and deployer roles, human oversight, and record-keeping in a self-hosted hiring system." />
   <meta property="og:title" content="EU AI Act and AI CV Screening | Vekt" />
-  <meta property="og:description" content="Annex III high-risk hiring, human oversight, and decision records in open-source recruitment software." />
+  <meta property="og:description" content="Annex III high-risk hiring, human oversight, and decision records in open-source recruitment software. Vekt makes no claim of AI Act compliance." />
   <meta property="og:image" content="../logo.png" />
   <link rel="icon" href="../logo.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -47,6 +47,7 @@
           <p>Under the EU AI Act, using AI to screen job applications is an Annex III high-risk use, alongside evaluating exams and assessing loan applications. That classification does not depend on how capable the model is or how the vendor describes the product. It depends on what the system decides about people.</p>
           <p>An MIT licence does not change this. The free and open-source exemption in Article 2(12) does not apply to systems placed on the market or put into service as high-risk systems, or to systems falling under Article 5 or Article 50.</p>
           <p>Vekt is built on the assumption that this applies to it. The engineering consequences — human review before rejection, identity redaction before scoring, and a decision record that names the model — are in the codebase, not in a policy page.</p>
+          <p><strong>Vekt does not claim to be compliant with the AI Act, and could not.</strong> Compliance is a property of an organisation and a specific deployment — its risk management, its documentation, its oversight, its data — not a property of a piece of software that can be shipped to you. What a project can do is make the defensible path the default one, document the gaps, and refuse to overstate the rest.</p>
         </div>
         <aside class="hero-panel">
           <h2>What this means in practice</h2>
@@ -77,6 +78,24 @@
     </section>
 
     <section>
+      <div class="section-label">Limits</div>
+      <h2 class="section-title">What Vekt does not claim</h2>
+      <p class="section-desc">Read this before you rely on any of the above.</p>
+      <div class="mechanism">
+        <h2>The gaps are the point of this list</h2>
+        <ul class="text-list">
+          <li><strong>No compliance claim.</strong> Installing Vekt does not make an organisation compliant with the AI Act, the GDPR, or employment law in any jurisdiction. It cannot; those obligations attach to you, not to the software.</li>
+          <li><strong>No accuracy or bias metrics.</strong> Vekt has never been measured against labelled hiring outcomes. No precision, recall, or agreement-with-human figure exists, and any number claimed for it today would be invented.</li>
+          <li><strong>No conformity assessment, CE marking or EU database registration</strong> has been carried out, and no notified body has reviewed it.</li>
+          <li><strong>No risk management system</strong> under Article 9 ships with the code. That is an organisational process and it belongs to whoever acts as provider.</li>
+          <li><strong>Redaction is best-effort.</strong> Direct identifiers are stripped; proxies for origin, age and gender survive in free text and the model can still use them.</li>
+          <li><strong>The scoring prompt is unconstrained.</strong> A deployer can write weighting criteria that encode discrimination, and nothing in the code prevents it.</li>
+          <li><strong>No warranty.</strong> The software is provided as is. Nothing on this site is legal advice, and it is not a substitute for your own assessment.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section>
       <div class="section-label">Roles</div>
       <h2 class="section-title">Provider or deployer</h2>
       <p class="section-desc">Which obligations land on you depends on what you do with the software, not on who wrote it.</p>
@@ -90,7 +109,7 @@
     <section>
       <div class="section-label">Implementation</div>
       <h2 class="section-title">What the code actually does</h2>
-      <p class="section-desc">Three design decisions follow directly from the obligations.</p>
+      <p class="section-desc">Four design decisions follow directly from the obligations. None of them is a compliance guarantee.</p>
       <div class="cards">
         <article class="card">
           <h2>Human review before rejection</h2>
@@ -126,7 +145,8 @@
 
     <section class="closing">
       <div class="closing-box">
-        <p>None of this is legal advice, and no software makes an organisation compliant. What software can do is make the compliant path the default one, and record enough that the decisions it influenced can still be explained a year later.</p>
+        <p>None of this is legal advice, and no software makes an organisation compliant. What software can do is make the defensible path the default one, and record enough that the decisions it influenced can still be explained a year later.</p>
+        <p>If you deploy Vekt to screen real applicants, the obligations are yours. You decide the model, the prompt, the threshold, whether automatic rejection is switched on, and whether anyone competent actually reviews the output. The project supplies the mechanism and the documentation of its limits; it cannot supply the judgement, and it accepts no liability for decisions made with it.</p>
       </div>
     </section>
   </main>
@@ -143,6 +163,16 @@
       <a href="../architecture/" class="footer-link">Auditability and decision traceability</a>
       <a href="../opensource/" class="footer-link">Self-hosting and data ownership</a>
     </div>
+    <p class="footer-disclaimer">
+      <strong>No compliance claim.</strong> Vekt is software, not a compliance
+      service, and is provided as is, without warranty of any kind. Nothing on
+      this site is legal advice. Using AI to screen job applications is an Annex
+      III high-risk use under the EU AI Act; the organisation that deploys Vekt
+      carries the resulting obligations, not this project. Vekt has not been
+      audited, certified or conformity-assessed, and declares no accuracy figure.
+      What it does and does not do is documented in
+      <a href="https://github.com/Behnoudmst/vekt/tree/main/docs/compliance" target="_blank" rel="noopener">docs/compliance</a>.
+    </p>
   </footer>
   <script>
     const hamburger = document.getElementById('hamburger');

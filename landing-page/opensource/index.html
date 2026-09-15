@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Open-Source Recruiting Platform Control | Vekt</title>
-  <meta name="description" content="Open-source recruiting platform with self-hosted hiring workflows, candidate data ownership, auditability, and GDPR-compliant retention." />
+  <meta name="description" content="Open-source recruiting platform with self-hosted hiring workflows, candidate data ownership, auditability, and configurable retention." />
   <meta property="og:title" content="Open-Source Recruiting Platform Control | Vekt" />
   <meta property="og:description" content="Why self-hosting matters for recruitment orchestration and data ownership." />
   <meta property="og:image" content="../logo.png" />
@@ -106,7 +106,7 @@
           <p>See how logs and scoring records support operational review.</p>
         </a>
         <a class="page-link-card card" href="../gdpr/">
-          <div class="card-title">GDPR-compliant recruiting</div>
+          <div class="card-title">GDPR and candidate data</div>
           <p>See how ownership supports retention and candidate data deletion controls.</p>
         </a>
       </div>
@@ -115,6 +115,7 @@
     <section class="closing">
       <div class="closing-box">
         <p>Vekt is open-source recruitment infrastructure, not a closed hiring appliance. Self-hosting and data ownership matter because hiring workflows carry legal, operational, and architectural consequences.</p>
+        <p>Owning the deployment means owning the obligations that come with it. Running Vekt to screen applicants in the EU makes you the deployer of a high-risk AI system, and reading the source is not the same as having validated it for your own use.</p>
       </div>
     </section>
   </main>
@@ -132,6 +133,16 @@
       <a href="../vetting/" class="footer-link">Structured candidate vetting</a>
       <a href="../ai-act/" class="footer-link">EU AI Act and AI screening</a>
     </div>
+    <p class="footer-disclaimer">
+      <strong>No compliance claim.</strong> Vekt is software, not a compliance
+      service, and is provided as is, without warranty of any kind. Nothing on
+      this site is legal advice. Using AI to screen job applications is an Annex
+      III high-risk use under the EU AI Act; the organisation that deploys Vekt
+      carries the resulting obligations, not this project. Vekt has not been
+      audited, certified or conformity-assessed, and declares no accuracy figure.
+      What it does and does not do is documented in
+      <a href="https://github.com/Behnoudmst/vekt/tree/main/docs/compliance" target="_blank" rel="noopener">docs/compliance</a>.
+    </p>
   </footer>
   <script>
     const hamburger = document.getElementById('hamburger');

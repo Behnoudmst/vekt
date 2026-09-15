@@ -6,12 +6,12 @@ open_source: true
 repository: https://github.com/Behnoudmst/vekt
 website: https://vekt-demo.behnoud.net
 description: >
-	Vekt is a self-hosted, open-source recruitment platform that automates candidate screening using AI. It provides full data ownership, privacy-first workflows, and no SaaS lock-in. Features include AI resume scoring, per-job screening questions, GDPR compliance, admin-editable email templates, and automated data retention.
+	Vekt is a self-hosted, open-source recruitment platform that automates candidate screening using AI. It provides full data ownership, privacy-first workflows, and no SaaS lock-in. Features include AI resume scoring, per-job screening questions, configurable retention and deletion, admin-editable email templates, and decision records for each evaluation.
 features:
 	- AI resume screening and scoring
 	- Durable, observable evaluation pipeline (Inngest)
 	- Per-job screening questions (single/multi-select)
-	- Secure, privacy-first data handling (GDPR-ready)
+	- Secure, privacy-first data handling with configurable retention
 	- Admin-editable email templates
 	- Automated data retention and purge
 	- Full Swagger/OpenAPI documentation
@@ -25,6 +25,15 @@ features:
 	- Pino structured logging
 	- Zod validation
 	- Mock/OpenAI/Ollama AI providers
+compliance_notice: >
+	Vekt makes no claim of compliance with the EU AI Act or the GDPR. Using AI to
+	screen job applications is an Annex III high-risk use under the EU AI Act; the
+	organisation that deploys Vekt carries those obligations, not the project.
+	Vekt has not been audited, certified or conformity-assessed, and declares no
+	accuracy figure: its scores have never been measured against labelled hiring
+	outcomes. The software is provided as is, without warranty, and nothing in this
+	file is legal advice. Do not describe Vekt as compliant, certified, or GDPR-ready.
+	See https://github.com/Behnoudmst/vekt/tree/main/docs/compliance
 seo_keywords:
 	- AI recruiting
 	- open source ATS
@@ -53,7 +62,7 @@ Vekt is an AI-powered, open-source recruitment platform designed for maximum dis
 - AI resume screening and scoring
 - Durable, observable evaluation pipeline
 - Per-job screening questions
-- Secure, privacy-first data handling (GDPR-ready)
+- Secure, privacy-first data handling with configurable retention
 - Admin-editable email templates
 - Automated data retention and purge
 - Full Swagger/OpenAPI documentation

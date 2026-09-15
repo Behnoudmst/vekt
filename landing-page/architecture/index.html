@@ -85,7 +85,7 @@
 
     <section>
       <div class="section-label">Related concerns</div>
-      <h2 class="section-title">AI usage with explainability guarantees</h2>
+      <h2 class="section-title">AI usage that can be explained after the fact</h2>
       <p class="section-desc">Explainability does not mean certainty. It means the system can show the basis of the evaluation and how it affected the eventual candidate status.</p>
       <div class="cards">
         <article class="card">
@@ -115,6 +115,7 @@
     <section class="closing">
       <div class="closing-box">
         <p>Vekt treats auditable hiring decisions as a property of system design. If a workflow cannot be inspected, scored, traced, and reviewed, it is not a robust foundation for compliance-sensitive hiring.</p>
+        <p>Traceability is not the same as correctness. A decision record shows which model, prompt and threshold produced a score; it does not establish that the score was right, and Vekt declares no accuracy figure. Judging whether the output is fit for your hiring decisions stays with the organisation running it.</p>
       </div>
     </section>
   </main>
@@ -132,6 +133,16 @@
       <a href="../vetting/" class="footer-link">Structured candidate vetting</a>
       <a href="../ai-act/" class="footer-link">EU AI Act and AI screening</a>
     </div>
+    <p class="footer-disclaimer">
+      <strong>No compliance claim.</strong> Vekt is software, not a compliance
+      service, and is provided as is, without warranty of any kind. Nothing on
+      this site is legal advice. Using AI to screen job applications is an Annex
+      III high-risk use under the EU AI Act; the organisation that deploys Vekt
+      carries the resulting obligations, not this project. Vekt has not been
+      audited, certified or conformity-assessed, and declares no accuracy figure.
+      What it does and does not do is documented in
+      <a href="https://github.com/Behnoudmst/vekt/tree/main/docs/compliance" target="_blank" rel="noopener">docs/compliance</a>.
+    </p>
   </footer>
   <script>
     const hamburger = document.getElementById('hamburger');
