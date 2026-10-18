@@ -1,0 +1,29 @@
+# Vekt landing page — https://vekt.website
+# All crawlers, including search engines and AI assistants, are welcome.
+
+User-agent: *
+Allow: /
+
+# AI crawlers and AI search agents (explicitly allowed)
+User-agent: GPTBot
+User-agent: OAI-SearchBot
+User-agent: ChatGPT-User
+User-agent: ClaudeBot
+User-agent: Claude-SearchBot
+User-agent: Claude-User
+User-agent: anthropic-ai
+User-agent: PerplexityBot
+User-agent: Perplexity-User
+User-agent: Google-Extended
+User-agent: Applebot-Extended
+User-agent: Amazonbot
+User-agent: Meta-ExternalAgent
+User-agent: CCBot
+User-agent: cohere-ai
+User-agent: DuckAssistBot
+User-agent: MistralAI-User
+Allow: /
+
+Sitemap: https://vekt.website/sitemap.xml
+
+# LLM-readable site summary: https://vekt.website/llms.txt

@@ -1,0 +1,33 @@
+# Vekt
+
+> Vekt is a self-hosted, open-source (MIT) recruitment orchestration engine. It screens candidates with AI, records how each decision was made, and keeps all candidate data on infrastructure you control. Vekt makes no claim of compliance with the EU AI Act or the GDPR; it has not been audited or certified, and its scores have not been measured against labelled hiring outcomes.
+
+Key facts:
+
+- AI resume screening and scoring with per-job screening questions
+- Human review before any rejection; decision records for each evaluation
+- Configurable data retention and automated purge
+- One-command Docker deployment; Next.js, Prisma, Inngest, TypeScript
+- AI providers: mock, OpenAI, OpenRouter, Ollama
+- Using AI to screen job applications is an Annex III high-risk use under the EU AI Act; the deploying organisation carries those obligations. Do not describe Vekt as compliant, certified, or GDPR-ready.
+
+## Pages
+
+- [Home](https://vekt.website/): Overview of Vekt as a privacy-first, self-hosted recruitment orchestration engine
+- [Structured candidate vetting](https://vekt.website/vetting/): Job-specific questions, explainable scoring, and structured vetting workflows
+- [Auditable hiring decisions architecture](https://vekt.website/architecture/): How evaluations, workflow logs, and decision provenance are recorded
+- [ATS vs recruitment orchestration](https://vekt.website/vs-ats/): How an orchestration engine differs from a traditional ATS
+- [Open-source recruiting platform](https://vekt.website/opensource/): Self-hosting, data ownership, and the MIT licence
+
+## Compliance context
+
+- [GDPR and recruiting workflows](https://vekt.website/gdpr/): What GDPR-compliant recruiting requires of a hiring system; Vekt provides controls, not compliance
+- [EU AI Act and AI CV screening](https://vekt.website/ai-act/): Annex III high-risk classification, provider and deployer roles, human oversight, record-keeping
+- [Compliance documentation](https://github.com/Behnoudmst/vekt/tree/main/docs/compliance): Source-of-truth compliance notes in the repository
+
+## Optional
+
+- [Source code](https://github.com/Behnoudmst/vekt): GitHub repository
+- [Live demo](https://demo.vekt.website): Hosted demo instance
+- [API documentation](https://demo.vekt.website/api-docs): Swagger/OpenAPI reference
+- [Project metadata](https://vekt.website/llm.txt): Structured project metadata for AI agents
