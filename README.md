@@ -10,9 +10,9 @@
 [![Open Source](https://img.shields.io/badge/Open%20Source-MIT-blue)](LICENSE)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-vekt--demo.behnoud.net-6366f1)](https://demo.vekt.website)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-demo.vekt.eu-6366f1)](https://demo.vekt.eu)
 
-> **[Live Demo →](https://demo.vekt.website)**
+> **[Live Demo →](https://demo.vekt.eu)**
 
 Vekt is an open source, self-hosted recruitment platform that automates candidate screening using AI.
 
@@ -70,7 +70,7 @@ Use Vekt if you need:
 - **Human review before rejection** — below-threshold candidates are marked `NEEDS_REVIEW` and no rejection email is sent until a recruiter decides. Fully automated rejection is an explicit admin opt-in (`AUTO_REJECT_BELOW_THRESHOLD`)
 - **Identity redaction** — name, email, phone, URLs, date of birth and declared personal attributes are stripped from CV text before it reaches any AI provider
 - **Traceable decisions** — every evaluation records the provider, exact model, prompt hash and evaluator version, so a score can still be explained after the model behind it is retired
-- **GDPR-compliant** — strictly necessary cookies only, configurable auto-deletion of candidate data, privacy policy included
+- **Privacy defaults** — strictly necessary cookies only, configurable auto-deletion of candidate data, privacy policy included
 - **Secure file handling** — resume PDFs stored outside the web root (`private/uploads/`), served only to authenticated users via a protected API route
 - **Job slugs** — human-readable URLs for every job listing (e.g. `/jobs/ux-ui-designer`)
 - **Swagger UI** — full API documentation at `/api-docs`
