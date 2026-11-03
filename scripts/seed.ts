@@ -23,23 +23,26 @@ async function main() {
     console.error("❌ SEED_ADMIN_PASSWORD env var is required. Add it to your .env file.");
     process.exit(1);
   }
-  const adminPassword = await bcrypt.hash(adminRaw, 10);
-  await prisma.user.upsert({
-    where: { email: adminEmail },
-    update: { password: adminPassword },
-    create: { email: adminEmail, password: adminPassword, role: "ADMIN" },
-  });
-  console.log(`✅ Seeded admin user:     ${adminEmail}`);
+  // Seed runs on every container start (SEED_ON_START), so never overwrite or recreate existing data
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  if (existingAdmin) {
+    console.log(`─ Admin user exists, skipping admin and sample job: ${adminEmail}`);
+  } else {
+    const adminPassword = await bcrypt.hash(adminRaw, 10);
+    await prisma.user.create({
+      data: { email: adminEmail, password: adminPassword, role: "ADMIN" },
+    });
+    console.log(`✅ Seeded admin user:     ${adminEmail}`);
+  }
 
-  // --- Dummy job listing ---
-  await prisma.job.upsert({
-    where: { id: "seed-job-ux-ui-designer" },
-    update: {},
-    create: {
-      id: "seed-job-ux-ui-designer",
-      slug: "ux-ui-designer",
-      title: "UX/UI Designer",
-      description: `We are looking for a talented UX/UI Designer to join our growing team.
+  // --- Dummy job listing (fresh install only, so a deleted sample job stays deleted) ---
+  if (!existingAdmin) {
+    await prisma.job.create({
+      data: {
+        id: "seed-job-ux-ui-designer",
+        slug: "ux-ui-designer",
+        title: "UX/UI Designer",
+        description: `We are looking for a talented UX/UI Designer to join our growing team.
 
 **Responsibilities:**
 - Design intuitive and visually compelling user interfaces for web and mobile products
@@ -58,11 +61,12 @@ async function main() {
 **Nice to have:**
 - Experience with motion design or micro-interactions
 - Familiarity with front-end technologies (HTML/CSS/React)`,
-      location: "Remote",
-      isActive: true,
-    },
-  });
-  console.log("✅ Seeded job listing:    UX/UI Designer");
+        location: "Remote",
+        isActive: true,
+      },
+    });
+    console.log("✅ Seeded job listing:    UX/UI Designer");
+  }
 
   // --- Email templates ---
   const templates: { type: EmailType; subject: string; body: string }[] = [
