@@ -129,29 +129,6 @@ case "$ai_choice" in
     ;;
 esac
 
-# ── Email (SMTP) ───────────────────────────────────────────────────────────────
-echo -e "\n${BOLD}Email — SMTP — optional${RESET}"
-read -rp "  SMTP host [leave blank to skip]: " smtp_host < /dev/tty
-
-if [ -n "$smtp_host" ]; then
-  read -rp "  SMTP port        [587]: " smtp_port < /dev/tty
-  smtp_port="${smtp_port:-587}"
-  read -rp "  SMTP username    [leave blank if not required]: " smtp_user < /dev/tty
-  read -rsp "  SMTP password    [leave blank if not required]: " smtp_pass < /dev/tty
-  echo ""
-  read -rp "  SMTP from email  [noreply@example.com]: " smtp_from < /dev/tty
-  smtp_from="${smtp_from:-noreply@example.com}"
-  
-  sed -i.bak "s|^SMTP_HOST=.*|SMTP_HOST=${smtp_host}|" .env && rm -f .env.bak
-  sed -i.bak "s|^SMTP_PORT=.*|SMTP_PORT=${smtp_port}|" .env && rm -f .env.bak
-  [ -n "$smtp_user" ] && sed -i.bak "s|^SMTP_USER=.*|SMTP_USER=${smtp_user}|" .env && rm -f .env.bak
-  [ -n "$smtp_pass" ] && sed -i.bak "s|^SMTP_PASS=.*|SMTP_PASS=${smtp_pass}|" .env && rm -f .env.bak
-  sed -i.bak "s|^SMTP_FROM=.*|SMTP_FROM=${smtp_from}|" .env && rm -f .env.bak
-  echo "  ✓ SMTP configured"
-else
-  echo -e "  ${YELLOW}─ Skipped — SMTP emails will not be sent${RESET}"
-fi
-
 # ── Email (Resend) ─────────────────────────────────────────────────────────────
 echo -e "\n${BOLD}Email — Resend — optional (https://resend.com)${RESET}"
 echo "  Used for application confirmation, status updates, and data retention warnings."

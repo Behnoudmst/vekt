@@ -36,5 +36,10 @@ export default async function JobApplyPage({
     notFound();
   }
 
-  return <ApplyForm job={{ ...job, description: sanitizeRichText(job.description) }} />;
+  return (
+    <ApplyForm
+      job={{ ...job, description: sanitizeRichText(job.description) }}
+      supportEmail={process.env.SUPPORT_EMAIL || "example-support@email.com"}
+    />
+  );
 }

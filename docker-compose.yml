@@ -47,6 +47,14 @@ services:
       # URL Inngest uses to call back into the app
       INNGEST_APP_URL: "${NEXTAUTH_URL:-http://app:3000}/api/inngest"
 
+      # ── Email (Resend) ──────────────────────────────────────────────────────
+      RESEND_API_KEY: "${RESEND_API_KEY:-}"
+      EMAIL_FROM: "${EMAIL_FROM:-noreply@vekt.io}"
+      # Public base URL for status-page and unsubscribe links
+      APP_URL: "${APP_URL:-http://localhost:3000}"
+      SUPPORT_EMAIL: "${SUPPORT_EMAIL:-}"
+      PRIVACY_CONTACT_EMAIL: "${PRIVACY_CONTACT_EMAIL:-}"
+
       # ── Branding & logging ──────────────────────────────────────────────────
       COMPANY_NAME: "${COMPANY_NAME:-Vekt}"
       LOG_LEVEL: "${LOG_LEVEL:-info}"
