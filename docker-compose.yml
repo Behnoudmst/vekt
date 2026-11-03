@@ -52,6 +52,8 @@ services:
       EMAIL_FROM: "${EMAIL_FROM:-noreply@vekt.io}"
       # Public base URL for status-page and unsubscribe links
       APP_URL: "${APP_URL:-http://localhost:3000}"
+      SUPPORT_EMAIL: "${SUPPORT_EMAIL:-}"
+      PRIVACY_CONTACT_EMAIL: "${PRIVACY_CONTACT_EMAIL:-}"
 
       # ── Branding & logging ──────────────────────────────────────────────────
       COMPANY_NAME: "${COMPANY_NAME:-Vekt}"

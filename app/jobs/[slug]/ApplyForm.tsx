@@ -43,6 +43,7 @@ type Job = {
 
 type Props = {
   job?: Job | null;
+  supportEmail: string;
 };
 
 type SubmissionState =
@@ -50,8 +51,6 @@ type SubmissionState =
   | { status: "loading" }
   | { status: "success"; statusPath: string }
   | { status: "error"; message: string };
-
-const supportEmail = process.env.NEXT_PUBLIC_SUPPORT_EMAIL || "example-support@email.com";
 
 function StepDot({ active, done }: { active?: boolean; done?: boolean }) {
   return (
@@ -68,7 +67,7 @@ function StepDot({ active, done }: { active?: boolean; done?: boolean }) {
   );
 }
 
-export default function ApplyForm({ job }: Props) {
+export default function ApplyForm({ job, supportEmail }: Props) {
   const hasQuestions = (job?.screeningQuestions?.length ?? 0) > 0;
 
   const [step, setStep] = useState<"details" | "questions">("details");
