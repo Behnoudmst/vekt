@@ -1,4 +1,4 @@
-# Vekt landing page — https://vekt.website
+# Vekt landing page — https://vekt.eu
 # All crawlers, including search engines and AI assistants, are welcome.
 
 User-agent: *
@@ -24,6 +24,6 @@ User-agent: DuckAssistBot
 User-agent: MistralAI-User
 Allow: /
 
-Sitemap: https://vekt.website/sitemap.xml
+Sitemap: https://vekt.eu/sitemap.xml
 
-# LLM-readable site summary: https://vekt.website/llms.txt
+# LLM-readable site summary: https://vekt.eu/llms.txt

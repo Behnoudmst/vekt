@@ -9,7 +9,7 @@ export default function SiteFooter() {
           <p>&copy; {new Date().getFullYear()} {COMPANY_NAME}. All rights reserved.</p>
           <span className="hidden sm:inline text-border">|</span>
           <a
-            href="https://vekt.website"
+            href="https://vekt.eu"
             target="_blank"
             rel="noopener"
             className="hover:text-foreground transition-colors underline underline-offset-3"
