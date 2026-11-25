@@ -4,7 +4,7 @@ project_type: AI-powered recruitment platform
 license: MIT
 open_source: true
 repository: https://github.com/Behnoudmst/vekt
-website: https://vekt-demo.behnoud.net
+website: https://demo.vekt.eu
 description: >
 	Vekt is a self-hosted, open-source recruitment platform that automates candidate screening using AI. It provides full data ownership, privacy-first workflows, and no SaaS lock-in. Features include AI resume scoring, per-job screening questions, configurable retention and deletion, admin-editable email templates, and decision records for each evaluation.
 features:
@@ -51,7 +51,7 @@ structured_data:
 	programmingLanguage: TypeScript, JavaScript
 	offers: Free, Open Source
 	audience: Recruiters, HR teams, Developers, Startups
-	url: https://vekt.website
+	url: https://vekt.eu
 	sameAs:
 		- https://github.com/Behnoudmst/vekt
 
